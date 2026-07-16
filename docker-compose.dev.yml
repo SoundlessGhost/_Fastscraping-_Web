@@ -1,0 +1,23 @@
+# Local development database only — production runs its own stack on the server.
+# Port 5433 on the host so it can't collide with any local Postgres on 5432.
+services:
+  db:
+    image: postgres:16
+    container_name: fs-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fastscraping
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: fastscraping
+    ports:
+      - "5433:5432"
+    volumes:
+      - fs_dev_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fastscraping -d fastscraping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  fs_dev_db:

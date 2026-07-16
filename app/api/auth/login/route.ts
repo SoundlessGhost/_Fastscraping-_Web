@@ -1,44 +1,57 @@
 import { NextResponse } from "next/server";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
-import { sessionOptions, type DashSession } from "@/lib/session";
-import { fetchUsage } from "@/lib/scrape-api";
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { verifyPassword } from "@/lib/auth/password";
+import { createSession } from "@/lib/auth/session";
+import { isBootstrapAdmin } from "@/lib/auth/admins";
 
 export const runtime = "nodejs";
 
-// Login = validate the API key against the backend, then store it encrypted
-// in the session cookie. The key itself is the identity.
-export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as { apiKey?: unknown };
-  const key = typeof body.apiKey === "string" ? body.apiKey.trim() : "";
+const Body = z.object({
+  email: z.string().email().max(160),
+  password: z.string().max(200),
+});
 
-  if (!key) {
-    return NextResponse.json({ ok: false, error: "API key is required." }, { status: 400 });
+// Deliberately vague so this endpoint can't be used to discover which emails exist.
+const INVALID = "Invalid email or password.";
+
+export async function POST(req: Request) {
+  const parsed = Body.safeParse(await req.json().catch(() => ({})));
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false, error: INVALID }, { status: 400 });
+  }
+  const email = parsed.data.email.trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user?.passwordHash) {
+    return NextResponse.json({ ok: false, error: INVALID }, { status: 401 });
   }
 
-  let res: Response;
-  try {
-    res = await fetchUsage(key, 1);
-  } catch {
+  const good = await verifyPassword(parsed.data.password, user.passwordHash);
+  if (!good) {
+    return NextResponse.json({ ok: false, error: INVALID }, { status: 401 });
+  }
+
+  if (!user.emailVerifiedAt) {
     return NextResponse.json(
-      { ok: false, error: "Cannot reach the usage service. Try again." },
-      { status: 502 },
+      { ok: false, error: "Please verify your email first.", needsVerification: true },
+      { status: 403 },
+    );
+  }
+  if (user.status !== "ACTIVE") {
+    return NextResponse.json(
+      { ok: false, error: "This account has been disabled. Contact support." },
+      { status: 403 },
     );
   }
 
-  if (res.status === 401 || res.status === 403) {
-    return NextResponse.json({ ok: false, error: "Invalid API key." }, { status: 401 });
+  // Keeps ADMIN_EMAILS authoritative even if the account signed up earlier.
+  let role = user.role;
+  if (isBootstrapAdmin(email) && role !== "ADMIN") {
+    await prisma.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
+    role = "ADMIN";
   }
-  if (!res.ok) {
-    return NextResponse.json({ ok: false, error: "Usage service error." }, { status: 502 });
-  }
 
-  const data = (await res.json().catch(() => ({}))) as { owner?: string };
-
-  const session = await getIronSession<DashSession>(await cookies(), sessionOptions);
-  session.apiKey = key;
-  session.owner = data.owner ?? "client";
-  await session.save();
-
-  return NextResponse.json({ ok: true, owner: session.owner });
+  await createSession(user.id);
+  return NextResponse.json({ ok: true, role });
 }

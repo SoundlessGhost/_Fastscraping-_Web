@@ -1,0 +1,162 @@
+// Fastscraping dashboard data model.
+// The connection URL lives in prisma.config.ts (env DATABASE_URL) — Prisma 7
+// no longer accepts `url` here.
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum CodePurpose {
+  SIGNUP
+  RESET
+}
+
+enum ServiceStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum ClientServiceStatus {
+  ACTIVE
+  DISABLED
+}
+
+/// A dashboard account. Signup is open; role decides admin vs client.
+model User {
+  id                   String     @id @default(cuid())
+  email                String     @unique
+  passwordHash         String?
+  name                 String?
+  company              String?
+  role                 Role       @default(CLIENT)
+  status               UserStatus @default(ACTIVE)
+  emailVerifiedAt      DateTime?
+  /// Enforces the "password can only change once every 30 days" rule.
+  lastPasswordChangeAt DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  clientServices ClientService[]
+  sessions       Session[]
+  auditLogs      AuditLog[]      @relation("actor")
+
+  @@index([role])
+}
+
+/// Short-lived 6-digit codes emailed for signup verification and password reset.
+/// Only the hash is stored, never the code itself.
+model EmailCode {
+  id        String      @id @default(cuid())
+  email     String
+  codeHash  String
+  purpose   CodePurpose
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int         @default(0)
+  createdAt DateTime    @default(now())
+
+  @@index([email, purpose])
+  @@index([expiresAt])
+}
+
+/// A backend we proxy to — one row per running endpoint (its own host:port and
+/// its own API key). The four taxonomy columns are what the sidebar nests by:
+///   category -> platform -> region -> endpoint
+/// A row may stop short (region/endpoint null) when one key covers a whole
+/// platform. `kind` selects the response adapter; `capabilities` drives which
+/// UI widgets show.
+model Service {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique
+  category String
+  platform String
+  region   String?
+  endpoint String?
+
+  baseUrl String
+  /// Where usage lives on that backend, and which header carries the key —
+  /// per-service so a new backend needs no code change.
+  usagePath  String @default("/me/usage")
+  authHeader String @default("X-API-Key")
+
+  kind         String        @default("generic")
+  capabilities Json?
+  status       ServiceStatus @default(ACTIVE)
+  sortOrder    Int           @default(0)
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  clientServices ClientService[]
+
+  @@index([category, platform])
+  @@index([status])
+}
+
+/// The join that makes multi-service work: which client holds which API key
+/// for which backend. The key is encrypted at rest (AES-256-GCM).
+model ClientService {
+  id        String              @id @default(cuid())
+  userId    String
+  serviceId String
+  apiKeyEnc String
+  label     String?
+  status    ClientServiceStatus @default(ACTIVE)
+  /// The backend is the source of truth for whether a key is valid; these two
+  /// only cache the last answer so the UI can say "key rejected, update it".
+  verifiedAt DateTime?
+  lastError  String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceId])
+  @@index([userId])
+}
+
+/// Server-side session records so an admin can revoke access / log a user out.
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+  userAgent  String?
+  ip         String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Trail of admin/user actions.
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  target    String?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  actor User? @relation("actor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+}

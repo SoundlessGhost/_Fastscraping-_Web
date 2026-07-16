@@ -1,10 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Gate /dashboard/* behind a session cookie. This is a lightweight presence
-// check — the real key validation happens in /api/usage (which destroys the
-// session if the backend rejects the key).
+// Lightweight cookie-presence gate. The real check (live session row + active
+// user + role) happens server-side in the pages/routes, since Prisma can't run
+// on the edge runtime.
+const SESSION_COOKIE = "fs_session";
+
 export function middleware(req: NextRequest) {
-  const hasSession = req.cookies.has("fs_dash");
+  const hasSession = req.cookies.has(SESSION_COOKIE);
   const { pathname } = req.nextUrl;
   const isLogin = pathname.startsWith("/dashboard/login");
 
@@ -24,5 +26,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*"],
 };
