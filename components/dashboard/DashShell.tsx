@@ -165,7 +165,12 @@ export default function DashShell({
           >
             <span className="ds-item-label">Settings</span>
           </Link>
-          {/* Admin link lands here once /admin exists — see Phase 4. */}
+          {user.role === "ADMIN" && (
+            <Link href="/admin" className="ds-item" onClick={() => setDrawer(false)}>
+              <span className="ds-item-label">Admin</span>
+              <span className="ds-tag">admin</span>
+            </Link>
+          )}
         </div>
       </aside>
 
