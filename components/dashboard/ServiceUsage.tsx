@@ -559,7 +559,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
                 </div>
               )}
 
-              <div className="dash-card">
+              <div className="dash-card su-topcard">
                 <div className="dash-card-h">
                   <div className="dash-card-t">
                     Top usage <small>busiest days in this range</small>

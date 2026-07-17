@@ -206,13 +206,14 @@
 .dash-stat--dark .dash-stat-s { color: rgba(245, 243, 238, 0.45); }
 
 /* ---------- Main grid ---------- */
-/* The whole page is meant to fit one screen, so the chart gets a fixed height
-   rather than stretching to whatever the right column happens to need. */
+/* The chart keeps a fixed height rather than stretching to whatever the right
+   column needs; the right column stretches to match it instead, so the two
+   columns end level. */
 .dash-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
   gap: 12px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .dash-card {

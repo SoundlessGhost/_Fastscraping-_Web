@@ -545,29 +545,41 @@
 /* ---------- Top usage ----------
    One line per day: the card sits beside the chart, so its height decides
    whether the page fits on a screen. Rank, date, share of the peak, count. */
-.su-top { padding: 0 20px 14px; display: grid; gap: 8px; }
+/* Job health is as tall as its numbers need; Top usage takes whatever is left
+   so the column ends level with the chart, and its three rows share that space
+   instead of huddling at the top. */
+.su-topcard { flex: 1; }
+.su-top {
+  flex: 1;
+  padding: 0 20px 16px;
+  display: grid;
+  grid-auto-rows: 1fr;
+  align-content: stretch;
+  gap: 8px;
+  min-height: 0;
+}
 .su-top-row {
   display: grid;
-  grid-template-columns: 14px 62px minmax(0, 1fr) auto;
+  grid-template-columns: 16px 66px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  height: 26px;
+  gap: 12px;
+  min-height: 30px;
 }
 .su-top-rank {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--muted);
 }
 .su-top-row:first-child .su-top-rank { color: var(--accent); font-weight: 600; }
 .su-top-date {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-2);
   white-space: nowrap;
 }
 .su-top-bar {
   display: block;
-  height: 6px;
+  height: 7px;
   border-radius: 999px;
   background: var(--hairline);
   overflow: hidden;
@@ -575,7 +587,7 @@
 .su-top-bar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
 .su-top-n {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 18px;
   color: var(--ink);
   line-height: 1;
   white-space: nowrap;
@@ -656,8 +668,8 @@
   .dash-health-row { margin-bottom: 8px; }
   .dash-health-l { margin-top: 4px; }
   .su-billnote { padding: 4px 18px 8px; font-size: 10px; }
-  .su-top { padding: 0 18px 10px; gap: 6px; }
-  .su-top-row { height: 22px; }
+  .su-top { padding: 0 18px 12px; gap: 6px; }
+  .su-top-row { min-height: 24px; }
 }
 
 /* ---------- Day breakdown ---------- */
