@@ -19,21 +19,25 @@ export const CATEGORIES: Record<string, { label: string; blurb: string }> = {
 export const PLATFORMS: Record<string, { label: string }> = {
   shopee: { label: "Shopee" },
   temu: { label: "Temu" },
-  homegate: { label: "Homegate" },
-  immoscout: { label: "ImmoScout24" },
-  // The homepage marquee's brands. Only the ones a prettified slug would get
-  // wrong need an entry — but listing them all keeps the mapping in one place.
+  // The brands the homepage marquee advertises. Only the ones a prettified
+  // slug would get wrong strictly need an entry — but listing them all keeps
+  // the mapping in one place.
   stubhub: { label: "StubHub" },
   seatgeek: { label: "SeatGeek" },
   indeed: { label: "Indeed" },
   glassdoor: { label: "Glassdoor" },
   linkedin: { label: "LinkedIn" },
-  immoscout24: { label: "ImmoScout24" },
   starbucks: { label: "Starbucks" },
   mcdonalds: { label: "McDonald's" },
   doordash: { label: "DoorDash" },
   amazon: { label: "Amazon" },
   walmart: { label: "Walmart" },
+  homegate: { label: "Homegate" },
+  immoscout24: { label: "ImmoScout24" },
+  urbanhome: { label: "Urbanhome" },
+  newhome: { label: "Newhome" },
+  flatfox: { label: "Flatfox" },
+  tutti: { label: "Tutti" },
 };
 
 export const ENDPOINTS: Record<string, { label: string; blurb: string }> = {

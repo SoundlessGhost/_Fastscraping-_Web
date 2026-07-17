@@ -41,6 +41,14 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# sharp is the one dependency the standalone trace gets wrong: it copies the
+# JavaScript but not the platform package that carries libvips, so requiring it
+# died with "libvips-cpp.so: cannot open shared object file" and every avatar
+# upload came back as "that file isn't an image we can read". Bring the real
+# module across whole.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/sharp ./node_modules/sharp
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@img ./node_modules/@img
+
 USER nextjs
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \

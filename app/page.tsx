@@ -5,6 +5,27 @@ import AnimatedNumber from "@/components/AnimatedNumber";
 import KMAvatar from "@/components/KMAvatar";
 import "./styles/home-responsive.css";
 
+/// The brands under "Active pipelines for". Mirrored by MARQUEE in
+/// prisma/seed.ts, which puts each one in the dashboard catalogue.
+const MARQUEE = [
+  { name: "StubHub", tick: "ticketing" },
+  { name: "SeatGeek", tick: "ticketing" },
+  { name: "Indeed", tick: "jobs" },
+  { name: "Glassdoor", tick: "jobs" },
+  { name: "LinkedIn", tick: "b2b" },
+  { name: "Starbucks", tick: "restaurant" },
+  { name: "McDonald's", tick: "restaurant" },
+  { name: "DoorDash", tick: "delivery" },
+  { name: "Amazon", tick: "e-com" },
+  { name: "Walmart", tick: "e-com" },
+  { name: "Homegate", tick: "real estate" },
+  { name: "ImmoScout24", tick: "real estate" },
+  { name: "Urbanhome", tick: "real estate" },
+  { name: "Newhome", tick: "real estate" },
+  { name: "Flatfox", tick: "real estate" },
+  { name: "Tutti", tick: "real estate" },
+];
+
 export default function HomePage() {
   return (
     <>
@@ -112,31 +133,15 @@ export default function HomePage() {
         <div className="container">
           <div className="marquee-label">Active pipelines for</div>
         </div>
+        {/* Listed once and rendered twice — the track needs a second copy to
+            loop seamlessly, and two hand-written copies drift apart the moment
+            someone adds a brand to one of them.
+
+            Keep in step with MARQUEE in prisma/seed.ts: every brand here is a
+            service in the dashboard catalogue, so what we advertise and what a
+            client can see stay the same list. */}
         <div className="marquee-track">
-          {[
-            { name: "StubHub", tick: "ticketing" },
-            { name: "SeatGeek", tick: "ticketing" },
-            { name: "Indeed", tick: "jobs" },
-            { name: "LinkedIn", tick: "b2b" },
-            { name: "ImmoScout24", tick: "real estate" },
-            { name: "Starbucks", tick: "restaurant" },
-            { name: "DoorDash", tick: "delivery" },
-            { name: "McDonald's", tick: "restaurant" },
-            { name: "Amazon", tick: "e-com" },
-            { name: "Walmart", tick: "e-com" },
-            { name: "Glassdoor", tick: "jobs" },
-            { name: "StubHub", tick: "ticketing" },
-            { name: "SeatGeek", tick: "ticketing" },
-            { name: "Indeed", tick: "jobs" },
-            { name: "LinkedIn", tick: "b2b" },
-            { name: "ImmoScout24", tick: "real estate" },
-            { name: "Starbucks", tick: "restaurant" },
-            { name: "DoorDash", tick: "delivery" },
-            { name: "McDonald's", tick: "restaurant" },
-            { name: "Amazon", tick: "e-com" },
-            { name: "Walmart", tick: "e-com" },
-            { name: "Glassdoor", tick: "jobs" },
-          ].map((c, i) => (
+          {[...MARQUEE, ...MARQUEE].map((c, i) => (
             <span key={i} className="platform-chip">
               {c.name} <span className="tick">{c.tick}</span>
             </span>

@@ -35,9 +35,8 @@ const PLACEHOLDER = "http://0.0.0.0:0";
 /// the dashboard's categories. Marketing copy and the catalogue should not
 /// disagree about what we run, so this list mirrors app/page.tsx.
 ///
-/// ImmoScout24 is in the marquee too, but it already has a real entry above
-/// (Switzerland · Listings) — listing it here as well would show the brand
-/// twice under Real estate.
+/// Real estate is listed last on purpose — the sidebar follows sortOrder, and
+/// these are the least-used of the lot.
 const MARQUEE = [
   { slug: "stubhub", name: "StubHub", category: "ticketing" },
   { slug: "seatgeek", name: "SeatGeek", category: "ticketing" },
@@ -49,6 +48,15 @@ const MARQUEE = [
   { slug: "doordash", name: "DoorDash", category: "delivery" },
   { slug: "amazon", name: "Amazon", category: "ecommerce" },
   { slug: "walmart", name: "Walmart", category: "ecommerce" },
+
+  // Real estate sits last in the sidebar, so it comes last here — the tree is
+  // built in the order rows arrive, which the API sorts by sortOrder.
+  { slug: "homegate", name: "Homegate", category: "realestate" },
+  { slug: "immoscout24", name: "ImmoScout24", category: "realestate" },
+  { slug: "urbanhome", name: "Urbanhome", category: "realestate" },
+  { slug: "newhome", name: "Newhome", category: "realestate" },
+  { slug: "flatfox", name: "Flatfox", category: "realestate" },
+  { slug: "tutti", name: "Tutti", category: "realestate" },
 ];
 
 const SERVICES: Seed[] = [
@@ -68,10 +76,6 @@ const SERVICES: Seed[] = [
 
   // --- E-commerce / Temu ---------------------------------------------------
   { slug: "temu-us-search", name: "Search", category: "ecommerce", platform: "temu", region: "us", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
-
-  // --- Real estate ---------------------------------------------------------
-  { slug: "homegate-ch-listings", name: "Listings", category: "realestate", platform: "homegate", region: "ch", endpoint: "listings", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 70 },
-  { slug: "immoscout-ch-listings", name: "Listings", category: "realestate", platform: "immoscout", region: "ch", endpoint: "listings", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 80 },
 
   // --- The brands the homepage marquee advertises --------------------------
   // Name only: no region, no endpoint. These are here so the dashboard shows
