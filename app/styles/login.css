@@ -273,6 +273,13 @@
 }
 
 .lg-label {
+  /* A <label> is inline, and vertical margins do nothing on an inline box.
+     The labels that are direct children of .lg-card-body got away with it —
+     it's a flex column, so its children are blockified and the margins bite.
+     The ones nested inside .lg-two are not flex items, so their margins were
+     being dropped and the name row sat flush against the field above it.
+     Saying block outright makes the spacing work wherever a label is used. */
+  display: block;
   font-family: var(--font-mono);
   font-size: 10.5px;
   letter-spacing: 0.14em;
