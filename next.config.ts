@@ -12,6 +12,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Ships a self-contained server with only the modules it actually imports,
+  // so the container doesn't carry all of node_modules.
+  output: "standalone",
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,

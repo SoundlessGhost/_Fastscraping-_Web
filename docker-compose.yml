@@ -1,0 +1,83 @@
+# Fastscraping — production stack for /opt/Fastscraping on 89.117.59.90.
+#
+# This box already runs bayna, which owns ports 80/443 through its own Caddy.
+# So nothing here publishes a port: Caddy reaches this app over the shared
+# `bayna_default` network and proxies `fs-app:3000`.
+#
+# Names matter. bayna's Caddyfile proxies the alias `app`, so a service called
+# `app` on that network would collide with bayna's own container and could
+# start serving bayna's traffic. Everything here is prefixed `fs-`.
+
+services:
+  fs-db:
+    image: postgres:16
+    container_name: fs-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fastscraping
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: fastscraping
+    volumes:
+      - fs_db:/var/lib/postgresql/data
+      # Nightly pg_dump lands here, on the host, so a rollback never depends on
+      # the volume still being intact.
+      - ./backups:/backups
+    # No ports: the database is reachable only from this compose network.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fastscraping -d fastscraping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fs
+
+  # Runs once per deploy and exits. `migrate deploy` only applies migrations
+  # that already exist in the repo — it never generates one and never drops
+  # data, so it is safe to run on every start.
+  fs-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    image: fastscraping-migrator
+    container_name: fs-migrate
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://fastscraping:${POSTGRES_PASSWORD}@fs-db:5432/fastscraping
+    depends_on:
+      fs-db:
+        condition: service_healthy
+    networks:
+      - fs
+
+  fs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    image: fastscraping-app
+    container_name: fs-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://fastscraping:${POSTGRES_PASSWORD}@fs-db:5432/fastscraping
+      NODE_ENV: production
+    depends_on:
+      fs-db:
+        condition: service_healthy
+      fs-migrate:
+        condition: service_completed_successfully
+    networks:
+      - fs
+      # Joined so bayna's Caddy can reach us. We only ever receive from it.
+      - bayna
+
+networks:
+  fs:
+    driver: bridge
+  bayna:
+    external: true
+    name: bayna_default
+
+volumes:
+  fs_db:
