@@ -54,16 +54,35 @@ const fmtWhen = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 /// One connected service. The key arrives with the page, so Reveal is a pure
-/// toggle — no request, nothing to wait for. Keys can't be removed here: a
-/// client's access to a service is ours to manage, not theirs to drop.
+/// toggle — no request, nothing to wait for.
+///
+/// Remove only forgets the key here; the service's own backend, and the usage
+/// on it, are untouched. To see usage again the client just pastes the key
+/// back — which is the point: a wrong or rotated key is theirs to fix without
+/// waiting on us.
 function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
+  const router = useRouter();
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   async function copy() {
     await navigator.clipboard.writeText(apiKey).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function remove() {
+    if (
+      !confirm(
+        `Remove your key for ${fullName(s)}?\n\nUsage stops showing here until you paste a key again. Nothing on the service itself changes.`,
+      )
+    )
+      return;
+    setRemoving(true);
+    await fetch(`/api/services/${s.slug}/connect`, { method: "DELETE" }).catch(() => {});
+    setRemoving(false);
+    router.refresh();
   }
 
   const broken = Boolean(s.connection?.lastError);
@@ -89,6 +108,9 @@ function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
         <Link href={`/dashboard/s/${s.slug}`} className="st-key-link">
           Usage →
         </Link>
+        <button className="st-key-rm" onClick={remove} disabled={removing}>
+          {removing ? "…" : "Remove"}
+        </button>
       </div>
     </div>
   );

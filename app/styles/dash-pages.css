@@ -397,6 +397,10 @@
   white-space: nowrap;
 }
 .st-key-row button:hover:not(:disabled) { border-color: var(--ink-2); color: var(--ink); }
+/* Remove is the one destructive control here — it already sits last in the row
+   (the key value flexes to fill the space), and reddens on hover so it never
+   gets clicked by reflex. */
+.st-key-row button.st-key-rm:hover:not(:disabled) { border-color: #c2492b; color: #c2492b; }
 .st-key-link {
   font-family: var(--font-mono);
   font-size: 11.5px;
