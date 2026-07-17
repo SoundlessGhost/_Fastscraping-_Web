@@ -180,6 +180,12 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
   );
   const today = todayUTC();
 
+  // Date picker: the backend reports this month and last day-by-day, on top of
+  // the daily window — so offer exactly the span we hold figures for.
+  const [pickedDate, setPickedDate] = useState<string>(today);
+  const known = useMemo(() => Object.keys(usage?.byDate ?? {}).sort(), [usage]);
+  const picked = usage?.byDate[pickedDate] ?? null;
+
   const credits = usage?.credits ?? null;
   const limits = usage?.limits ?? null;
   const jobs = usage?.jobs ?? null;
@@ -259,10 +265,11 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
       {/* CREDITS — only when the backend reports them */}
       {credits && (
         <div className="su-credits">
+          {/* Reads the way the maths runs: bought, spent, left. */}
           <div className="su-credit">
-            <span className="su-credit-k">Credits remaining</span>
-            <span className={`su-credit-v ${credits.unlimited ? "is-unl" : ""}`}>
-              {credits.unlimited ? "Unlimited" : credits.remaining !== null ? nf.format(credits.remaining) : "—"}
+            <span className="su-credit-k">Purchased</span>
+            <span className="su-credit-v">
+              {credits.unlimited ? "—" : credits.total !== null ? nf.format(credits.total) : "—"}
             </span>
           </div>
           <div className="su-credit">
@@ -270,9 +277,9 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
             <span className="su-credit-v">{credits.used !== null ? nf.format(credits.used) : "—"}</span>
           </div>
           <div className="su-credit">
-            <span className="su-credit-k">Purchased</span>
-            <span className="su-credit-v">
-              {credits.unlimited ? "—" : credits.total !== null ? nf.format(credits.total) : "—"}
+            <span className="su-credit-k">Credits remaining</span>
+            <span className={`su-credit-v ${credits.unlimited ? "is-unl" : ""}`}>
+              {credits.unlimited ? "Unlimited" : credits.remaining !== null ? nf.format(credits.remaining) : "—"}
             </span>
           </div>
           {!credits.unlimited && credits.total ? (
@@ -592,6 +599,49 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
           )}
         </div>
       </div>
+
+      {/* DAY BREAKDOWN — full width under the grid */}
+      {usage && (
+        <div className="dash-card su-day">
+          <div className="dash-card-h">
+            <div className="dash-card-t">
+              Day breakdown <small>requests on a specific date (UTC)</small>
+            </div>
+            <input
+              type="date"
+              className="su-date"
+              value={pickedDate}
+              min={known[0] ?? undefined}
+              max={today}
+              onChange={(e) => setPickedDate(e.target.value || today)}
+            />
+          </div>
+
+          <div className="su-day-body">
+            <div className="su-day-n">
+              <span className="su-day-v">{nf.format(picked?.total ?? 0)}</span>
+              <span className="su-day-s">
+                requests on <b>{pickedDate}</b>
+                {!picked && " · no figures held for this date"}
+                {picked && picked.total === 0 && " · no activity"}
+              </span>
+            </div>
+
+            {picked && picked.total > 0 && (
+              <div className="su-day-split">
+                {Object.entries(picked.by)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([k, v]) => (
+                    <span className="su-day-chip" key={k}>
+                      <i style={{ background: dimColor(k) }} />
+                      {dimLabel(k)} <b>{nf.format(v)}</b>
+                    </span>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

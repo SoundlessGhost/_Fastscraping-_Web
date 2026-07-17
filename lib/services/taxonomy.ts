@@ -19,7 +19,7 @@ export const PLATFORMS: Record<string, { label: string }> = {
 };
 
 export const ENDPOINTS: Record<string, { label: string; blurb: string }> = {
-  pdp: { label: "PDP", blurb: "Product detail pages" },
+  pdp: { label: "PDP (get_pc)", blurb: "Product detail pages" },
   get_pc: { label: "get_pc", blurb: "Product collection / listing" },
   cvc: { label: "CVC", blurb: "Category & variant crawl" },
   search: { label: "Search", blurb: "Keyword search results" },

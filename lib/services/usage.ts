@@ -49,6 +49,10 @@ export type Jobs = {
 
 export type NormalizedUsage = {
   owner: string | null;
+  /// Every date we know a figure for, keyed YYYY-MM-DD. Wider than `daily`:
+  /// the backend also reports a day-by-day breakdown of this month and last,
+  /// which is what the date picker reaches into.
+  byDate: Record<string, { total: number; by: Record<string, number> }>;
   credits: Credits | null;
   limits: Limits | null;
   keyInfo: KeyInfo | null;
@@ -76,7 +80,10 @@ export type ServiceTarget = {
   kind: string;
 };
 
-const TIMEOUT_MS = 20_000;
+// The Shopee PDP orchestrator counts every job row in Python for each call and
+// can take 8-15s for a busy key, so this is generous on purpose. It comes back
+// down once that endpoint aggregates in SQL.
+const TIMEOUT_MS = 35_000;
 
 function num(v: unknown): number {
   return typeof v === "number" && Number.isFinite(v) ? v : 0;
@@ -153,6 +160,52 @@ function readJobs(jobs: Record<string, unknown>): Jobs {
   };
 }
 
+/// `monthly_breakdown` is keyed "YYYY-MM" -> { "<day-of-month>": 0 | {region: n,
+/// all: n}, total: {...} }, and is null for a month with no traffic. Flatten it
+/// to real dates so a date picker can just look one up.
+function readMonthlyBreakdown(raw: Record<string, unknown>) {
+  const out: Record<string, { total: number; by: Record<string, number> }> = {};
+  const mb = raw["monthly_breakdown"];
+  if (!isRecord(mb)) return out;
+
+  for (const [month, days] of Object.entries(mb)) {
+    // A null month isn't "unknown" — the backend returns null precisely when
+    // the month held no billable jobs. So fill it in as zeros rather than
+    // leaving a gap the date picker would have to disclaim.
+    if (days === null) {
+      const [y, m] = month.split("-").map(Number);
+      if (!y || !m) continue;
+      const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+      for (let d = 1; d <= last; d++) {
+        out[`${month}-${String(d).padStart(2, "0")}`] = { total: 0, by: {} };
+      }
+      continue;
+    }
+    if (!isRecord(days)) continue;
+    for (const [day, v] of Object.entries(days)) {
+      if (day === "total") continue;
+      const date = `${month}-${day.padStart(2, "0")}`;
+
+      // A quiet day comes back as the number 0, not an object. Keep it: "we
+      // know there were none" is an answer, and dropping it would leave the
+      // date picker saying it has no figures for a day it does.
+      if (!isRecord(v)) {
+        out[date] = { total: 0, by: {} };
+        continue;
+      }
+
+      const by: Record<string, number> = {};
+      for (const [k, n] of Object.entries(v)) {
+        if (k === "all") continue;
+        const c = num(n);
+        if (c > 0) by[k] = c;
+      }
+      out[date] = { total: num(v["all"]), by };
+    }
+  }
+  return out;
+}
+
 /// The Shopee usage backend (`GET /me/usage?interval=n`): totals and daily rows
 /// are objects keyed by region code plus an `all` sum, and region keys only
 /// appear once they have traffic.
@@ -185,8 +238,13 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
 
   const jobs = isRecord(raw["jobs"]) ? raw["jobs"] : null;
 
+  const byDate: Record<string, { total: number; by: Record<string, number> }> = {};
+  for (const d of daily) byDate[d.date] = { total: d.total, by: d.by };
+  Object.assign(byDate, readMonthlyBreakdown(raw));
+
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    byDate,
     credits: readCredits(raw),
     limits: readLimits(raw),
     keyInfo: readKeyInfo(raw),
@@ -227,8 +285,12 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
 
   const jobs = isRecord(raw["jobs"]) ? raw["jobs"] : null;
 
+  const byDate: Record<string, { total: number; by: Record<string, number> }> = {};
+  for (const d of daily) byDate[d.date] = { total: d.total, by: d.by };
+
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    byDate,
     credits: readCredits(raw),
     limits: readLimits(raw),
     keyInfo: readKeyInfo(raw),

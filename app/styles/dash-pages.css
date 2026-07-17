@@ -581,124 +581,6 @@
   white-space: nowrap;
 }
 
-/* ---------- Avatar ---------- */
-.av {
-  display: inline-block;
-  border-radius: 999px;
-  overflow: hidden;
-  flex: none;
-  background: var(--bg);
-  color: var(--ink);
-  line-height: 0;
-}
-.av-img {
-  width: 100%;
-  height: 100%;
-  border-radius: 999px;
-  object-fit: cover;
-  display: block;
-}
-
-/* ---------- Avatar picker (settings) ---------- */
-.ap {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 6px 0 18px;
-  border-bottom: 1px solid var(--hairline);
-  margin-bottom: 6px;
-}
-.ap-shot {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  border-radius: 999px;
-  overflow: hidden;
-  flex: none;
-  border: 1px solid var(--hairline);
-}
-.ap-busy {
-  position: absolute;
-  inset: 0;
-  background: rgba(244, 241, 234, 0.6);
-  border-radius: 999px;
-}
-.ap-busy::after {
-  content: "";
-  position: absolute;
-  inset: 50% auto auto 50%;
-  width: 18px;
-  height: 18px;
-  margin: -9px 0 0 -9px;
-  border-radius: 999px;
-  border: 2px solid var(--hairline);
-  border-top-color: var(--accent);
-  animation: su-spin 0.7s linear infinite;
-}
-.ap-side { min-width: 0; }
-.ap-acts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.ap-btn { padding: 8px 14px; font-size: 13px; }
-.ap .cn-note { margin-top: 8px; }
-.ap .cn-err { margin-top: 6px; }
-
-/* ---------- Top usage ---------- */
-.su-top { padding: 4px 18px 18px; display: grid; gap: 12px; }
-.su-top-row {
-  display: grid;
-  grid-template-columns: 22px 1fr auto;
-  align-items: center;
-  gap: 12px;
-}
-.su-top-rank {
-  font-family: var(--font-display);
-  font-size: 20px;
-  color: var(--muted);
-  text-align: center;
-}
-.su-top-row:first-child .su-top-rank { color: var(--accent); }
-.su-top-main { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.su-top-date { font-size: 13px; color: var(--ink); }
-.su-top-bar {
-  display: block;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--hairline);
-  overflow: hidden;
-}
-.su-top-bar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
-.su-top-split {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.su-top-n {
-  font-family: var(--font-display);
-  font-size: 22px;
-  color: var(--ink);
-  line-height: 1;
-}
-
-/* Profile fields sit in pairs so the card uses its width instead of running
-   as one long narrow column. */
-.st-hint {
-  font-style: normal;
-  text-transform: none;
-  letter-spacing: 0;
-  opacity: 0.7;
-  margin-left: 4px;
-}
-.st-foot {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-}
-.st-foot .st-btn { margin-top: 0; }
-.st-foot p { margin: 0 !important; }
 
 /* ---------- Live / refresh ---------- */
 .su-live {
@@ -777,3 +659,46 @@
   .su-top { padding: 0 18px 10px; gap: 6px; }
   .su-top-row { height: 22px; }
 }
+
+/* ---------- Day breakdown ---------- */
+.su-day { margin-top: 12px; }
+.su-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+.su-date:focus { outline: none; border-color: var(--accent); }
+.su-day-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.su-day-n { display: flex; align-items: baseline; gap: 12px; }
+.su-day-v {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1;
+  color: var(--ink);
+}
+.su-day-s { font-size: 12.5px; color: var(--muted); }
+.su-day-s b { color: var(--ink); font-weight: 500; font-family: var(--font-mono); }
+.su-day-split { display: flex; gap: 8px; flex-wrap: wrap; }
+.su-day-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.su-day-chip i { width: 8px; height: 8px; border-radius: 3px; }
+.su-day-chip b { color: var(--ink); font-family: var(--font-mono); font-size: 11.5px; }

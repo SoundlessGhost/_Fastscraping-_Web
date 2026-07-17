@@ -41,7 +41,10 @@ const SERVICES: Seed[] = [
   // are wrong: 8888 holds 4.3 GB and drains its queue, while the plainly-named
   // 9999 holds 55 MB with ~1600 jobs stuck pending. Check pg_database_size and
   // /health before ever "correcting" this back.
-  { slug: "shopee-br-pdp", name: "PDP", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
+  { slug: "shopee-br-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
+
+  // Taiwan is a demo placeholder until its orchestrator has an address.
+  { slug: "shopee-tw-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "tw", endpoint: "pdp", baseUrl: PLACEHOLDER, kind: "shopee-usage", status: "DISABLED", sortOrder: 20 },
 
   // --- E-commerce / Temu ---------------------------------------------------
   { slug: "temu-us-search", name: "Search", category: "ecommerce", platform: "temu", region: "us", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
