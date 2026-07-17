@@ -100,7 +100,7 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
           </p>
         </div>
         <input
-          className="cn-in ad-search"
+          className="cn-in adm-search"
           placeholder="Search email, name, company…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -109,8 +109,8 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
 
       {error && <div className="su-error"><b>{error}</b></div>}
 
-      <div className="ad-table">
-        <div className="ad-tr ad-tr--head">
+      <div className="adm-table">
+        <div className="adm-tr adm-tr--head">
           <span>Account</span>
           <span>Role</span>
           <span>Keys</span>
@@ -126,32 +126,32 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
 
         {filtered.map((u) => (
           <div key={u.id}>
-            <div className={`ad-tr ${u.status === "DISABLED" ? "is-off" : ""}`}>
-              <span className="ad-acct">
-                <button className="ad-acct-b" onClick={() => setOpen(open === u.id ? null : u.id)}>
-                  <span className="ad-email">{u.email}</span>
-                  <span className="ad-sub">
+            <div className={`adm-tr ${u.status === "DISABLED" ? "is-off" : ""}`}>
+              <span className="adm-acct">
+                <button className="adm-acct-b" onClick={() => setOpen(open === u.id ? null : u.id)}>
+                  <span className="adm-email">{u.email}</span>
+                  <span className="adm-sub">
                     {fullName(u) || u.company
                       ? [fullName(u), u.company].filter(Boolean).join(" · ")
                       : "no name set"}
-                    {!u.verified && <b className="ad-flag"> unverified</b>}
-                    {u.status === "DISABLED" && <b className="ad-flag"> disabled</b>}
-                    {u.isSelf && <b className="ad-you"> you</b>}
+                    {!u.verified && <b className="adm-flag"> unverified</b>}
+                    {u.status === "DISABLED" && <b className="adm-flag"> disabled</b>}
+                    {u.isSelf && <b className="adm-you"> you</b>}
                   </span>
                 </button>
               </span>
 
               <span>
-                <span className={`ad-pill ${u.role === "ADMIN" ? "is-admin" : ""}`}>{u.role.toLowerCase()}</span>
+                <span className={`adm-pill ${u.role === "ADMIN" ? "is-admin" : ""}`}>{u.role.toLowerCase()}</span>
               </span>
 
-              <span className="ad-num">{u.keyCount}</span>
-              <span className="ad-when">
+              <span className="adm-num">{u.keyCount}</span>
+              <span className="adm-when">
                 {fmtDate(u.lastSeenAt)}
-                {u.liveSessions > 0 && <i className="ad-live">{u.liveSessions} live</i>}
+                {u.liveSessions > 0 && <i className="adm-live">{u.liveSessions} live</i>}
               </span>
 
-              <span className="ad-acts">
+              <span className="adm-acts">
                 {u.role === "CLIENT" ? (
                   <button disabled={busy === u.id} onClick={() => act(u.id, { role: "ADMIN" })}>
                     Make admin
@@ -199,7 +199,7 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
                 )}
 
                 <button
-                  className="ad-danger"
+                  className="adm-danger"
                   disabled={busy === u.id || u.isSelf}
                   onClick={() => remove(u)}
                 >
@@ -209,18 +209,18 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
             </div>
 
             {open === u.id && (
-              <div className="ad-detail">
+              <div className="adm-detail">
                 <div>
                   <span className="ov-k">Joined</span>
-                  <span className="ad-detail-v">{fmtDate(u.createdAt)}</span>
+                  <span className="adm-detail-v">{fmtDate(u.createdAt)}</span>
                 </div>
                 <div>
                   <span className="ov-k">Connected services</span>
-                  <span className="ad-detail-v">{u.services.length ? u.services.join(", ") : "none yet"}</span>
+                  <span className="adm-detail-v">{u.services.length ? u.services.join(", ") : "none yet"}</span>
                 </div>
                 <div>
                   <span className="ov-k">Email</span>
-                  <span className="ad-detail-v">{u.verified ? "verified" : "not verified"}</span>
+                  <span className="adm-detail-v">{u.verified ? "verified" : "not verified"}</span>
                 </div>
               </div>
             )}

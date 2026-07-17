@@ -323,7 +323,7 @@ export default function Settings({
               Where you&apos;re signed in <small>{devices.length} active</small>
             </div>
             {others.length > 0 && (
-              <button className="ad-link st-linkbtn" onClick={signOutOthers} disabled={sessBusy}>
+              <button className="adm-link st-linkbtn" onClick={signOutOthers} disabled={sessBusy}>
                 {sessBusy ? "…" : "Sign out other devices"}
               </button>
             )}
@@ -335,7 +335,7 @@ export default function Settings({
                   <span className={`ds-dot ds-dot--${d.isCurrent ? "on" : "off"}`} />
                   <span className="st-sess-n">
                     {prettyAgent(d.userAgent)}
-                    {d.isCurrent && <b className="ad-you"> this device</b>}
+                    {d.isCurrent && <b className="adm-you"> this device</b>}
                   </span>
                   <span className="st-sess-m">{d.ip ?? "—"}</span>
                   <span className="st-sess-m">last seen {fmtWhen(d.lastSeenAt)}</span>

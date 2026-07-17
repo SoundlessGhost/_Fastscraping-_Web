@@ -180,7 +180,7 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
       {error && !draft && <div className="su-error"><b>{error}</b></div>}
 
       {draft && (
-        <div className="dash-card ad-card ad-form">
+        <div className="dash-card adm-card adm-form">
           <div className="dash-card-h">
             <div className="dash-card-t">
               {draft.id ? "Edit service" : "New service"}{" "}
@@ -188,8 +188,8 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
             </div>
           </div>
 
-          <div className="ad-form-body">
-            <div className="ad-fgrid">
+          <div className="adm-form-body">
+            <div className="adm-fgrid">
               <label>
                 <span className="cn-l">Category</span>
                 <input className="cn-in" value={draft.category} onChange={(e) => set("category", e.target.value)} placeholder="ecommerce" />
@@ -208,7 +208,7 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
               </label>
             </div>
 
-            <div className="ad-fgrid">
+            <div className="adm-fgrid">
               <label>
                 <span className="cn-l">Display name</span>
                 <input className="cn-in" value={draft.name} onChange={(e) => set("name", e.target.value)} placeholder="get_pc" />
@@ -232,7 +232,7 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
               <input className="cn-in" value={draft.baseUrl} onChange={(e) => set("baseUrl", e.target.value)} placeholder="http://86.48.2.59:8040" />
             </label>
 
-            <div className="ad-fgrid">
+            <div className="adm-fgrid">
               <label>
                 <span className="cn-l">Usage path</span>
                 <input className="cn-in" value={draft.usagePath} onChange={(e) => set("usagePath", e.target.value)} />
@@ -273,7 +273,7 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
               moment they try to connect.
             </p>
 
-            <div className="ad-form-acts">
+            <div className="adm-form-acts">
               <button className="btn btn-primary" onClick={save} disabled={busy}>
                 {busy ? "Saving…" : draft.id ? "Save changes" : "Create service"}
               </button>
@@ -287,30 +287,30 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
 
       {/* The catalog, in the same shape the client sidebar renders */}
       {tree.map((cat) => (
-        <section className="ad-cat" key={cat.category}>
+        <section className="adm-cat" key={cat.category}>
           <h2 className="ov-sec-t">{cat.label}</h2>
           {cat.platforms.map((plat) => (
-            <div className="ad-plat" key={plat.platform}>
-              <h3 className="ad-plat-t">
+            <div className="adm-plat" key={plat.platform}>
+              <h3 className="adm-plat-t">
                 {plat.label} <small>{plat.count}</small>
               </h3>
               {plat.regions.map((reg) => (
                 <div key={reg.region ?? "_all"}>
-                  <div className="ad-reg-t">{reg.label}</div>
+                  <div className="adm-reg-t">{reg.label}</div>
                   {reg.services.map((node) => {
                     const s = bySlug.get(node.slug);
                     if (!s) return null;
                     return (
-                      <div className="ad-srow" key={s.id}>
+                      <div className="adm-srow" key={s.id}>
                         <span className={`ds-dot ds-dot--${s.status === "ACTIVE" ? "on" : "soon"}`} />
-                        <span className="ad-sname">{s.name}</span>
-                        <span className="ad-sslug">{s.slug}</span>
-                        <span className="ad-surl">{s.baseUrl}</span>
-                        <span className="ad-skind">{s.kind}</span>
-                        <span className="ad-sclients">{s.clients} key{s.clients === 1 ? "" : "s"}</span>
-                        <span className="ad-acts">
+                        <span className="adm-sname">{s.name}</span>
+                        <span className="adm-sslug">{s.slug}</span>
+                        <span className="adm-surl">{s.baseUrl}</span>
+                        <span className="adm-skind">{s.kind}</span>
+                        <span className="adm-sclients">{s.clients} key{s.clients === 1 ? "" : "s"}</span>
+                        <span className="adm-acts">
                           <button onClick={() => edit(s.id)}>Edit</button>
-                          <button className="ad-danger" onClick={() => remove(s)} disabled={busy}>
+                          <button className="adm-danger" onClick={() => remove(s)} disabled={busy}>
                             Delete
                           </button>
                         </span>

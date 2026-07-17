@@ -21,25 +21,25 @@ export default async function AdminAudit() {
         </div>
       </div>
 
-      <div className="dash-card ad-card">
+      <div className="dash-card adm-card">
         {rows.length === 0 ? (
           <div className="dash-empty">
             <div className="dash-empty-t">Nothing logged yet</div>
           </div>
         ) : (
-          <div className="ad-log">
-            <div className="ad-log-row ad-log-row--head">
+          <div className="adm-log">
+            <div className="adm-log-row adm-log-row--head">
               <span>Action</span>
               <span>Target</span>
               <span>By</span>
               <span>When</span>
             </div>
             {rows.map((r) => (
-              <div className="ad-log-row" key={r.id}>
-                <span className="ad-log-a">{r.action}</span>
-                <span className="ad-log-t">{r.target ?? "—"}</span>
-                <span className="ad-log-w">{r.actor?.email ?? "system"}</span>
-                <span className="ad-log-d">{r.createdAt.toISOString().replace("T", " ").slice(0, 16)}</span>
+              <div className="adm-log-row" key={r.id}>
+                <span className="adm-log-a">{r.action}</span>
+                <span className="adm-log-t">{r.target ?? "—"}</span>
+                <span className="adm-log-w">{r.actor?.email ?? "system"}</span>
+                <span className="adm-log-d">{r.createdAt.toISOString().replace("T", " ").slice(0, 16)}</span>
               </div>
             ))}
           </div>

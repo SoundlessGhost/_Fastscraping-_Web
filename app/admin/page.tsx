@@ -62,7 +62,7 @@ export default async function AdminOverview() {
         </div>
       </div>
 
-      <div className="ad-quick">
+      <div className="adm-quick">
         <Link href="/admin/services" className="ov-pick">
           <span className="ov-pick-n">Add a service to the catalog</span>
           <span className="ov-pick-a">Services →</span>
@@ -73,12 +73,12 @@ export default async function AdminOverview() {
         </Link>
       </div>
 
-      <div className="dash-card ad-card">
+      <div className="dash-card adm-card">
         <div className="dash-card-h">
           <div className="dash-card-t">
             Recent activity <small>newest first</small>
           </div>
-          <Link href="/admin/audit" className="ad-link">
+          <Link href="/admin/audit" className="adm-link">
             Full log →
           </Link>
         </div>
@@ -88,13 +88,13 @@ export default async function AdminOverview() {
             <div className="dash-empty-s">actions show up here as they happen</div>
           </div>
         ) : (
-          <div className="ad-log">
+          <div className="adm-log">
             {recent.map((r) => (
-              <div className="ad-log-row" key={r.id}>
-                <span className="ad-log-a">{r.action}</span>
-                <span className="ad-log-t">{r.target ?? "—"}</span>
-                <span className="ad-log-w">{r.actor?.email ?? "system"}</span>
-                <span className="ad-log-d">{r.createdAt.toISOString().replace("T", " ").slice(0, 16)}</span>
+              <div className="adm-log-row" key={r.id}>
+                <span className="adm-log-a">{r.action}</span>
+                <span className="adm-log-t">{r.target ?? "—"}</span>
+                <span className="adm-log-w">{r.actor?.email ?? "system"}</span>
+                <span className="adm-log-d">{r.createdAt.toISOString().replace("T", " ").slice(0, 16)}</span>
               </div>
             ))}
           </div>
