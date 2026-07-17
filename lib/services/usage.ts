@@ -80,10 +80,9 @@ export type ServiceTarget = {
   kind: string;
 };
 
-// The Shopee PDP orchestrator counts every job row in Python for each call and
-// can take 8-15s for a busy key, so this is generous on purpose. It comes back
-// down once that endpoint aggregates in SQL.
-const TIMEOUT_MS = 35_000;
+// The orchestrator now aggregates usage in SQL (~1s even for a busy key), so
+// this only needs to cover a slow network or a cold cache, not a 15s scan.
+const TIMEOUT_MS = 20_000;
 
 function num(v: unknown): number {
   return typeof v === "number" && Number.isFinite(v) ? v : 0;
