@@ -16,10 +16,23 @@ export type Credits = {
   remaining: number | null;
 };
 
+/// `notFound` = the product genuinely wasn't there, `billable` = completed +
+/// notFound. The orchestrator charges for those two and not for failed /
+/// captcha / pending, so its own totals count billable jobs only — the UI has
+/// to say the same thing or the numbers won't add up for the client.
+export type Jobs = {
+  total: number;
+  completed: number;
+  failed: number;
+  pending: number;
+  notFound: number | null;
+  billable: number | null;
+};
+
 export type NormalizedUsage = {
   owner: string | null;
   credits: Credits | null;
-  jobs: { total: number; completed: number; failed: number; pending: number } | null;
+  jobs: Jobs | null;
   totals: { today: number; last7: number; last30: number; thisMonth: number; lifetime: number };
   /// What the stacked chart splits by ("region"), or null when the backend
   /// reports a single undifferentiated number.
@@ -80,6 +93,20 @@ function readCredits(raw: Record<string, unknown>): Credits | null {
   return { total, used, remaining };
 }
 
+/// Older backends report four job states; the PDP orchestrator adds two more.
+/// The extras stay null when absent so the UI can hide them rather than show a
+/// confident zero.
+function readJobs(jobs: Record<string, unknown>): Jobs {
+  return {
+    total: num(jobs["total"]),
+    completed: num(jobs["completed"]),
+    failed: num(jobs["failed"]),
+    pending: num(jobs["pending"]),
+    notFound: maybeNum(jobs["not_found"]),
+    billable: maybeNum(jobs["billable"]),
+  };
+}
+
 /// The Shopee usage backend (`GET /me/usage?interval=n`): totals and daily rows
 /// are objects keyed by region code plus an `all` sum, and region keys only
 /// appear once they have traffic.
@@ -115,14 +142,7 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     credits: readCredits(raw),
-    jobs: jobs
-      ? {
-          total: num(jobs["total"]),
-          completed: num(jobs["completed"]),
-          failed: num(jobs["failed"]),
-          pending: num(jobs["pending"]),
-        }
-      : null,
+    jobs: jobs ? readJobs(jobs) : null,
     totals: {
       today: bucket("today"),
       last7: bucket("last_7_days"),
@@ -162,14 +182,7 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     credits: readCredits(raw),
-    jobs: jobs
-      ? {
-          total: num(jobs["total"]),
-          completed: num(jobs["completed"]),
-          failed: num(jobs["failed"]),
-          pending: num(jobs["pending"]),
-        }
-      : null,
+    jobs: jobs ? readJobs(jobs) : null,
     totals: {
       today: bucket("today"),
       last7: bucket("last_7_days"),

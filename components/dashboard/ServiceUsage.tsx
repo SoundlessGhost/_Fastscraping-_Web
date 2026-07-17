@@ -273,6 +273,12 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
                   <div className="dash-health-v ok">{nf.format(jobs.completed)}</div>
                   <div className="dash-health-l">completed</div>
                 </div>
+                {jobs.notFound !== null && (
+                  <div className="dash-health-cell">
+                    <div className="dash-health-v">{nf.format(jobs.notFound)}</div>
+                    <div className="dash-health-l">not found</div>
+                  </div>
+                )}
                 <div className="dash-health-cell">
                   <div className="dash-health-v bad">{nf.format(jobs.failed)}</div>
                   <div className="dash-health-l">failed</div>
@@ -289,7 +295,13 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
               <div className="dash-meter-s">
                 {jobs.total ? `${((jobs.completed / jobs.total) * 100).toFixed(1)}% success` : "no jobs yet"} ·{" "}
                 {nf.format(jobs.total)} total
+                {jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
               </div>
+              {jobs.billable !== null && (
+                <div className="su-billnote">
+                  Billable = completed + not found. Failed, captcha and pending jobs aren&apos;t charged.
+                </div>
+              )}
             </div>
           )}
 

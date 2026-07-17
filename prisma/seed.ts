@@ -1,10 +1,10 @@
 // Seeds the service catalog — the list the dashboard sidebar nests into
 // category -> platform -> region -> endpoint.
 //
-// Only the Shopee usage backend is real; everything else is a placeholder left
-// DISABLED ("coming soon") until we have its host:port. Nothing here is
-// destructive: rows are upserted by slug, so editing a service from the admin
-// panel survives a re-run, and a row removed from this file stays in the DB.
+// Only Shopee Brazil PDP is wired to a real backend; everything else is a
+// placeholder left DISABLED ("coming soon") until we have its host:port.
+// Rows are upserted by slug and the update only touches labels, so a service
+// an admin has edited (base URL, status, adapter) survives a re-run.
 import "dotenv/config";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -34,11 +34,14 @@ const PLACEHOLDER = "http://0.0.0.0:0";
 const SERVICES: Seed[] = [
   // --- E-commerce / Shopee -------------------------------------------------
   // Brazil only for now — other Shopee markets get added back as they land.
-  // PDP is the one that exists: the orchestrator on 212.90.121.151 stores into
-  // a database literally named `shopee_pdp`, takes shop_id + item_id, and
-  // returns full product data. Its base URL stays a placeholder until we settle
-  // which instance to point at (9999 = prod, 8888 = test).
-  { slug: "shopee-br-pdp", name: "PDP", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: PLACEHOLDER, kind: "shopee-usage", status: "DISABLED", sortOrder: 10 },
+  // PDP is the one that exists: shop_id + item_id in, full product data out.
+  //
+  // Port 8888 is deliberate and correct, despite its unit being named
+  // `shopee-api-simple-test` and its database `shopee_pdp_test`. Those names
+  // are wrong: 8888 holds 4.3 GB and drains its queue, while the plainly-named
+  // 9999 holds 55 MB with ~1600 jobs stuck pending. Check pg_database_size and
+  // /health before ever "correcting" this back.
+  { slug: "shopee-br-pdp", name: "PDP", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
 
   // --- E-commerce / Temu ---------------------------------------------------
   { slug: "temu-us-search", name: "Search", category: "ecommerce", platform: "temu", region: "us", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
