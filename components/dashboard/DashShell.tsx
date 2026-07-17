@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { buildTree, endpointLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import type { SessionUser } from "@/lib/auth/session";
+import Avatar from "@/components/dashboard/Avatar";
 
 // The frame every dashboard page sits in: service tree on the left, account
 // bar on top. The tree is rendered from the catalog the layout loaded, so it is
@@ -185,10 +186,9 @@ export default function DashShell({
             <span />
           </button>
           <div className="ds-top-spacer" />
-          <div className="ds-who">
-            <span className="ds-who-dot" />
-            <span className="ds-who-email">{user.email}</span>
-          </div>
+          <Link href="/dashboard/settings" className="ds-avatar" title="Account settings">
+            <Avatar user={user} size={32} />
+          </Link>
           <button className="btn btn-ghost ds-logout" onClick={logout} disabled={busy}>
             {busy ? "…" : "Log out"}
           </button>

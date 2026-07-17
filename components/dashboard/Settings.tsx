@@ -6,6 +6,7 @@ import Link from "next/link";
 import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import { regionName } from "@/lib/regions";
 import type { SessionUser } from "@/lib/auth/session";
+import AvatarPicker from "@/components/dashboard/AvatarPicker";
 
 // Everything a client manages about themselves: who they are, how they sign in,
 // which keys they've connected, and where they're signed in.
@@ -47,49 +48,17 @@ function prettyAgent(ua: string | null): string {
 const fmtWhen = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-/// One connected service: its key (hidden until asked for), and the controls
-/// for it.
-function KeyRow({ s }: { s: ServiceNode }) {
-  const router = useRouter();
-  const [revealed, setRevealed] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+/// One connected service. The key arrives with the page, so Reveal is a pure
+/// toggle — no request, nothing to wait for. Keys can't be removed here: a
+/// client's access to a service is ours to manage, not theirs to drop.
+function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
+  const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [removing, setRemoving] = useState(false);
-
-  async function reveal() {
-    if (revealed) {
-      setRevealed(null);
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetch(`/api/services/${s.slug}/key`);
-      const body = await res.json().catch(() => ({}));
-      if (res.ok) setRevealed(body.apiKey);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function copy() {
-    let key = revealed;
-    if (!key) {
-      const res = await fetch(`/api/services/${s.slug}/key`);
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) return;
-      key = body.apiKey;
-    }
-    await navigator.clipboard.writeText(key ?? "").catch(() => {});
+    await navigator.clipboard.writeText(apiKey).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
-  }
-
-  async function remove() {
-    if (!confirm(`Remove your key for ${fullName(s)}?\n\nIt keeps working everywhere else — we just forget it.`)) return;
-    setRemoving(true);
-    await fetch(`/api/services/${s.slug}/connect`, { method: "DELETE" }).catch(() => {});
-    setRemoving(false);
-    router.refresh();
   }
 
   const broken = Boolean(s.connection?.lastError);
@@ -109,17 +78,12 @@ function KeyRow({ s }: { s: ServiceNode }) {
       </div>
 
       <div className="st-key-row">
-        <code className="st-key-val">{revealed ?? s.connection?.keyMask}</code>
-        <button onClick={reveal} disabled={busy}>
-          {busy ? "…" : revealed ? "Hide" : "Reveal"}
-        </button>
+        <code className="st-key-val">{revealed ? apiKey : s.connection?.keyMask}</code>
+        <button onClick={() => setRevealed((v) => !v)}>{revealed ? "Hide" : "Reveal"}</button>
         <button onClick={copy}>{copied ? "Copied" : "Copy"}</button>
         <Link href={`/dashboard/s/${s.slug}`} className="st-key-link">
           Usage →
         </Link>
-        <button className="st-rm" onClick={remove} disabled={removing}>
-          {removing ? "…" : "Remove"}
-        </button>
       </div>
     </div>
   );
@@ -128,12 +92,15 @@ function KeyRow({ s }: { s: ServiceNode }) {
 export default function Settings({
   user,
   services,
+  keys,
   passwordWaitDays,
   memberSince,
   devices,
 }: {
   user: SessionUser;
   services: ServiceNode[];
+  /// slug -> the client's own key, decrypted for this page only.
+  keys: Record<string, string>;
   passwordWaitDays: number;
   memberSince: string | null;
   devices: DeviceSession[];
@@ -238,6 +205,8 @@ export default function Settings({
             <div className="dash-card-t">Profile</div>
           </div>
           <div className="st-body">
+            <AvatarPicker user={user} />
+
             <div className="st-two">
               <div>
                 <label className="cn-l" htmlFor="firstName">
@@ -326,13 +295,12 @@ export default function Settings({
             ) : (
               <div className="st-keys">
                 {services.map((s) => (
-                  <KeyRow key={s.slug} s={s} />
+                  <KeyRow key={s.slug} s={s} apiKey={keys[s.slug] ?? ""} />
                 ))}
               </div>
             )}
             <p className="cn-note">
-              Keys are stored encrypted and only ever sent to their own service. Removing one only forgets it here
-              — it keeps working wherever else you use it.
+              Keys are stored encrypted and only ever sent to their own service. Need one changed? Email us.
             </p>
           </div>
         </div>

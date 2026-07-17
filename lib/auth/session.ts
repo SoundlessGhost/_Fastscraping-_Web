@@ -67,6 +67,9 @@ export type SessionUser = {
   lastName: string | null;
   company: string | null;
   role: "ADMIN" | "CLIENT";
+  /// Timestamp of the last avatar upload, or null when they use the default.
+  /// Doubles as the cache-buster in the image URL.
+  avatarVersion: number | null;
 };
 
 /// Whatever we can show as a person's name, or null when they set neither.
@@ -98,6 +101,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     lastName: row.user.lastName,
     company: row.user.company,
     role: row.user.role,
+    avatarVersion: row.user.avatarUpdatedAt?.getTime() ?? null,
   };
 }
 

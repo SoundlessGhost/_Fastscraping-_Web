@@ -114,6 +114,13 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
   const rangeTotal = days.reduce((s, d) => s + d.total, 0);
   const avg = days.length ? rangeTotal / days.length : 0;
   const busiest = days.reduce<Point | null>((b, d) => (!b || d.total > b.total ? d : b), null);
+
+  // The three heaviest days in view, biggest first — quiet days are not
+  // interesting here, so they never make the list.
+  const busiestDays = useMemo(
+    () => days.filter((d) => d.total > 0).sort((a, b) => b.total - a.total).slice(0, 3),
+    [days],
+  );
   const today = todayUTC();
 
   const credits = usage?.credits ?? null;
@@ -474,28 +481,37 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
               <div className="dash-card">
                 <div className="dash-card-h">
                   <div className="dash-card-t">
-                    Top regions <small>this range</small>
+                    Top usage <small>busiest days in this range</small>
                   </div>
                 </div>
-                {dims.length === 0 || rangeTotal === 0 ? (
+                {busiestDays.length === 0 ? (
                   <div className="dash-empty">
                     <div className="dash-empty-t">No activity yet</div>
-                    <div className="dash-empty-s">regions appear once they have requests</div>
+                    <div className="dash-empty-s">your busiest days will show up here</div>
                   </div>
                 ) : (
-                  <div className="dash-regions">
-                    {dims
-                      .map((c) => ({ c, v: days.reduce((s, d) => s + (d.by[c] ?? 0), 0) }))
-                      .sort((a, b) => b.v - a.v)
-                      .map(({ c, v }) => (
-                        <div className="dash-region-row" key={c}>
-                          <div className="dash-region-name">{dimLabel(c)}</div>
-                          <div className="dash-region-bar">
-                            <span style={{ width: `${(v / rangeTotal) * 100}%`, background: dimColor(c) }} />
-                          </div>
-                          <div className="dash-region-n">{nf.format(v)}</div>
-                        </div>
-                      ))}
+                  <div className="su-top">
+                    {busiestDays.map((d, i) => (
+                      <div className="su-top-row" key={d.date}>
+                        <span className="su-top-rank">{i + 1}</span>
+                        <span className="su-top-main">
+                          <span className="su-top-date">
+                            {longDate(d.date)}
+                            {d.date === today && <b className="ad-you"> today</b>}
+                          </span>
+                          <span className="su-top-bar">
+                            <span style={{ width: `${(d.total / busiestDays[0].total) * 100}%` }} />
+                          </span>
+                          <span className="su-top-split">
+                            {Object.entries(d.by)
+                              .sort((a, b) => b[1] - a[1])
+                              .map(([k, v]) => `${dimLabel(k)} ${nf.format(v)}`)
+                              .join(" · ")}
+                          </span>
+                        </span>
+                        <span className="su-top-n">{nf.format(d.total)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

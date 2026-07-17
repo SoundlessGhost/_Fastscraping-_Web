@@ -282,3 +282,11 @@
   .ds-content { padding: 22px 16px 56px; }
   .ds-who-email { max-width: 140px; }
 }
+
+/* Avatar sits to the left of Log out and opens settings. */
+.ds-avatar {
+  display: inline-flex;
+  border-radius: 999px;
+  transition: box-shadow 0.16s ease;
+}
+.ds-avatar:hover { box-shadow: 0 0 0 3px var(--accent-soft); }

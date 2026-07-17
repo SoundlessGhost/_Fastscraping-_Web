@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SessionUser } from "@/lib/auth/session";
+import Avatar from "@/components/dashboard/Avatar";
 
 // Same frame as the client dashboard (ds-* classes), different nav — so the two
 // sides of the product stay one product.
@@ -74,11 +75,10 @@ export default function AdminShell({ user, children }: { user: SessionUser; chil
             <span />
           </button>
           <div className="ds-top-spacer" />
-          <div className="ds-who">
-            <span className="ds-who-dot" />
-            <span className="ds-who-email">{user.email}</span>
-          </div>
           <span className="ds-tag">admin</span>
+          <Link href="/dashboard/settings" className="ds-avatar" title="Account settings">
+            <Avatar user={user} size={32} />
+          </Link>
           <button className="btn btn-ghost ds-logout" onClick={logout} disabled={busy}>
             {busy ? "…" : "Log out"}
           </button>

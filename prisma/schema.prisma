@@ -43,6 +43,9 @@ model User {
   firstName    String?
   lastName     String?
   company      String?
+  /// Bumped on every avatar upload; used as a cache-buster in the image URL so
+  /// a new picture shows up immediately instead of sitting behind a cached one.
+  avatarUpdatedAt DateTime?
   role                 Role       @default(CLIENT)
   status               UserStatus @default(ACTIVE)
   emailVerifiedAt      DateTime?
@@ -54,8 +57,21 @@ model User {
   clientServices ClientService[]
   sessions       Session[]
   auditLogs      AuditLog[]      @relation("actor")
+  avatar         Avatar?
 
   @@index([role])
+}
+
+/// Profile picture, in its own table so that loading a User never drags the
+/// image bytes along. Uploads are accepted up to 10 MB but stored re-encoded
+/// to a small square, so what actually lands here is a few tens of KB.
+model Avatar {
+  userId    String   @id
+  mime      String
+  data      Bytes
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// Short-lived 6-digit codes emailed for signup verification and password reset.
