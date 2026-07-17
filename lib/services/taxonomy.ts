@@ -9,6 +9,11 @@ import { regionName } from "@/lib/regions";
 export const CATEGORIES: Record<string, { label: string; blurb: string }> = {
   ecommerce: { label: "E-commerce", blurb: "Marketplace product & pricing data" },
   realestate: { label: "Real estate", blurb: "Listing & property feeds" },
+  ticketing: { label: "Ticketing", blurb: "Event inventory & pricing" },
+  jobs: { label: "Jobs", blurb: "Listings, salaries & employer data" },
+  b2b: { label: "B2B", blurb: "Company & professional data" },
+  restaurant: { label: "Restaurant", blurb: "Menus, stores & pricing" },
+  delivery: { label: "Delivery", blurb: "Storefronts, menus & delivery pricing" },
 };
 
 export const PLATFORMS: Record<string, { label: string }> = {
@@ -16,6 +21,19 @@ export const PLATFORMS: Record<string, { label: string }> = {
   temu: { label: "Temu" },
   homegate: { label: "Homegate" },
   immoscout: { label: "ImmoScout24" },
+  // The homepage marquee's brands. Only the ones a prettified slug would get
+  // wrong need an entry — but listing them all keeps the mapping in one place.
+  stubhub: { label: "StubHub" },
+  seatgeek: { label: "SeatGeek" },
+  indeed: { label: "Indeed" },
+  glassdoor: { label: "Glassdoor" },
+  linkedin: { label: "LinkedIn" },
+  immoscout24: { label: "ImmoScout24" },
+  starbucks: { label: "Starbucks" },
+  mcdonalds: { label: "McDonald's" },
+  doordash: { label: "DoorDash" },
+  amazon: { label: "Amazon" },
+  walmart: { label: "Walmart" },
 };
 
 export const ENDPOINTS: Record<string, { label: string; blurb: string }> = {

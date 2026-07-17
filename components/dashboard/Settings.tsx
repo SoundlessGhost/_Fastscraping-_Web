@@ -21,7 +21,12 @@ export type DeviceSession = {
 };
 
 function fullName(s: ServiceNode) {
-  return [platformLabel(s.platform), s.region ? regionName(s.region) : null, s.name].filter(Boolean).join(" · ");
+  const platform = platformLabel(s.platform);
+  // For a brand that is its own single service, name and platform are the same
+  // string — "StubHub · StubHub" helps nobody.
+  return [platform, s.region ? regionName(s.region) : null, s.name === platform ? null : s.name]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /// User agents are long and mostly noise; show the part a person recognises.

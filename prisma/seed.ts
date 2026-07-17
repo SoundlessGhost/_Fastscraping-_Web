@@ -31,6 +31,26 @@ type Seed = {
 
 const PLACEHOLDER = "http://0.0.0.0:0";
 
+/// The brands listed under "Active pipelines for" on the homepage, mapped onto
+/// the dashboard's categories. Marketing copy and the catalogue should not
+/// disagree about what we run, so this list mirrors app/page.tsx.
+///
+/// ImmoScout24 is in the marquee too, but it already has a real entry above
+/// (Switzerland · Listings) — listing it here as well would show the brand
+/// twice under Real estate.
+const MARQUEE = [
+  { slug: "stubhub", name: "StubHub", category: "ticketing" },
+  { slug: "seatgeek", name: "SeatGeek", category: "ticketing" },
+  { slug: "indeed", name: "Indeed", category: "jobs" },
+  { slug: "glassdoor", name: "Glassdoor", category: "jobs" },
+  { slug: "linkedin", name: "LinkedIn", category: "b2b" },
+  { slug: "starbucks", name: "Starbucks", category: "restaurant" },
+  { slug: "mcdonalds", name: "McDonald's", category: "restaurant" },
+  { slug: "doordash", name: "DoorDash", category: "delivery" },
+  { slug: "amazon", name: "Amazon", category: "ecommerce" },
+  { slug: "walmart", name: "Walmart", category: "ecommerce" },
+];
+
 const SERVICES: Seed[] = [
   // --- E-commerce / Shopee -------------------------------------------------
   // Brazil only for now — other Shopee markets get added back as they land.
@@ -52,6 +72,23 @@ const SERVICES: Seed[] = [
   // --- Real estate ---------------------------------------------------------
   { slug: "homegate-ch-listings", name: "Listings", category: "realestate", platform: "homegate", region: "ch", endpoint: "listings", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 70 },
   { slug: "immoscout-ch-listings", name: "Listings", category: "realestate", platform: "immoscout", region: "ch", endpoint: "listings", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 80 },
+
+  // --- The brands the homepage marquee advertises --------------------------
+  // Name only: no region, no endpoint. These are here so the dashboard shows
+  // the same catalogue the site sells, and each one says plainly that it isn't
+  // live yet — the marquee already implies we run them, and a client who signs
+  // up shouldn't find the cupboard bare.
+  //
+  // Kept in step with the "Active pipelines for" list in app/page.tsx.
+  ...MARQUEE.map((m, i) => ({
+    slug: m.slug,
+    name: m.name,
+    category: m.category,
+    platform: m.slug,
+    baseUrl: PLACEHOLDER,
+    status: "DISABLED" as const,
+    sortOrder: 100 + i,
+  })),
 ];
 
 async function main() {

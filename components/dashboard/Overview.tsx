@@ -12,9 +12,12 @@ import type { SessionUser } from "@/lib/auth/session";
 // the rest of the page.
 
 function fullName(s: ServiceNode) {
-  const bits = [platformLabel(s.platform)];
+  const platform = platformLabel(s.platform);
+  const bits = [platform];
   if (s.region) bits.push(regionName(s.region));
-  bits.push(s.name);
+  // For a brand that is its own single service the two are the same string,
+  // and "StubHub · StubHub" helps nobody.
+  if (s.name !== platform) bits.push(s.name);
   return bits.join(" · ");
 }
 

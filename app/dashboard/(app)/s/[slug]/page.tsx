@@ -15,7 +15,10 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   const service = (await getCatalogForUser(user.id)).find((s) => s.slug === slug);
   if (!service) notFound();
 
-  const title = [platformLabel(service.platform), service.region ? regionName(service.region) : null, service.name]
+  const platform = platformLabel(service.platform);
+  // A brand that is its own single service has name === platform; printing both
+  // would title the page "StubHub · StubHub".
+  const title = [platform, service.region ? regionName(service.region) : null, service.name === platform ? null : service.name]
     .filter(Boolean)
     .join(" · ");
 

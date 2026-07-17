@@ -103,6 +103,40 @@ export default function DashShell({
               {cat.platforms.map((plat) => {
                 const key = `${cat.category}/${plat.platform}`;
                 const open = isOpen(key);
+
+                // A brand with a single service and no region or endpoint under
+                // it is the service. Nesting it would print its name twice with
+                // a pointless "All regions" in between, so link it directly.
+                const only =
+                  plat.regions.length === 1 &&
+                  plat.regions[0].region === null &&
+                  plat.regions[0].services.length === 1 &&
+                  !plat.regions[0].services[0].endpoint
+                    ? plat.regions[0].services[0]
+                    : null;
+
+                if (only) {
+                  const state = only.connection
+                    ? only.connection.lastError
+                      ? "err"
+                      : "on"
+                    : only.status === "ACTIVE"
+                      ? "off"
+                      : "soon";
+                  return (
+                    <Link
+                      key={key}
+                      href={serviceHref(only.slug)}
+                      onClick={() => setDrawer(false)}
+                      className={`ds-plat-solo ${activeSlug === only.slug ? "is-active" : ""}`}
+                      title={state === "soon" ? "Not live yet" : undefined}
+                    >
+                      <span className={`ds-dot ds-dot--${state}`} aria-hidden="true" />
+                      <span className="ds-plat-name">{plat.label}</span>
+                    </Link>
+                  );
+                }
+
                 return (
                   <div className="ds-plat" key={key}>
                     <button
