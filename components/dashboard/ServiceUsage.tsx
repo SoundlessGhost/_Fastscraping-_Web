@@ -21,9 +21,11 @@ const RANGES = [
   { v: 30, l: "30d" },
 ];
 const WIDEST = 30;
-/// The backend needs ~8s per call, so this is deliberately unhurried; the
-/// manual button is there for when someone wants it now.
-const REFRESH_MS = 60_000;
+/// The backend answers in ~1s now, so a 10s poll feels near-live without
+/// stacking (one request at a time, and only while the tab is visible). If many
+/// clients ever watch at once, each refresh is still a real DB scan on the
+/// orchestrator — raise this or add caching then.
+const REFRESH_MS = 10_000;
 
 const VBW = 900;
 const VBH = 300;
