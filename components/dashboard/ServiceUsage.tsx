@@ -582,10 +582,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
                           .join(" · ")}
                       >
                         <span className="su-top-rank">{i + 1}</span>
-                        <span className="su-top-date">
-                          {shortDate(d.date)}
-                          {d.date === today && <b className="ad-you"> today</b>}
-                        </span>
+                        <span className="su-top-date">{shortDate(d.date)}</span>
                         <span className="su-top-bar">
                           <span style={{ width: `${(d.total / busiestDays[0].total) * 100}%` }} />
                         </span>
