@@ -37,11 +37,12 @@ enum ClientServiceStatus {
 
 /// A dashboard account. Signup is open; role decides admin vs client.
 model User {
-  id                   String     @id @default(cuid())
-  email                String     @unique
-  passwordHash         String?
-  name                 String?
-  company              String?
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String?
+  firstName    String?
+  lastName     String?
+  company      String?
   role                 Role       @default(CLIENT)
   status               UserStatus @default(ACTIVE)
   emailVerifiedAt      DateTime?

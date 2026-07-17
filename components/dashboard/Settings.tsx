@@ -2,15 +2,127 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import { regionName } from "@/lib/regions";
 import type { SessionUser } from "@/lib/auth/session";
 
-// Account, password, and the keys you have connected — the three things a
-// client needs to manage themselves.
+// Everything a client manages about themselves: who they are, how they sign in,
+// which keys they've connected, and where they're signed in.
+
+export type DeviceSession = {
+  id: string;
+  userAgent: string | null;
+  ip: string | null;
+  lastSeenAt: string;
+  createdAt: string;
+  isCurrent: boolean;
+};
 
 function fullName(s: ServiceNode) {
   return [platformLabel(s.platform), s.region ? regionName(s.region) : null, s.name].filter(Boolean).join(" · ");
+}
+
+/// User agents are long and mostly noise; show the part a person recognises.
+function prettyAgent(ua: string | null): string {
+  if (!ua) return "Unknown device";
+  const browser =
+    /Edg\//.test(ua) ? "Edge" :
+    /OPR\//.test(ua) ? "Opera" :
+    /Chrome\//.test(ua) ? "Chrome" :
+    /Safari\//.test(ua) ? "Safari" :
+    /Firefox\//.test(ua) ? "Firefox" :
+    /curl/i.test(ua) ? "curl" :
+    "Browser";
+  const os =
+    /Windows/.test(ua) ? "Windows" :
+    /Android/.test(ua) ? "Android" :
+    /iPhone|iPad/.test(ua) ? "iOS" :
+    /Mac OS X/.test(ua) ? "macOS" :
+    /Linux/.test(ua) ? "Linux" :
+    "";
+  return os ? `${browser} on ${os}` : browser;
+}
+
+const fmtWhen = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+/// One connected service: its key (hidden until asked for), and the controls
+/// for it.
+function KeyRow({ s }: { s: ServiceNode }) {
+  const router = useRouter();
+  const [revealed, setRevealed] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [removing, setRemoving] = useState(false);
+
+  async function reveal() {
+    if (revealed) {
+      setRevealed(null);
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/services/${s.slug}/key`);
+      const body = await res.json().catch(() => ({}));
+      if (res.ok) setRevealed(body.apiKey);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copy() {
+    let key = revealed;
+    if (!key) {
+      const res = await fetch(`/api/services/${s.slug}/key`);
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return;
+      key = body.apiKey;
+    }
+    await navigator.clipboard.writeText(key ?? "").catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  }
+
+  async function remove() {
+    if (!confirm(`Remove your key for ${fullName(s)}?\n\nIt keeps working everywhere else — we just forget it.`)) return;
+    setRemoving(true);
+    await fetch(`/api/services/${s.slug}/connect`, { method: "DELETE" }).catch(() => {});
+    setRemoving(false);
+    router.refresh();
+  }
+
+  const broken = Boolean(s.connection?.lastError);
+
+  return (
+    <div className="st-key">
+      <div className="st-key-top">
+        <span className={`ds-dot ds-dot--${broken ? "err" : "on"}`} />
+        <span className="st-key-n">{fullName(s)}</span>
+        <span className="st-key-s">
+          {broken
+            ? s.connection?.lastError
+            : s.connection?.verifiedAt
+              ? `verified ${new Date(s.connection.verifiedAt).toLocaleDateString()}`
+              : ""}
+        </span>
+      </div>
+
+      <div className="st-key-row">
+        <code className="st-key-val">{revealed ?? s.connection?.keyMask}</code>
+        <button onClick={reveal} disabled={busy}>
+          {busy ? "…" : revealed ? "Hide" : "Reveal"}
+        </button>
+        <button onClick={copy}>{copied ? "Copied" : "Copy"}</button>
+        <Link href={`/dashboard/s/${s.slug}`} className="st-key-link">
+          Usage →
+        </Link>
+        <button className="st-rm" onClick={remove} disabled={removing}>
+          {removing ? "…" : "Remove"}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function Settings({
@@ -18,21 +130,21 @@ export default function Settings({
   services,
   passwordWaitDays,
   memberSince,
+  devices,
 }: {
   user: SessionUser;
   services: ServiceNode[];
   passwordWaitDays: number;
   memberSince: string | null;
+  devices: DeviceSession[];
 }) {
   const router = useRouter();
 
   const [profileMsg, setProfileMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [profileBusy, setProfileBusy] = useState(false);
-
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pwBusy, setPwBusy] = useState(false);
-
-  const [removing, setRemoving] = useState<string | null>(null);
+  const [sessBusy, setSessBusy] = useState(false);
 
   async function saveProfile(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,7 +155,11 @@ export default function Settings({
       const res = await fetch("/api/auth/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: String(fd.get("name") ?? ""), company: String(fd.get("company") ?? "") }),
+        body: JSON.stringify({
+          firstName: String(fd.get("firstName") ?? ""),
+          lastName: String(fd.get("lastName") ?? ""),
+          company: String(fd.get("company") ?? ""),
+        }),
       });
       const body = await res.json().catch(() => ({}));
       setProfileMsg(res.ok ? { ok: true, text: "Saved." } : { ok: false, text: body.error ?? "Could not save." });
@@ -88,14 +204,16 @@ export default function Settings({
     }
   }
 
-  async function removeKey(slug: string) {
-    setRemoving(slug);
-    await fetch(`/api/services/${slug}/connect`, { method: "DELETE" }).catch(() => {});
-    setRemoving(null);
+  async function signOutOthers() {
+    if (!confirm("Sign out of every other device?")) return;
+    setSessBusy(true);
+    await fetch("/api/auth/sessions", { method: "DELETE" }).catch(() => {});
+    setSessBusy(false);
     router.refresh();
   }
 
   const locked = passwordWaitDays > 0;
+  const others = devices.filter((d) => !d.isCurrent);
 
   return (
     <>
@@ -106,7 +224,9 @@ export default function Settings({
           </h1>
           <p className="dash-meta">
             <b>{user.email}</b>
-            {memberSince && <> · member since {new Date(memberSince).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</>}
+            {memberSince && (
+              <> · member since {new Date(memberSince).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</>
+            )}
           </p>
         </div>
       </div>
@@ -118,15 +238,31 @@ export default function Settings({
             <div className="dash-card-t">Profile</div>
           </div>
           <div className="st-body">
-            <label className="cn-l" htmlFor="name">
-              Name
-            </label>
-            <input id="name" name="name" className="cn-in" defaultValue={user.name ?? ""} disabled={profileBusy} />
+            <div className="st-two">
+              <div>
+                <label className="cn-l" htmlFor="firstName">
+                  First name
+                </label>
+                <input id="firstName" name="firstName" className="cn-in" defaultValue={user.firstName ?? ""} disabled={profileBusy} />
+              </div>
+              <div>
+                <label className="cn-l" htmlFor="lastName">
+                  Last name
+                </label>
+                <input id="lastName" name="lastName" className="cn-in" defaultValue={user.lastName ?? ""} disabled={profileBusy} />
+              </div>
+            </div>
 
             <label className="cn-l" htmlFor="company">
               Company
             </label>
             <input id="company" name="company" className="cn-in" defaultValue={user.company ?? ""} disabled={profileBusy} />
+
+            <label className="cn-l" htmlFor="email">
+              Email
+            </label>
+            <input id="email" className="cn-in st-ro" value={user.email} readOnly disabled />
+            <p className="cn-note">Your email is your sign-in. Contact us if it needs to change.</p>
 
             {profileMsg && <p className={profileMsg.ok ? "st-ok" : "cn-err"}>{profileMsg.text}</p>}
             <button className="btn btn-ghost st-btn" disabled={profileBusy}>
@@ -175,40 +311,58 @@ export default function Settings({
           </div>
         </form>
 
-        {/* KEYS */}
+        {/* API KEYS */}
         <div className="dash-card st-card st-card--wide">
           <div className="dash-card-h">
             <div className="dash-card-t">
-              Connected keys <small>one key per service</small>
+              API keys <small>one key per service</small>
             </div>
           </div>
           <div className="st-body">
             {services.length === 0 ? (
-              <p className="st-lock">You haven&apos;t connected any service keys yet.</p>
+              <p className="st-lock">
+                You haven&apos;t connected any service keys yet. <Link href="/dashboard">Add one →</Link>
+              </p>
             ) : (
               <div className="st-keys">
                 {services.map((s) => (
-                  <div className="st-key" key={s.slug}>
-                    <span className={`ds-dot ds-dot--${s.connection?.lastError ? "err" : "on"}`} />
-                    <span className="st-key-n">{fullName(s)}</span>
-                    <span className="st-key-m">{s.connection?.keyMask}</span>
-                    <span className="st-key-s">
-                      {s.connection?.lastError
-                        ? s.connection.lastError
-                        : s.connection?.verifiedAt
-                          ? `verified ${new Date(s.connection.verifiedAt).toLocaleDateString()}`
-                          : ""}
-                    </span>
-                    <button className="st-rm" onClick={() => removeKey(s.slug)} disabled={removing === s.slug}>
-                      {removing === s.slug ? "…" : "Remove"}
-                    </button>
-                  </div>
+                  <KeyRow key={s.slug} s={s} />
                 ))}
               </div>
             )}
             <p className="cn-note">
-              Removing a key only forgets it here. It keeps working wherever else you use it.
+              Keys are stored encrypted and only ever sent to their own service. Removing one only forgets it here
+              — it keeps working wherever else you use it.
             </p>
+          </div>
+        </div>
+
+        {/* SESSIONS */}
+        <div className="dash-card st-card st-card--wide">
+          <div className="dash-card-h">
+            <div className="dash-card-t">
+              Where you&apos;re signed in <small>{devices.length} active</small>
+            </div>
+            {others.length > 0 && (
+              <button className="ad-link st-linkbtn" onClick={signOutOthers} disabled={sessBusy}>
+                {sessBusy ? "…" : "Sign out other devices"}
+              </button>
+            )}
+          </div>
+          <div className="st-body">
+            <div className="st-sessions">
+              {devices.map((d) => (
+                <div className="st-sess" key={d.id}>
+                  <span className={`ds-dot ds-dot--${d.isCurrent ? "on" : "off"}`} />
+                  <span className="st-sess-n">
+                    {prettyAgent(d.userAgent)}
+                    {d.isCurrent && <b className="ad-you"> this device</b>}
+                  </span>
+                  <span className="st-sess-m">{d.ip ?? "—"}</span>
+                  <span className="st-sess-m">last seen {fmtWhen(d.lastSeenAt)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

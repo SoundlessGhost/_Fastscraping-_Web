@@ -22,7 +22,8 @@ export default async function AdminUsers() {
   const users: AdminUser[] = rows.map((u) => ({
     id: u.id,
     email: u.email,
-    name: u.name,
+    firstName: u.firstName,
+    lastName: u.lastName,
     company: u.company,
     role: u.role,
     status: u.status,

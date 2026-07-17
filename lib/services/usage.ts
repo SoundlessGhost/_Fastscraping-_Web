@@ -10,10 +10,28 @@
 
 export type UsagePoint = { date: string; total: number; by: Record<string, number> };
 
+/// A key with no quota is unlimited, not empty. The backend says so explicitly
+/// because "total: null" on its own reads as 0 — which would tell a client with
+/// an unlimited plan that they had run out.
 export type Credits = {
   total: number | null;
   used: number | null;
   remaining: number | null;
+  unlimited: boolean;
+};
+
+/// The key's rate limits, when its backend reports them.
+export type Limits = {
+  perMinute: number | null;
+  perHour: number | null;
+  perDay: number | null;
+  concurrency: number | null;
+};
+
+/// Facts about the key itself (never the key material).
+export type KeyInfo = {
+  isActive: boolean | null;
+  createdAt: string | null;
 };
 
 /// `notFound` = the product genuinely wasn't there, `billable` = completed +
@@ -32,6 +50,8 @@ export type Jobs = {
 export type NormalizedUsage = {
   owner: string | null;
   credits: Credits | null;
+  limits: Limits | null;
+  keyInfo: KeyInfo | null;
   jobs: Jobs | null;
   totals: { today: number; last7: number; last30: number; thisMonth: number; lifetime: number };
   /// What the stacked chart splits by ("region"), or null when the backend
@@ -77,7 +97,7 @@ function readCredits(raw: Record<string, unknown>): Credits | null {
   if (c === null || c === undefined) return null;
 
   if (typeof c === "number") {
-    return { total: null, used: null, remaining: c };
+    return { total: null, used: null, remaining: c, unlimited: false };
   }
   if (!isRecord(c)) return null;
 
@@ -85,12 +105,38 @@ function readCredits(raw: Record<string, unknown>): Credits | null {
   let used = maybeNum(c["used"] ?? c["consumed"] ?? c["spent"]);
   let remaining = maybeNum(c["remaining"] ?? c["left"] ?? c["available"] ?? c["balance"]);
 
-  if (remaining === null && total !== null && used !== null) remaining = total - used;
-  if (used === null && total !== null && remaining !== null) used = total - remaining;
-  if (total === null && used !== null && remaining !== null) total = used + remaining;
+  // Trust an explicit flag; otherwise "used but no cap" is the unlimited shape.
+  const unlimited =
+    typeof c["unlimited"] === "boolean" ? c["unlimited"] : total === null && used !== null;
 
-  if (total === null && used === null && remaining === null) return null;
-  return { total, used, remaining };
+  if (!unlimited) {
+    if (remaining === null && total !== null && used !== null) remaining = total - used;
+    if (used === null && total !== null && remaining !== null) used = total - remaining;
+    if (total === null && used !== null && remaining !== null) total = used + remaining;
+  }
+
+  if (total === null && used === null && remaining === null && !unlimited) return null;
+  return { total, used, remaining, unlimited };
+}
+
+function readLimits(raw: Record<string, unknown>): Limits | null {
+  const l = raw["limits"];
+  if (!isRecord(l)) return null;
+  return {
+    perMinute: maybeNum(l["per_minute"]),
+    perHour: maybeNum(l["per_hour"]),
+    perDay: maybeNum(l["per_day"]),
+    concurrency: maybeNum(l["concurrency"]),
+  };
+}
+
+function readKeyInfo(raw: Record<string, unknown>): KeyInfo | null {
+  const k = raw["key"];
+  if (!isRecord(k)) return null;
+  return {
+    isActive: typeof k["is_active"] === "boolean" ? k["is_active"] : null,
+    createdAt: typeof k["created_at"] === "string" ? k["created_at"] : null,
+  };
 }
 
 /// Older backends report four job states; the PDP orchestrator adds two more.
@@ -142,6 +188,8 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     credits: readCredits(raw),
+    limits: readLimits(raw),
+    keyInfo: readKeyInfo(raw),
     jobs: jobs ? readJobs(jobs) : null,
     totals: {
       today: bucket("today"),
@@ -182,6 +230,8 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     credits: readCredits(raw),
+    limits: readLimits(raw),
+    keyInfo: readKeyInfo(raw),
     jobs: jobs ? readJobs(jobs) : null,
     totals: {
       today: bucket("today"),

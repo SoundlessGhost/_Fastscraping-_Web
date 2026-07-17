@@ -63,10 +63,16 @@ export async function destroySession() {
 export type SessionUser = {
   id: string;
   email: string;
-  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   company: string | null;
   role: "ADMIN" | "CLIENT";
 };
+
+/// Whatever we can show as a person's name, or null when they set neither.
+export function displayName(u: { firstName: string | null; lastName: string | null }): string | null {
+  return [u.firstName, u.lastName].filter(Boolean).join(" ") || null;
+}
 
 /** Resolves the cookie -> live DB session -> active user. Null if anything fails. */
 export async function getCurrentUser(): Promise<SessionUser | null> {
@@ -88,7 +94,8 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   return {
     id: row.user.id,
     email: row.user.email,
-    name: row.user.name,
+    firstName: row.user.firstName,
+    lastName: row.user.lastName,
     company: row.user.company,
     role: row.user.role,
   };

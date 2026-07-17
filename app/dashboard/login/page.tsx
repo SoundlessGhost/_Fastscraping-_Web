@@ -125,7 +125,8 @@ export default function DashboardLogin() {
           email,
           code,
           password: pw,
-          name: val("name") || undefined,
+          firstName: val("firstName") || undefined,
+          lastName: val("lastName") || undefined,
           company: val("company") || undefined,
         });
         if (!r.ok || !d.ok) {
@@ -393,24 +394,32 @@ export default function DashboardLogin() {
                 )}
 
                 {mode === "signup" && step === 3 && (
-                  <div className="lg-two">
-                    <div>
-                      <label className="lg-label lg-mt" htmlFor="name">
-                        Name <span className="lg-opt">optional</span>
-                      </label>
-                      <div className="lg-field">
-                        <input id="name" name="name" type="text" placeholder="Your name" autoComplete="name" />
+                  <>
+                    <div className="lg-two">
+                      <div>
+                        <label className="lg-label lg-mt" htmlFor="firstName">
+                          First name <span className="lg-opt">optional</span>
+                        </label>
+                        <div className="lg-field">
+                          <input id="firstName" name="firstName" type="text" placeholder="First" autoComplete="given-name" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="lg-label lg-mt" htmlFor="lastName">
+                          Last name <span className="lg-opt">optional</span>
+                        </label>
+                        <div className="lg-field">
+                          <input id="lastName" name="lastName" type="text" placeholder="Last" autoComplete="family-name" />
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <label className="lg-label lg-mt" htmlFor="company">
-                        Company <span className="lg-opt">optional</span>
-                      </label>
-                      <div className="lg-field">
-                        <input id="company" name="company" type="text" placeholder="Company" autoComplete="organization" />
-                      </div>
+                    <label className="lg-label lg-mt" htmlFor="company">
+                      Company <span className="lg-opt">optional</span>
+                    </label>
+                    <div className="lg-field">
+                      <input id="company" name="company" type="text" placeholder="Company" autoComplete="organization" />
                     </div>
-                  </div>
+                  </>
                 )}
 
                 <div className={`lg-hint${error ? " error" : ""}`}>

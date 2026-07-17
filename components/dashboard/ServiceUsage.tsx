@@ -84,6 +84,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
 
   const rangeTotal = days.reduce((s, d) => s + sumOf(d), 0);
   const credits = usage?.credits ?? null;
+  const limits = usage?.limits ?? null;
   const jobs = usage?.jobs ?? null;
 
   return (
@@ -158,7 +159,13 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
         <div className="su-credits">
           <div className="su-credit">
             <span className="su-credit-k">Credits remaining</span>
-            <span className="su-credit-v">{credits.remaining !== null ? nf.format(credits.remaining) : "—"}</span>
+            <span className={`su-credit-v ${credits.unlimited ? "is-unl" : ""}`}>
+              {credits.unlimited
+                ? "Unlimited"
+                : credits.remaining !== null
+                  ? nf.format(credits.remaining)
+                  : "—"}
+            </span>
           </div>
           <div className="su-credit">
             <span className="su-credit-k">Used</span>
@@ -166,9 +173,11 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
           </div>
           <div className="su-credit">
             <span className="su-credit-k">Purchased</span>
-            <span className="su-credit-v">{credits.total !== null ? nf.format(credits.total) : "—"}</span>
+            <span className="su-credit-v">
+              {credits.unlimited ? "—" : credits.total !== null ? nf.format(credits.total) : "—"}
+            </span>
           </div>
-          {credits.total ? (
+          {!credits.unlimited && credits.total ? (
             <div className="su-credit-bar">
               <span
                 style={{
@@ -177,6 +186,14 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
               />
             </div>
           ) : null}
+          {limits && (
+            <div className="su-limits">
+              {limits.perMinute !== null && <span>{nf.format(limits.perMinute)} / min</span>}
+              {limits.perHour !== null && <span>{nf.format(limits.perHour)} / hour</span>}
+              {limits.perDay !== null && <span>{nf.format(limits.perDay)} / day</span>}
+              {limits.concurrency !== null && <span>{limits.concurrency} concurrent</span>}
+            </div>
+          )}
         </div>
       )}
 

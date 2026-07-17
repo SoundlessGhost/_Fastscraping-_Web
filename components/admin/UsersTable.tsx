@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 export type AdminUser = {
   id: string;
   email: string;
-  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   company: string | null;
   role: "ADMIN" | "CLIENT";
   status: "ACTIVE" | "DISABLED";
@@ -20,6 +21,10 @@ export type AdminUser = {
   isBootstrapAdmin: boolean;
   isSelf: boolean;
 };
+
+/// Either half may be missing; show whatever they gave us.
+const fullName = (u: { firstName: string | null; lastName: string | null }) =>
+  [u.firstName, u.lastName].filter(Boolean).join(" ");
 
 const fmtDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
@@ -35,7 +40,9 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
     const needle = q.trim().toLowerCase();
     if (!needle) return users;
     return users.filter((u) =>
-      [u.email, u.name ?? "", u.company ?? ""].some((v) => v.toLowerCase().includes(needle)),
+      [u.email, u.firstName ?? "", u.lastName ?? "", u.company ?? ""].some((v) =>
+        v.toLowerCase().includes(needle),
+      ),
     );
   }, [q, users]);
 
@@ -124,7 +131,9 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
                 <button className="ad-acct-b" onClick={() => setOpen(open === u.id ? null : u.id)}>
                   <span className="ad-email">{u.email}</span>
                   <span className="ad-sub">
-                    {u.name || u.company ? [u.name, u.company].filter(Boolean).join(" · ") : "no name set"}
+                    {fullName(u) || u.company
+                      ? [fullName(u), u.company].filter(Boolean).join(" · ")
+                      : "no name set"}
                     {!u.verified && <b className="ad-flag"> unverified</b>}
                     {u.status === "DISABLED" && <b className="ad-flag"> disabled</b>}
                     {u.isSelf && <b className="ad-you"> you</b>}

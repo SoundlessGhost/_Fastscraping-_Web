@@ -12,7 +12,8 @@ const Body = z.object({
   email: z.string().email().max(160),
   code: z.string().regex(/^\d{6}$/, "Enter the 6-digit code."),
   password: z.string().max(200),
-  name: z.string().max(120).optional(),
+  firstName: z.string().max(80).optional(),
+  lastName: z.string().max(80).optional(),
   company: z.string().max(120).optional(),
 });
 
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { code, password, name, company } = parsed.data;
+  const { code, password, firstName, lastName, company } = parsed.data;
   const email = parsed.data.email.trim().toLowerCase();
 
   const pwProblem = passwordProblem(password);
@@ -51,7 +52,8 @@ export async function POST(req: Request) {
     create: {
       email,
       passwordHash,
-      name: name?.trim() || null,
+      firstName: firstName?.trim() || null,
+      lastName: lastName?.trim() || null,
       company: company?.trim() || null,
       emailVerifiedAt: now,
       lastPasswordChangeAt: now,
@@ -59,7 +61,8 @@ export async function POST(req: Request) {
     },
     update: {
       passwordHash,
-      name: name?.trim() || null,
+      firstName: firstName?.trim() || null,
+      lastName: lastName?.trim() || null,
       company: company?.trim() || null,
       emailVerifiedAt: now,
       lastPasswordChangeAt: now,
