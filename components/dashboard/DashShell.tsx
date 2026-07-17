@@ -74,9 +74,11 @@ export default function DashShell({
     <div className={`ds ${drawer ? "ds--drawer" : ""}`}>
       <aside className="ds-side">
         <div className="ds-side-head">
-          <Link href="/" className="ds-brand">
-            <span className="ds-brand-mark">f</span>
-            <span className="ds-brand-name">Fastscraping</span>
+          {/* Same markup as the site header, so the logo is literally the
+              same logo — not a lookalike. Styles come from base.css. */}
+          <Link href="/" className="brand">
+            <span className="brand-mark">f</span>
+            <span>Fastscraping</span>
           </Link>
           <button className="ds-drawer-close" onClick={() => setDrawer(false)} aria-label="Close menu">
             ×

@@ -33,31 +33,15 @@ const PLACEHOLDER = "http://0.0.0.0:0";
 
 const SERVICES: Seed[] = [
   // --- E-commerce / Shopee -------------------------------------------------
-  // The one live backend: a single key covers every region, so it sits at
-  // platform level with no region/endpoint.
-  {
-    slug: "shopee-usage",
-    name: "Shopee usage",
-    category: "ecommerce",
-    platform: "shopee",
-    baseUrl: process.env["SCRAPE_API_BASE"] ?? "http://86.48.2.59:8040",
-    kind: "shopee-usage",
-    status: "ACTIVE",
-    sortOrder: 0,
-    notes: "One key reports every Shopee market.",
-  },
-  { slug: "shopee-br-pdp", name: "PDP", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 10 },
-  { slug: "shopee-br-get-pc", name: "get_pc", category: "ecommerce", platform: "shopee", region: "br", endpoint: "get_pc", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 11 },
-  { slug: "shopee-br-cvc", name: "CVC", category: "ecommerce", platform: "shopee", region: "br", endpoint: "cvc", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 12 },
-  { slug: "shopee-tw-pdp", name: "PDP", category: "ecommerce", platform: "shopee", region: "tw", endpoint: "pdp", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 20 },
-  { slug: "shopee-tw-get-pc", name: "get_pc", category: "ecommerce", platform: "shopee", region: "tw", endpoint: "get_pc", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 21 },
-  { slug: "shopee-th-get-pc", name: "get_pc", category: "ecommerce", platform: "shopee", region: "th", endpoint: "get_pc", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 30 },
-  { slug: "shopee-id-get-pc", name: "get_pc", category: "ecommerce", platform: "shopee", region: "id", endpoint: "get_pc", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 40 },
+  // Brazil only for now — other Shopee markets get added back as they land.
+  // PDP is the one that exists: the orchestrator on 212.90.121.151 stores into
+  // a database literally named `shopee_pdp`, takes shop_id + item_id, and
+  // returns full product data. Its base URL stays a placeholder until we settle
+  // which instance to point at (9999 = prod, 8888 = test).
+  { slug: "shopee-br-pdp", name: "PDP", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: PLACEHOLDER, kind: "shopee-usage", status: "DISABLED", sortOrder: 10 },
 
   // --- E-commerce / Temu ---------------------------------------------------
   { slug: "temu-us-search", name: "Search", category: "ecommerce", platform: "temu", region: "us", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
-  { slug: "temu-us-pdp", name: "PDP", category: "ecommerce", platform: "temu", region: "us", endpoint: "pdp", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 51 },
-  { slug: "temu-de-search", name: "Search", category: "ecommerce", platform: "temu", region: "de", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 60 },
 
   // --- Real estate ---------------------------------------------------------
   { slug: "homegate-ch-listings", name: "Listings", category: "realestate", platform: "homegate", region: "ch", endpoint: "listings", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 70 },
@@ -88,8 +72,30 @@ async function main() {
       update: { name: data.name, category: data.category, platform: data.platform, region: data.region, endpoint: data.endpoint, sortOrder: data.sortOrder },
     });
   }
+  // Drop placeholders this file no longer lists, so trimming the catalog is an
+  // edit here rather than hand-written SQL. Three guards keep it from eating
+  // anything real: it only touches rows still on the placeholder URL (so never
+  // a wired backend, never one an admin created), and only rows no client has
+  // a key for.
+  const keep = new Set(SERVICES.map((s) => s.slug));
+  const stale = await prisma.service.findMany({
+    where: { baseUrl: PLACEHOLDER, slug: { notIn: [...keep] } },
+    include: { _count: { select: { clientServices: true } } },
+  });
+  const prunable = stale.filter((s) => s._count.clientServices === 0);
+
+  for (const s of prunable) await prisma.service.delete({ where: { id: s.id } });
+
+  for (const s of stale) {
+    if (s._count.clientServices > 0) {
+      console.log(`kept ${s.slug}: ${s._count.clientServices} client key(s) still attached`);
+    }
+  }
+
   const total = await prisma.service.count();
-  console.log(`seeded ${SERVICES.length} services (catalog now holds ${total})`);
+  console.log(
+    `seeded ${SERVICES.length} services, pruned ${prunable.length} placeholder(s) (catalog now holds ${total})`,
+  );
 }
 
 main()

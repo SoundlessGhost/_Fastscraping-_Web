@@ -32,9 +32,10 @@ export default function AdminShell({ user, children }: { user: SessionUser; chil
     <div className={`ds ${drawer ? "ds--drawer" : ""}`}>
       <aside className="ds-side">
         <div className="ds-side-head">
-          <Link href="/admin" className="ds-brand">
-            <span className="ds-brand-mark">f</span>
-            <span className="ds-brand-name">Fastscraping</span>
+          {/* Same markup as the site header — see DashShell. */}
+          <Link href="/admin" className="brand">
+            <span className="brand-mark">f</span>
+            <span>Fastscraping</span>
           </Link>
           <button className="ds-drawer-close" onClick={() => setDrawer(false)} aria-label="Close menu">
             ×

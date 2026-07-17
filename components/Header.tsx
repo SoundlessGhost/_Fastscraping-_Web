@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { isAppRoute } from "@/lib/chrome";
 
 type PageMeta = { cta: string; ctaHref: string; status: string };
 
@@ -79,7 +80,7 @@ export default function Header() {
     [],
   );
 
-  if (pathname?.startsWith("/dashboard")) return null;
+  if (isAppRoute(pathname)) return null;
 
   return (
     <>

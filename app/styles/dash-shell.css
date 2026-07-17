@@ -29,32 +29,11 @@
   padding: 18px 18px 16px;
   border-bottom: 1px solid var(--hairline);
 }
-.ds-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  min-width: 0;
-}
-.ds-brand-mark {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--font-display);
-  font-size: 15px;
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-.ds-brand-name {
-  font-family: var(--font-display);
-  font-size: 17px;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  white-space: nowrap;
-}
+/* The sidebar reuses .brand / .brand-mark from base.css so the logo matches
+   the site header exactly. Only the bits the sidebar needs are added here. */
+.ds-side-head .brand { min-width: 0; }
+.ds-side-head .brand-mark { flex: none; }
+.ds-side-head .brand span:last-child { white-space: nowrap; }
 .ds-drawer-close {
   display: none;
   border: none;

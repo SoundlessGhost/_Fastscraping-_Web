@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { MouseEvent } from "react";
+import { isAppRoute } from "@/lib/chrome";
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/dashboard")) return null;
+  if (isAppRoute(pathname)) return null;
   const scrollTopIfHome = (e: MouseEvent<HTMLAnchorElement>) => {
     if (pathname === "/") {
       e.preventDefault();
