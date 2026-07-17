@@ -1,63 +1,89 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { regionColor, regionName } from "@/lib/regions";
 import type { ServiceNode } from "@/lib/services/taxonomy";
 import type { NormalizedUsage } from "@/lib/services/usage";
 
 // Usage for one service, drawn from the normalised shape — so a new backend
 // only needs an adapter, never a new chart.
+//
+// We fetch once at the widest range and slice locally. The backend recomputes
+// nothing per interval (its totals are interval-independent and `daily` is just
+// truncated), so asking again for 7 days would buy exactly the rows we already
+// hold — and cost a round trip. Switching ranges is therefore instant.
 
 const nf = new Intl.NumberFormat("en-US");
-const INTERVALS = [
+const RANGES = [
   { v: 1, l: "24h" },
   { v: 3, l: "3d" },
   { v: 7, l: "7d" },
   { v: 30, l: "30d" },
 ];
+const WIDEST = 30;
 
 const VBW = 900;
-const VBH = 320;
-const PADL = 42;
-const PADR = 14;
-const PADT = 16;
-const PADB = 30;
+const VBH = 300;
+const PADL = 44;
+const PADR = 16;
+const PADT = 18;
+const PADB = 34;
 const plotH = VBH - PADT - PADB;
+const plotW = VBW - PADL - PADR;
 
 const shortDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 
+const longDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
 const fmtAxis = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(v % 1000 === 0 ? 0 : 1)}k` : String(v));
 
-/// The dimension keys are region codes today; label/colour fall back for
-/// anything else a future backend splits by.
 const dimLabel = (k: string) => regionName(k);
 const dimColor = (k: string) => regionColor(k);
 
-type Data = { usage: NormalizedUsage; interval: number };
+const todayUTC = () => new Date().toISOString().slice(0, 10);
+
+type Point = { date: string; total: number; by: Record<string, number> };
+type Tip = { x: number; y: number; day: Point } | null;
+
+function Spinner({ label }: { label?: string }) {
+  return (
+    <div className="su-spin" role="status" aria-live="polite">
+      <span className="su-spin-ring" />
+      {label && <span className="su-spin-l">{label}</span>}
+    </div>
+  );
+}
 
 export default function ServiceUsage({ service, title }: { service: ServiceNode; title: string }) {
-  const [interval, setInterval] = useState(7);
-  const [data, setData] = useState<Data | null>(null);
+  const [range, setRange] = useState(7);
+  const [usage, setUsage] = useState<NormalizedUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [dim, setDim] = useState("all");
+  const [tip, setTip] = useState<Tip>(null);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
     setError(null);
 
-    fetch(`/api/services/${service.slug}/usage?interval=${interval}`)
+    fetch(`/api/services/${service.slug}/usage?interval=${WIDEST}`)
       .then(async (r) => {
         const body = await r.json().catch(() => ({}));
         if (!alive) return;
         if (!r.ok) {
           setError(body.message ?? "Could not load usage.");
-          setData(null);
+          setUsage(null);
           return;
         }
-        setData({ usage: body.usage, interval: body.interval });
+        setUsage(body.usage);
       })
       .catch(() => alive && setError("Network error."))
       .finally(() => alive && setLoading(false));
@@ -65,24 +91,31 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
     return () => {
       alive = false;
     };
-  }, [service.slug, interval]);
+  }, [service.slug]);
 
-  const usage = data?.usage ?? null;
-  const dims = usage?.dims ?? [];
-  const shown = useMemo(() => (dim === "all" ? dims : dims.filter((d) => d === dim)), [dim, dims]);
+  const all = useMemo(() => usage?.daily ?? [], [usage]);
+  const days = useMemo(() => (all.length > range ? all.slice(-range) : all), [all, range]);
 
-  const days = usage?.daily ?? [];
-  const sumOf = (row: { total: number; by: Record<string, number> }) =>
-    dim === "all" ? row.total : (row.by[dim] ?? 0);
+  // Only regions with traffic *in the visible range* get a colour and a legend
+  // slot — otherwise a quiet month shows a legend of things that aren't there.
+  const dims = useMemo(() => {
+    const seen: string[] = [];
+    for (const d of days) for (const k of Object.keys(d.by)) if (!seen.includes(k)) seen.push(k);
+    return seen;
+  }, [days]);
 
-  const top = Math.max(1, ...days.map(sumOf));
+  const top = Math.max(1, ...days.map((d) => d.total));
   const yOf = (v: number) => PADT + plotH - (v / top) * plotH;
-  const colW = days.length ? (VBW - PADL - PADR) / days.length : 0;
-  const barW = Math.min(26, colW * 0.62);
+  const colW = days.length ? plotW / days.length : 0;
+  const barW = Math.max(3, Math.min(30, colW * 0.6));
   const lblStep = Math.max(1, Math.ceil(days.length / 8));
   const grid = [0, 0.25, 0.5, 0.75, 1].map((f) => ({ v: Math.round(top * f), y: yOf(top * f) }));
 
-  const rangeTotal = days.reduce((s, d) => s + sumOf(d), 0);
+  const rangeTotal = days.reduce((s, d) => s + d.total, 0);
+  const avg = days.length ? rangeTotal / days.length : 0;
+  const busiest = days.reduce<Point | null>((b, d) => (!b || d.total > b.total ? d : b), null);
+  const today = todayUTC();
+
   const credits = usage?.credits ?? null;
   const limits = usage?.limits ?? null;
   const jobs = usage?.jobs ?? null;
@@ -102,31 +135,19 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
 
         <div className="dash-controls">
           <div className="dash-seg">
-            {INTERVALS.map((it) => (
-              <button key={it.v} className={interval === it.v ? "on" : ""} onClick={() => setInterval(it.v)}>
+            {RANGES.map((it) => (
+              <button key={it.v} className={range === it.v ? "on" : ""} onClick={() => setRange(it.v)}>
                 {it.l}
               </button>
             ))}
           </div>
-          {dims.length > 0 && (
-            <select className="dash-region" value={dim} onChange={(e) => setDim(e.target.value)} aria-label="Filter">
-              <option value="all">All regions</option>
-              {dims.map((d) => (
-                <option key={d} value={d}>
-                  {dimLabel(d)}
-                </option>
-              ))}
-            </select>
-          )}
         </div>
       </div>
 
       {error && (
         <div className="su-error">
           <b>{error}</b>
-          <span>
-            If your key changed, remove it in Settings and add the new one.
-          </span>
+          <span>If your key changed, remove it in Settings and add the new one.</span>
         </div>
       )}
 
@@ -160,11 +181,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
           <div className="su-credit">
             <span className="su-credit-k">Credits remaining</span>
             <span className={`su-credit-v ${credits.unlimited ? "is-unl" : ""}`}>
-              {credits.unlimited
-                ? "Unlimited"
-                : credits.remaining !== null
-                  ? nf.format(credits.remaining)
-                  : "—"}
+              {credits.unlimited ? "Unlimited" : credits.remaining !== null ? nf.format(credits.remaining) : "—"}
             </span>
           </div>
           <div className="su-credit">
@@ -180,9 +197,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
           {!credits.unlimited && credits.total ? (
             <div className="su-credit-bar">
               <span
-                style={{
-                  width: `${Math.min(100, Math.max(0, ((credits.used ?? 0) / credits.total) * 100))}%`,
-                }}
+                style={{ width: `${Math.min(100, Math.max(0, ((credits.used ?? 0) / credits.total) * 100))}%` }}
               />
             </div>
           ) : null}
@@ -199,14 +214,18 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
 
       <div className="dash-grid">
         {/* CHART */}
-        <div className="dash-card">
+        <div className="dash-card su-chartcard">
           <div className="dash-card-h">
             <div className="dash-card-t">
-              Traffic overview <small>requests / day{usage?.dimension ? " · stacked by region" : ""}</small>
+              Traffic overview{" "}
+              <small>
+                {nf.format(rangeTotal)} requests over {days.length} day{days.length === 1 ? "" : "s"} ·{" "}
+                {nf.format(Math.round(avg))} / day average
+              </small>
             </div>
-            {shown.length > 0 && (
+            {dims.length > 0 && (
               <div className="dash-legend">
-                {shown.map((c) => (
+                {dims.map((c) => (
                   <span key={c}>
                     <i style={{ background: dimColor(c) }} />
                     {dimLabel(c)}
@@ -216,140 +235,272 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
             )}
           </div>
 
-          <div className="dash-chart">
-            {loading && !usage ? (
-              <div className="su-load">loading…</div>
+          <div className="dash-chart su-chart" ref={chartRef}>
+            {loading ? (
+              <Spinner label="loading usage…" />
+            ) : rangeTotal === 0 ? (
+              <div className="su-nodata">
+                <b>No requests in this range</b>
+                <span>pick a longer range, or check back once jobs run</span>
+              </div>
             ) : (
-              <svg viewBox={`0 0 ${VBW} ${VBH}`} preserveAspectRatio="none">
+              <svg viewBox={`0 0 ${VBW} ${VBH}`} preserveAspectRatio="none" onMouseLeave={() => setTip(null)}>
+                {/* horizontal grid + y labels */}
                 {grid.map((g, i) => (
                   <g key={i}>
-                    <line x1={PADL} x2={VBW - PADR} y1={g.y} y2={g.y} stroke="rgba(19,22,19,0.07)" strokeWidth={1} />
-                    <text x={PADL - 8} y={g.y + 3} textAnchor="end" fontSize="9.5" fontWeight="500" fontFamily="var(--font-mono)" fill="#6b6e69">
+                    <line
+                      x1={PADL}
+                      x2={VBW - PADR}
+                      y1={g.y}
+                      y2={g.y}
+                      stroke="rgba(19,22,19,0.07)"
+                      strokeWidth={1}
+                    />
+                    <text
+                      x={PADL - 10}
+                      y={g.y + 3}
+                      textAnchor="end"
+                      fontSize="9.5"
+                      fontWeight="500"
+                      fontFamily="var(--font-mono)"
+                      fill="#6b6e69"
+                    >
                       {fmtAxis(g.v)}
                     </text>
                   </g>
                 ))}
 
+                {/* average line — the "is today normal?" reference */}
+                {avg > 0 && days.length > 1 && (
+                  <g>
+                    <line
+                      x1={PADL}
+                      x2={VBW - PADR}
+                      y1={yOf(avg)}
+                      y2={yOf(avg)}
+                      stroke="#131613"
+                      strokeWidth={1}
+                      strokeDasharray="3 4"
+                      opacity={0.4}
+                    />
+                    <text
+                      x={VBW - PADR}
+                      y={yOf(avg) - 6}
+                      textAnchor="end"
+                      fontSize="9"
+                      fontWeight="500"
+                      fontFamily="var(--font-mono)"
+                      fill="#6b6e69"
+                    >
+                      avg {fmtAxis(Math.round(avg))}
+                    </text>
+                  </g>
+                )}
+
                 {days.map((d, i) => {
                   const cx = PADL + colW * (i + 0.5);
+                  const isToday = d.date === today;
+                  const isTip = tip?.day.date === d.date;
                   let acc = 0;
-                  const stack = shown.length ? shown : ["_"];
+
                   return (
                     <g key={d.date}>
-                      {stack.map((c) => {
-                        const v = c === "_" ? sumOf(d) : (d.by[c] ?? 0);
-                        if (v <= 0) return null;
-                        const h = (v / top) * plotH;
-                        const y = yOf(acc + v);
-                        acc += v;
-                        return (
-                          <rect
-                            key={c}
-                            x={cx - barW / 2}
-                            y={y}
-                            width={barW}
-                            height={Math.max(0, h)}
-                            fill={c === "_" ? "#0e5d44" : dimColor(c)}
-                            rx={2}
-                          />
-                        );
-                      })}
+                      {/* hover band, drawn under the bar */}
+                      {isTip && (
+                        <rect
+                          x={cx - colW / 2}
+                          y={PADT}
+                          width={colW}
+                          height={plotH}
+                          fill="rgba(19,22,19,0.045)"
+                          rx={3}
+                        />
+                      )}
+
+                      {/* zero days still get a mark, so "nothing happened" reads
+                          as a fact rather than a gap in the chart */}
+                      {d.total === 0 ? (
+                        <line
+                          x1={cx - barW / 2}
+                          x2={cx + barW / 2}
+                          y1={PADT + plotH}
+                          y2={PADT + plotH}
+                          stroke="#c9c7c0"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                        />
+                      ) : (
+                        (dims.length ? dims : ["_"]).map((c) => {
+                          const v = c === "_" ? d.total : (d.by[c] ?? 0);
+                          if (v <= 0) return null;
+                          const h = (v / top) * plotH;
+                          const y = yOf(acc + v);
+                          acc += v;
+                          return (
+                            <rect
+                              key={c}
+                              x={cx - barW / 2}
+                              y={y}
+                              width={barW}
+                              height={Math.max(1.5, h)}
+                              fill={c === "_" ? "#0e5d44" : dimColor(c)}
+                              rx={2}
+                              opacity={isTip ? 1 : 0.92}
+                            />
+                          );
+                        })
+                      )}
+
+                      {/* full-height hit area */}
+                      <rect
+                        x={cx - colW / 2}
+                        y={PADT}
+                        width={colW}
+                        height={plotH}
+                        fill="transparent"
+                        onMouseMove={(e) => setTip({ x: e.clientX, y: e.clientY, day: d })}
+                      />
+
                       {(days.length - 1 - i) % lblStep === 0 ? (
-                        <text x={cx} y={VBH - 8} textAnchor="middle" fontSize="9.5" fontWeight="500" fontFamily="var(--font-mono)" fill="#6b6e69">
-                          {shortDate(d.date)}
+                        <text
+                          x={cx}
+                          y={VBH - 12}
+                          textAnchor="middle"
+                          fontSize="9.5"
+                          fontWeight={isToday ? 700 : 500}
+                          fontFamily="var(--font-mono)"
+                          fill={isToday ? "#131613" : "#6b6e69"}
+                        >
+                          {isToday ? "today" : shortDate(d.date)}
                         </text>
                       ) : null}
                     </g>
                   );
                 })}
 
-                {days.length > 1 ? (
-                  <polyline
-                    points={days.map((d, i) => `${PADL + colW * (i + 0.5)},${yOf(sumOf(d))}`).join(" ")}
-                    fill="none"
-                    stroke="#131613"
-                    strokeWidth="1.4"
-                    strokeDasharray="4 3"
-                    opacity="0.5"
-                  />
-                ) : null}
+                {/* busiest day gets its number, so the peak is readable without hovering */}
+                {busiest && busiest.total > 0 && days.length > 2 && (
+                  <text
+                    x={PADL + colW * (days.indexOf(busiest) + 0.5)}
+                    y={yOf(busiest.total) - 7}
+                    textAnchor="middle"
+                    fontSize="10"
+                    fontWeight="600"
+                    fontFamily="var(--font-mono)"
+                    fill="#131613"
+                  >
+                    {nf.format(busiest.total)}
+                  </text>
+                )}
+
+                {/* baseline */}
+                <line
+                  x1={PADL}
+                  x2={VBW - PADR}
+                  y1={PADT + plotH}
+                  y2={PADT + plotH}
+                  stroke="rgba(19,22,19,0.18)"
+                  strokeWidth={1}
+                />
               </svg>
             )}
           </div>
+
+          {tip && (
+            <div className="dash-tip" style={{ left: tip.x, top: tip.y }}>
+              {longDate(tip.day.date)}
+              {Object.entries(tip.day.by).map(([k, v]) => (
+                <div key={k}>
+                  {dimLabel(k)} <b>{nf.format(v)}</b>
+                </div>
+              ))}
+              <div>
+                total <b>{nf.format(tip.day.total)}</b>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* RIGHT COLUMN */}
         <div className="dash-col">
-          {jobs && (
-            <div className="dash-card">
-              <div className="dash-card-h">
-                <div className="dash-card-t">Job health</div>
-              </div>
-              <div className="dash-health-row">
-                <div className="dash-health-cell">
-                  <div className="dash-health-v ok">{nf.format(jobs.completed)}</div>
-                  <div className="dash-health-l">completed</div>
-                </div>
-                {jobs.notFound !== null && (
-                  <div className="dash-health-cell">
-                    <div className="dash-health-v">{nf.format(jobs.notFound)}</div>
-                    <div className="dash-health-l">not found</div>
+          {loading && !usage ? (
+            <div className="dash-card su-sidecard">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              {jobs && (
+                <div className="dash-card">
+                  <div className="dash-card-h">
+                    <div className="dash-card-t">Job health</div>
                   </div>
-                )}
-                <div className="dash-health-cell">
-                  <div className="dash-health-v bad">{nf.format(jobs.failed)}</div>
-                  <div className="dash-health-l">failed</div>
-                </div>
-                <div className="dash-health-cell">
-                  <div className="dash-health-v">{nf.format(jobs.pending)}</div>
-                  <div className="dash-health-l">pending</div>
-                </div>
-              </div>
-              <div className="dash-meter">
-                <span className="m-ok" style={{ width: jobs.total ? `${(jobs.completed / jobs.total) * 100}%` : "0%" }} />
-                <span className="m-bad" style={{ width: jobs.total ? `${(jobs.failed / jobs.total) * 100}%` : "0%" }} />
-              </div>
-              <div className="dash-meter-s">
-                {jobs.total ? `${((jobs.completed / jobs.total) * 100).toFixed(1)}% success` : "no jobs yet"} ·{" "}
-                {nf.format(jobs.total)} total
-                {jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
-              </div>
-              {jobs.billable !== null && (
-                <div className="su-billnote">
-                  Billable = completed + not found. Failed, captcha and pending jobs aren&apos;t charged.
+                  <div className="dash-health-row">
+                    <div className="dash-health-cell">
+                      <div className="dash-health-v ok">{nf.format(jobs.completed)}</div>
+                      <div className="dash-health-l">completed</div>
+                    </div>
+                    {jobs.notFound !== null && (
+                      <div className="dash-health-cell">
+                        <div className="dash-health-v">{nf.format(jobs.notFound)}</div>
+                        <div className="dash-health-l">not found</div>
+                      </div>
+                    )}
+                    <div className="dash-health-cell">
+                      <div className="dash-health-v bad">{nf.format(jobs.failed)}</div>
+                      <div className="dash-health-l">failed</div>
+                    </div>
+                    <div className="dash-health-cell">
+                      <div className="dash-health-v">{nf.format(jobs.pending)}</div>
+                      <div className="dash-health-l">pending</div>
+                    </div>
+                  </div>
+                  <div className="dash-meter">
+                    <span className="m-ok" style={{ width: jobs.total ? `${(jobs.completed / jobs.total) * 100}%` : "0%" }} />
+                    <span className="m-bad" style={{ width: jobs.total ? `${(jobs.failed / jobs.total) * 100}%` : "0%" }} />
+                  </div>
+                  <div className="dash-meter-s">
+                    {jobs.total ? `${((jobs.completed / jobs.total) * 100).toFixed(1)}% success` : "no jobs yet"} ·{" "}
+                    {nf.format(jobs.total)} total
+                    {jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
+                  </div>
+                  {jobs.billable !== null && (
+                    <div className="su-billnote">
+                      Billable = completed + not found. Failed, captcha and pending jobs aren&apos;t charged.
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          <div className="dash-card">
-            <div className="dash-card-h">
-              <div className="dash-card-t">
-                Top regions <small>this range</small>
+              <div className="dash-card">
+                <div className="dash-card-h">
+                  <div className="dash-card-t">
+                    Top regions <small>this range</small>
+                  </div>
+                </div>
+                {dims.length === 0 || rangeTotal === 0 ? (
+                  <div className="dash-empty">
+                    <div className="dash-empty-t">No activity yet</div>
+                    <div className="dash-empty-s">regions appear once they have requests</div>
+                  </div>
+                ) : (
+                  <div className="dash-regions">
+                    {dims
+                      .map((c) => ({ c, v: days.reduce((s, d) => s + (d.by[c] ?? 0), 0) }))
+                      .sort((a, b) => b.v - a.v)
+                      .map(({ c, v }) => (
+                        <div className="dash-region-row" key={c}>
+                          <div className="dash-region-name">{dimLabel(c)}</div>
+                          <div className="dash-region-bar">
+                            <span style={{ width: `${(v / rangeTotal) * 100}%`, background: dimColor(c) }} />
+                          </div>
+                          <div className="dash-region-n">{nf.format(v)}</div>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
-            </div>
-            {shown.length === 0 || rangeTotal === 0 ? (
-              <div className="dash-empty">
-                <div className="dash-empty-t">No activity yet</div>
-                <div className="dash-empty-s">regions appear once they have requests</div>
-              </div>
-            ) : (
-              <div className="dash-regions">
-                {shown
-                  .map((c) => ({ c, v: days.reduce((s, d) => s + (d.by[c] ?? 0), 0) }))
-                  .sort((a, b) => b.v - a.v)
-                  .map(({ c, v }) => (
-                    <div className="dash-region-row" key={c}>
-                      <div className="dash-region-name">{dimLabel(c)}</div>
-                      <div className="dash-region-bar">
-                        <span style={{ width: `${(v / rangeTotal) * 100}%`, background: dimColor(c) }} />
-                      </div>
-                      <div className="dash-region-n">{nf.format(v)}</div>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </>
