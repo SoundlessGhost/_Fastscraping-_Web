@@ -381,6 +381,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+/* A grid item's min-width is `auto`, not 0 — so a column refuses to shrink
+   below its content's minimum. An <input> carries an intrinsic width of about
+   20 characters, which is wider than half this card, so the second column ran
+   past the edge (and the card clips, hiding it). Letting the items shrink is
+   what makes 1fr actually mean half. */
+.lg-two > * {
+  min-width: 0;
+}
 @media (max-width: 480px) {
   .lg-two {
     grid-template-columns: 1fr;
