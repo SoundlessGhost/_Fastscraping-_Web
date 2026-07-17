@@ -8,7 +8,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 6px 0 26px;
+  padding: 0 0 18px;
   flex-wrap: wrap;
 }
 
@@ -228,9 +228,9 @@
 .su-error span { color: var(--ink-2); font-size: 12px; }
 
 .su-billnote {
-  padding: 8px 18px 16px;
-  font-size: 11.5px;
-  line-height: 1.5;
+  padding: 4px 20px 10px;
+  font-size: 10.5px;
+  line-height: 1.4;
   color: var(--muted);
 }
 
@@ -242,8 +242,8 @@
   background: var(--card, var(--paper));
   border: 1px solid var(--hairline);
   border-radius: 14px;
-  padding: 18px 20px;
-  margin-bottom: 18px;
+  padding: 14px 20px;
+  margin-bottom: 14px;
 }
 .su-credit { display: flex; flex-direction: column; gap: 4px; }
 .su-credit-k {
@@ -255,7 +255,7 @@
 }
 .su-credit-v {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 24px;
   line-height: 1;
   color: var(--ink);
 }
@@ -271,11 +271,17 @@
 /* ---------- Settings ---------- */
 .st-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* Explicit columns, not auto-fit: the full-width cards below span 1/-1, which
+     keeps auto-fit from collapsing its empty tracks — that left Profile and
+     Password stranded in two narrow columns with the right half blank. */
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
 .st-card--wide { grid-column: 1 / -1; }
+@media (max-width: 1020px) {
+  .st-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .st-body { padding: 4px 18px 18px; }
 .st-btn { margin-top: 18px; }
 .st-ok { font-size: 12.5px; color: var(--accent); margin: 12px 0 0; }
@@ -429,7 +435,7 @@
   justify-content: center;
   gap: 12px;
   height: 100%;
-  min-height: 220px;
+  min-height: 180px;
 }
 .su-spin-ring {
   width: 26px;
@@ -461,7 +467,7 @@
   justify-content: center;
   gap: 6px;
   height: 100%;
-  min-height: 220px;
+  min-height: 180px;
   text-align: center;
 }
 .su-nodata b {
@@ -475,6 +481,105 @@
 /* the tooltip is positioned against the viewport, so the card must not clip it */
 .su-chartcard { overflow: visible; }
 .su-chart svg { cursor: crosshair; }
+
+/* ---------- Avatar ---------- */
+.av {
+  display: inline-block;
+  border-radius: 999px;
+  overflow: hidden;
+  flex: none;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 0;
+}
+.av-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Avatar picker (settings) ---------- */
+.ap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0 18px;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 6px;
+}
+.ap-shot {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex: none;
+  border: 1px solid var(--hairline);
+}
+.ap-busy {
+  position: absolute;
+  inset: 0;
+  background: rgba(244, 241, 234, 0.6);
+  border-radius: 999px;
+}
+.ap-busy::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 999px;
+  border: 2px solid var(--hairline);
+  border-top-color: var(--accent);
+  animation: su-spin 0.7s linear infinite;
+}
+.ap-side { min-width: 0; }
+.ap-acts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ap-btn { padding: 8px 14px; font-size: 13px; }
+.ap .cn-note { margin-top: 8px; }
+.ap .cn-err { margin-top: 6px; }
+
+/* ---------- Top usage ----------
+   One line per day: the card sits beside the chart, so its height decides
+   whether the page fits on a screen. Rank, date, share of the peak, count. */
+.su-top { padding: 0 20px 14px; display: grid; gap: 8px; }
+.su-top-row {
+  display: grid;
+  grid-template-columns: 14px 62px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  height: 26px;
+}
+.su-top-rank {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.su-top-row:first-child .su-top-rank { color: var(--accent); font-weight: 600; }
+.su-top-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.su-top-bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+.su-top-bar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.su-top-n {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1;
+  white-space: nowrap;
+}
 
 /* ---------- Avatar ---------- */
 .av {
@@ -574,4 +679,101 @@
   font-size: 22px;
   color: var(--ink);
   line-height: 1;
+}
+
+/* Profile fields sit in pairs so the card uses its width instead of running
+   as one long narrow column. */
+.st-hint {
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+.st-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.st-foot .st-btn { margin-top: 0; }
+.st-foot p { margin: 0 !important; }
+
+/* ---------- Live / refresh ---------- */
+.su-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2);
+}
+.su-live i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  animation: su-pulse 2.6s ease-in-out infinite;
+}
+.su-live i.is-busy { animation-duration: 0.8s; }
+@keyframes su-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.su-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color 0.16s ease, color 0.16s ease;
+}
+.su-refresh:hover:not(:disabled) { border-color: var(--ink-2); color: var(--ink); }
+.su-refresh:disabled { opacity: 0.55; cursor: default; }
+.su-refresh-i {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+}
+.su-refresh-i.is-busy { animation: su-spin 0.7s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .su-live i, .su-refresh-i.is-busy { animation: none; }
+}
+
+/* ---------- Short screens ----------
+   The usage page is meant to be read without scrolling. On a laptop the
+   viewport can be ~760-820px tall, so give back the height the chart and the
+   big numerals are using rather than let the page spill. */
+/* The right column, not the chart, is what sets the grid's height here: Job
+   health stacked on Top usage is taller than the chart card. So the trims that
+   matter are in those two. */
+@media (max-height: 880px) {
+  .dash-title { font-size: clamp(26px, 2.6vw, 34px); }
+  .dash-chart { height: 200px; min-height: 200px; }
+  .dash-stat { padding: 12px 16px 10px; }
+  .dash-stat-v { font-size: 32px; }
+  .dash-stat-k { margin-bottom: 6px; }
+  .su-credits { padding: 12px 20px; }
+  .su-credit-v { font-size: 20px; }
+  .su-credit-v.is-unl { font-size: 18px; }
+
+  .dash-col .dash-card { padding: 14px 18px 12px; }
+  .dash-col .dash-card-h { margin-bottom: 8px; }
+  .dash-health-v { font-size: 22px; }
+  .dash-health-row { margin-bottom: 8px; }
+  .dash-health-l { margin-top: 4px; }
+  .su-billnote { padding: 4px 18px 8px; font-size: 10px; }
+  .su-top { padding: 0 18px 10px; gap: 6px; }
+  .su-top-row { height: 22px; }
 }

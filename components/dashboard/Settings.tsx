@@ -222,21 +222,27 @@ export default function Settings({
               </div>
             </div>
 
-            <label className="cn-l" htmlFor="company">
-              Company
-            </label>
-            <input id="company" name="company" className="cn-in" defaultValue={user.company ?? ""} disabled={profileBusy} />
+            <div className="st-two">
+              <div>
+                <label className="cn-l" htmlFor="company">
+                  Company
+                </label>
+                <input id="company" name="company" className="cn-in" defaultValue={user.company ?? ""} disabled={profileBusy} />
+              </div>
+              <div>
+                <label className="cn-l" htmlFor="email">
+                  Email <i className="st-hint">your sign-in</i>
+                </label>
+                <input id="email" className="cn-in st-ro" value={user.email} readOnly disabled />
+              </div>
+            </div>
 
-            <label className="cn-l" htmlFor="email">
-              Email
-            </label>
-            <input id="email" className="cn-in st-ro" value={user.email} readOnly disabled />
-            <p className="cn-note">Your email is your sign-in. Contact us if it needs to change.</p>
-
-            {profileMsg && <p className={profileMsg.ok ? "st-ok" : "cn-err"}>{profileMsg.text}</p>}
-            <button className="btn btn-ghost st-btn" disabled={profileBusy}>
-              {profileBusy ? "Saving…" : "Save"}
-            </button>
+            <div className="st-foot">
+              <button className="btn btn-ghost st-btn" disabled={profileBusy}>
+                {profileBusy ? "Saving…" : "Save changes"}
+              </button>
+              {profileMsg && <p className={profileMsg.ok ? "st-ok" : "cn-err"}>{profileMsg.text}</p>}
+            </div>
           </div>
         </form>
 

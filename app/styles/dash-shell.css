@@ -244,9 +244,11 @@
 
 .ds-content {
   flex: 1;
-  padding: 30px 28px 64px;
+  padding: 24px 28px 28px;
   width: 100%;
-  max-width: 1400px;
+  /* Wide enough to use a 1920 screen — a dashboard is scanned, not read like
+     prose, so the usual reading-width cap works against it. */
+  max-width: 1600px;
 }
 
 .ds-scrim { display: none; }
@@ -279,7 +281,7 @@
 
 @media (max-width: 640px) {
   .ds-top { padding: 10px 16px; }
-  .ds-content { padding: 22px 16px 56px; }
+  .ds-content { padding: 20px 16px 40px; }
   .ds-who-email { max-width: 140px; }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { regionColor, regionName } from "@/lib/regions";
 import type { ServiceNode } from "@/lib/services/taxonomy";
 import type { NormalizedUsage } from "@/lib/services/usage";
@@ -21,6 +21,9 @@ const RANGES = [
   { v: 30, l: "30d" },
 ];
 const WIDEST = 30;
+/// The backend needs ~8s per call, so this is deliberately unhurried; the
+/// manual button is there for when someone wants it now.
+const REFRESH_MS = 60_000;
 
 const VBW = 900;
 const VBH = 300;
@@ -49,6 +52,9 @@ const dimColor = (k: string) => regionColor(k);
 
 const todayUTC = () => new Date().toISOString().slice(0, 10);
 
+const fmtAgo = (sec: number) =>
+  sec < 60 ? `${sec}s` : sec < 3600 ? `${Math.round(sec / 60)}m` : `${Math.round(sec / 3600)}h`;
+
 type Point = { date: string; total: number; by: Record<string, number> };
 type Tip = { x: number; y: number; day: Point } | null;
 
@@ -66,32 +72,83 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
   const [usage, setUsage] = useState<NormalizedUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
+  const [ago, setAgo] = useState(0);
   const [tip, setTip] = useState<Tip>(null);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    setError(null);
+  const load = useCallback(
+    async (mode: "first" | "refresh") => {
+      // The backend walks every job row for this key, so a call is expensive.
+      // Never let two run at once.
+      if (inFlight.current) return;
+      inFlight.current = true;
+      if (mode === "first") setLoading(true);
+      else setRefreshing(true);
 
-    fetch(`/api/services/${service.slug}/usage?interval=${WIDEST}`)
-      .then(async (r) => {
+      try {
+        const r = await fetch(`/api/services/${service.slug}/usage?interval=${WIDEST}`, {
+          cache: "no-store",
+        });
         const body = await r.json().catch(() => ({}));
-        if (!alive) return;
         if (!r.ok) {
+          // A refresh that fails leaves the numbers we already have on screen —
+          // stale data beats an empty page.
+          if (mode === "first") setUsage(null);
           setError(body.message ?? "Could not load usage.");
-          setUsage(null);
           return;
         }
         setUsage(body.usage);
-      })
-      .catch(() => alive && setError("Network error."))
-      .finally(() => alive && setLoading(false));
+        setError(null);
+        setUpdatedAt(Date.now());
+      } catch {
+        setError("Network error.");
+      } finally {
+        inFlight.current = false;
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [service.slug],
+  );
+
+  useEffect(() => {
+    setUsage(null);
+    setUpdatedAt(null);
+    load("first");
+  }, [service.slug, load]);
+
+  // Keep the numbers current without anyone pressing anything. Two rules keep
+  // this from hammering the backend: only while the tab is actually being
+  // looked at, and one request at a time.
+  useEffect(() => {
+    const tick = () => {
+      if (document.visibilityState === "visible") load("refresh");
+    };
+    const id = window.setInterval(tick, REFRESH_MS);
+
+    // Coming back to a tab that sat in the background: catch up immediately
+    // rather than waiting out the rest of the interval.
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      if (!updatedAt || Date.now() - updatedAt > REFRESH_MS) load("refresh");
+    };
+    document.addEventListener("visibilitychange", onVisible);
 
     return () => {
-      alive = false;
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [service.slug]);
+  }, [load, updatedAt]);
+
+  // Drives the "updated Ns ago" label.
+  useEffect(() => {
+    if (!updatedAt) return;
+    const id = window.setInterval(() => setAgo(Math.round((Date.now() - updatedAt) / 1000)), 1000);
+    setAgo(0);
+    return () => window.clearInterval(id);
+  }, [updatedAt]);
 
   const all = useMemo(() => usage?.daily ?? [], [usage]);
   const days = useMemo(() => (all.length > range ? all.slice(-range) : all), [all, range]);
@@ -136,7 +193,15 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
           </h1>
           <p className="dash-meta">
             owner <b>{usage?.owner ?? "—"}</b> · all times UTC
-            {usage && <> · key verified</>}
+            {updatedAt && (
+              <>
+                {" · "}
+                <span className="su-live" title="Refreshes on its own every minute">
+                  <i className={refreshing ? "is-busy" : ""} />
+                  {refreshing ? "updating…" : ago < 5 ? "just now" : `updated ${fmtAgo(ago)} ago`}
+                </span>
+              </>
+            )}
           </p>
         </div>
 
@@ -148,6 +213,15 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
               </button>
             ))}
           </div>
+          <button
+            className="su-refresh"
+            onClick={() => load("refresh")}
+            disabled={refreshing || loading}
+            title="Fetch the latest numbers now"
+          >
+            <span className={`su-refresh-i ${refreshing ? "is-busy" : ""}`} aria-hidden="true" />
+            Refresh
+          </button>
         </div>
       </div>
 
@@ -242,7 +316,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
             )}
           </div>
 
-          <div className="dash-chart su-chart" ref={chartRef}>
+          <div className="dash-chart su-chart">
             {loading ? (
               <Spinner label="loading usage…" />
             ) : rangeTotal === 0 ? (
@@ -492,22 +566,21 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
                 ) : (
                   <div className="su-top">
                     {busiestDays.map((d, i) => (
-                      <div className="su-top-row" key={d.date}>
+                      <div
+                        className="su-top-row"
+                        key={d.date}
+                        title={Object.entries(d.by)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([k, v]) => `${dimLabel(k)} ${nf.format(v)}`)
+                          .join(" · ")}
+                      >
                         <span className="su-top-rank">{i + 1}</span>
-                        <span className="su-top-main">
-                          <span className="su-top-date">
-                            {longDate(d.date)}
-                            {d.date === today && <b className="ad-you"> today</b>}
-                          </span>
-                          <span className="su-top-bar">
-                            <span style={{ width: `${(d.total / busiestDays[0].total) * 100}%` }} />
-                          </span>
-                          <span className="su-top-split">
-                            {Object.entries(d.by)
-                              .sort((a, b) => b[1] - a[1])
-                              .map(([k, v]) => `${dimLabel(k)} ${nf.format(v)}`)
-                              .join(" · ")}
-                          </span>
+                        <span className="su-top-date">
+                          {shortDate(d.date)}
+                          {d.date === today && <b className="ad-you"> today</b>}
+                        </span>
+                        <span className="su-top-bar">
+                          <span style={{ width: `${(d.total / busiestDays[0].total) * 100}%` }} />
                         </span>
                         <span className="su-top-n">{nf.format(d.total)}</span>
                       </div>
