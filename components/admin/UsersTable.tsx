@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useConfirm } from "@/components/ui/Confirm";
 
 export type AdminUser = {
   id: string;
@@ -31,6 +32,7 @@ const fmtDate = (iso: string | null) =>
 
 export default function UsersTable({ users }: { users: AdminUser[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,13 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
   }
 
   async function revoke(id: string, email: string) {
-    if (!confirm(`Sign ${email} out of every device?`)) return;
+    const ok = await confirm({
+      title: `Sign ${email} out of every device?`,
+      body: "Their live sessions end immediately; they'll have to log in again.",
+      confirmLabel: "Sign out",
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(id);
     await fetch(`/api/admin/users/${id}/sessions`, { method: "DELETE" }).catch(() => {});
     setBusy(null);
@@ -74,11 +82,16 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
   }
 
   async function remove(u: AdminUser) {
-    const warn =
-      u.keyCount > 0
-        ? `\n\nThis also deletes ${u.keyCount} stored key${u.keyCount === 1 ? "" : "s"}. Their usage on the service backends is not affected.`
-        : "";
-    if (!confirm(`Delete ${u.email} permanently?${warn}`)) return;
+    const ok = await confirm({
+      title: `Delete ${u.email} permanently?`,
+      body:
+        u.keyCount > 0
+          ? `This also deletes ${u.keyCount} stored key${u.keyCount === 1 ? "" : "s"}. Their usage on the service backends is not affected.`
+          : "This can't be undone.",
+      confirmLabel: "Delete account",
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(u.id);
     setError(null);
     const res = await fetch(`/api/admin/users/${u.id}`, { method: "DELETE" });

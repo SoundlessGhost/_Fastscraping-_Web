@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { buildTree } from "@/lib/services/taxonomy";
+import { useConfirm } from "@/components/ui/Confirm";
 
 export type AdminService = {
   id: string;
@@ -56,6 +57,7 @@ function suggestSlug(d: Draft) {
 
 export default function ServicesEditor({ services }: { services: AdminService[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,11 +146,16 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
   }
 
   async function remove(s: AdminService) {
-    const warn =
-      s.clients > 0
-        ? `\n\n${s.clients} client${s.clients === 1 ? " has" : "s have"} a key connected to it. Deleting drops those keys — they'd have to paste them again.`
-        : "";
-    if (!confirm(`Delete "${s.name}" (${s.slug}) from the catalog?${warn}`)) return;
+    const ok = await confirm({
+      title: `Delete "${s.name}" from the catalog?`,
+      body:
+        s.clients > 0
+          ? `${s.clients} client${s.clients === 1 ? " has" : "s have"} a key connected to it. Deleting drops those keys — they'd have to paste them again.`
+          : `Removes ${s.slug} from every client's sidebar. This can't be undone.`,
+      confirmLabel: "Delete service",
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(true);
     const res = await fetch(`/api/admin/services/${s.id}`, { method: "DELETE" });
     if (!res.ok) {

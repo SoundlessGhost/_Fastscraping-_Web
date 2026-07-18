@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SessionUser } from "@/lib/auth/session";
 import Avatar from "@/components/dashboard/Avatar";
+import { ConfirmProvider } from "@/components/ui/Confirm";
 
 // Same frame as the client dashboard (ds-* classes), different nav — so the two
 // sides of the product stay one product.
@@ -84,7 +85,9 @@ export default function AdminShell({ user, children }: { user: SessionUser; chil
           </button>
         </header>
 
-        <main className="ds-content">{children}</main>
+        <main className="ds-content">
+          <ConfirmProvider>{children}</ConfirmProvider>
+        </main>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import { regionName } from "@/lib/regions";
 import type { SessionUser } from "@/lib/auth/session";
 import AvatarPicker from "@/components/dashboard/AvatarPicker";
+import { useConfirm } from "@/components/ui/Confirm";
 
 // Everything a client manages about themselves: who they are, how they sign in,
 // which keys they've connected, and where they're signed in.
@@ -62,6 +63,7 @@ const fmtWhen = (iso: string) =>
 /// waiting on us.
 function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -73,12 +75,13 @@ function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
   }
 
   async function remove() {
-    if (
-      !confirm(
-        `Remove your key for ${fullName(s)}?\n\nUsage stops showing here until you paste a key again. Nothing on the service itself changes.`,
-      )
-    )
-      return;
+    const ok = await confirm({
+      title: `Remove your key for ${fullName(s)}?`,
+      body: "Usage stops showing here until you paste a key again. Nothing on the service itself changes.",
+      confirmLabel: "Remove",
+      danger: true,
+    });
+    if (!ok) return;
     setRemoving(true);
     await fetch(`/api/services/${s.slug}/connect`, { method: "DELETE" }).catch(() => {});
     setRemoving(false);
@@ -133,6 +136,7 @@ export default function Settings({
   devices: DeviceSession[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
 
   const [profileMsg, setProfileMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [profileBusy, setProfileBusy] = useState(false);
@@ -199,7 +203,13 @@ export default function Settings({
   }
 
   async function signOutOthers() {
-    if (!confirm("Sign out of every other device?")) return;
+    const ok = await confirm({
+      title: "Sign out of every other device?",
+      body: "This device stays signed in. Any other browsers or sessions are logged out.",
+      confirmLabel: "Sign out others",
+      danger: true,
+    });
+    if (!ok) return;
     setSessBusy(true);
     await fetch("/api/auth/sessions", { method: "DELETE" }).catch(() => {});
     setSessBusy(false);

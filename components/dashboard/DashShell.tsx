@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { buildTree, endpointLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import type { SessionUser } from "@/lib/auth/session";
 import Avatar from "@/components/dashboard/Avatar";
+import { ConfirmProvider } from "@/components/ui/Confirm";
 
 // The frame every dashboard page sits in: service tree on the left, account
 // bar on top. The tree is rendered from the catalog the layout loaded, so it is
@@ -228,7 +229,9 @@ export default function DashShell({
           </button>
         </header>
 
-        <main className="ds-content">{children}</main>
+        <main className="ds-content">
+          <ConfirmProvider>{children}</ConfirmProvider>
+        </main>
       </div>
     </div>
   );
