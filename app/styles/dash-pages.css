@@ -551,17 +551,18 @@
 /* ---------- Top usage ----------
    One line per day: the card sits beside the chart, so its height decides
    whether the page fits on a screen. Rank, date, share of the peak, count. */
-/* Job health is as tall as its numbers need; Top usage takes whatever is left
-   so the column ends level with the chart, and its three rows share that space
-   instead of huddling at the top. */
+/* Top usage takes whatever is left so the card ends level with the chart. The
+   rows keep a fixed comfortable height and sit centred in that space — stretching
+   them to fill left three lonely rows drifting 100px apart on services with no
+   Job-health card above (they own the whole column). */
 .su-topcard { flex: 1; }
 .su-top {
   flex: 1;
   padding: 0;
   display: grid;
-  grid-auto-rows: 1fr;
-  align-content: stretch;
-  gap: 8px;
+  grid-auto-rows: minmax(42px, max-content);
+  align-content: center;
+  gap: 14px;
   min-height: 0;
 }
 .su-top-row {
@@ -674,7 +675,9 @@
   .dash-health-row { margin-bottom: 8px; }
   .dash-health-l { margin-top: 4px; }
   .su-billnote { padding: 4px 18px 8px; font-size: 10px; }
-  .su-top { gap: 6px; }
+  /* Stacked on mobile the card is content-height, so keep rows compact and
+     top-aligned instead of padding them out to a chart height that isn't there. */
+  .su-top { gap: 8px; grid-auto-rows: minmax(28px, max-content); align-content: start; }
   .su-top-row { min-height: 24px; }
 }
 

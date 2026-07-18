@@ -183,12 +183,14 @@ export default function ServiceUsage({
   const avg = days.length ? rangeTotal / days.length : 0;
   const busiest = days.reduce<Point | null>((b, d) => (!b || d.total > b.total ? d : b), null);
 
-  // The three heaviest days in view, biggest first — quiet days are not
-  // interesting here, so they never make the list.
-  const busiestDays = useMemo(
-    () => days.filter((d) => d.total > 0).sort((a, b) => b.total - a.total).slice(0, 3),
-    [days],
-  );
+  // The heaviest days in view, biggest first — quiet days are not interesting
+  // here, so they never make the list. A service with no Job-health card hands
+  // the whole right column to this panel, so we fill it with more days rather
+  // than leave three rows floating in the empty space.
+  const busiestDays = useMemo(() => {
+    const ranked = days.filter((d) => d.total > 0).sort((a, b) => b.total - a.total);
+    return ranked.slice(0, usage?.jobs ? 3 : 6);
+  }, [days, usage?.jobs]);
   const today = todayUTC();
 
   // Date picker: the backend reports this month and last day-by-day, on top of
