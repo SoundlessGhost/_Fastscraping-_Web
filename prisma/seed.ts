@@ -51,7 +51,6 @@ const MARQUEE = [
 
   // Real estate sits last in the sidebar, so it comes last here — the tree is
   // built in the order rows arrive, which the API sorts by sortOrder.
-  { slug: "homegate", name: "Homegate", category: "realestate" },
   { slug: "immoscout24", name: "ImmoScout24", category: "realestate" },
   { slug: "urbanhome", name: "Urbanhome", category: "realestate" },
   { slug: "newhome", name: "Newhome", category: "realestate" },
@@ -76,6 +75,12 @@ const SERVICES: Seed[] = [
 
   // --- E-commerce / Temu ---------------------------------------------------
   { slug: "temu-us-search", name: "Search", category: "ecommerce", platform: "temu", region: "us", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
+
+  // --- Real estate / Homegate (live) ---------------------------------------
+  // Homegate v2 on 86.48.2.59:8900. Its /me/usage is flatter than Shopee's
+  // (no region, no job-health), so it gets its own adapter. Listed last-ish so
+  // real estate stays at the bottom of the sidebar.
+  { slug: "homegate", name: "Homegate", category: "realestate", platform: "homegate", baseUrl: "http://86.48.2.59:8900", kind: "homegate-usage", status: "ACTIVE", sortOrder: 109 },
 
   // --- The brands the homepage marquee advertises --------------------------
   // Name only: no region, no endpoint. These are here so the dashboard shows

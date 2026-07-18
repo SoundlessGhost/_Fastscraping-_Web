@@ -308,11 +308,84 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
   };
 }
 
+/// Homegate's `monthly_breakdown` is flatter than Shopee's: each month is
+/// `{ "<day>": count, ..., "total": n }` — plain integers, no region, no
+/// per-day object. Flatten to real dates, keeping zeros (a known 0 is an
+/// answer). "total" and any non-numeric day key are skipped.
+function readHomegateDays(raw: Record<string, unknown>): Record<string, number> {
+  const out: Record<string, number> = {};
+  const mb = raw["monthly_breakdown"];
+  if (!isRecord(mb)) return out;
+  for (const [month, days] of Object.entries(mb)) {
+    if (!isRecord(days)) continue;
+    for (const [day, v] of Object.entries(days)) {
+      if (day === "total" || !/^\d+$/.test(day)) continue;
+      out[`${month}-${day.padStart(2, "0")}`] = num(v);
+    }
+  }
+  return out;
+}
+
+/// The Homegate v2 backend (`GET /me/usage`): a single stream of requests, no
+/// region split and no job-health breakdown. `totals` are plain integers and
+/// there's no `last_7_days`/`last_30_days`, so those two are summed here from
+/// the daily breakdown. Credits/limits/jobs aren't reported, so their cards
+/// simply don't appear.
+function adaptHomegate(raw: Record<string, unknown>): NormalizedUsage {
+  const totals = isRecord(raw["totals"]) ? raw["totals"] : {};
+  const dayMap = readHomegateDays(raw);
+
+  // Sum the last n calendar days (UTC) out of the breakdown — this is what the
+  // "Last 7 days" stat and the chart window need, and the backend omits them.
+  const now = new Date();
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const dayBack = (i: number) =>
+    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+  const sumLast = (n: number) => {
+    let s = 0;
+    for (let i = 0; i < n; i++) s += dayMap[iso(dayBack(i))] ?? 0;
+    return s;
+  };
+
+  // Daily series for the last 30 days, oldest -> newest, matching Shopee so the
+  // same chart/date-picker code renders it.
+  const daily: UsagePoint[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const date = iso(dayBack(i));
+    daily.push({ date, total: dayMap[date] ?? 0, by: {} });
+  }
+
+  const byDate: Record<string, { total: number; by: Record<string, number> }> = {};
+  for (const [date, n] of Object.entries(dayMap)) byDate[date] = { total: n, by: {} };
+
+  return {
+    owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    byDate,
+    credits: readCredits(raw),
+    limits: readLimits(raw),
+    keyInfo: readKeyInfo(raw),
+    jobs: null, // Homegate's /me/usage reports no completed/failed/pending split
+    totals: {
+      today: num(totals["today"]),
+      last7: sumLast(7),
+      last30: sumLast(30),
+      thisMonth: num(totals["this_month"]),
+      lifetime: num(totals["lifetime"]),
+    },
+    dimension: null,
+    dims: [],
+    daily,
+    raw,
+  };
+}
+
 export function normalizeUsage(kind: string, raw: unknown): NormalizedUsage | null {
   if (!isRecord(raw)) return null;
   switch (kind) {
     case "shopee-usage":
       return adaptShopee(raw);
+    case "homegate-usage":
+      return adaptHomegate(raw);
     default:
       return adaptGeneric(raw);
   }
