@@ -239,3 +239,56 @@
   .adm-acts { justify-content: flex-start; }
   .adm-search { max-width: none; width: 100%; }
 }
+
+/* ---------- View-as (admin looking at a client's dashboard) ---------- */
+.adm-viewbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 11px 16px;
+  border: 1px solid var(--accent-soft);
+  background: var(--accent-soft);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.adm-viewbar b { color: var(--ink); }
+.adm-viewbar-k {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.adm-viewbar-ro {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--accent);
+  margin-left: 6px;
+}
+
+.adm-viewtabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.adm-viewtab {
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color 0.14s ease, color 0.14s ease;
+}
+.adm-viewtab:hover { border-color: var(--ink-2); color: var(--ink); }
+.adm-viewtab.is-on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}

@@ -69,7 +69,18 @@ function Spinner({ label }: { label?: string }) {
   );
 }
 
-export default function ServiceUsage({ service, title }: { service: ServiceNode; title: string }) {
+export default function ServiceUsage({
+  service,
+  title,
+  // Where to fetch the widest window from. Defaults to the signed-in client's
+  // own endpoint; the admin view-as passes a per-user endpoint instead. Same
+  // response shape either way, so everything below is unchanged.
+  usageUrl = `/api/services/${service.slug}/usage?interval=${WIDEST}`,
+}: {
+  service: ServiceNode;
+  title: string;
+  usageUrl?: string;
+}) {
   const [range, setRange] = useState(7);
   const [usage, setUsage] = useState<NormalizedUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,9 +101,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
       else setRefreshing(true);
 
       try {
-        const r = await fetch(`/api/services/${service.slug}/usage?interval=${WIDEST}`, {
-          cache: "no-store",
-        });
+        const r = await fetch(usageUrl, { cache: "no-store" });
         const body = await r.json().catch(() => ({}));
         if (!r.ok) {
           // A refresh that fails leaves the numbers we already have on screen —
@@ -112,7 +121,7 @@ export default function ServiceUsage({ service, title }: { service: ServiceNode;
         setRefreshing(false);
       }
     },
-    [service.slug],
+    [usageUrl],
   );
 
   useEffect(() => {

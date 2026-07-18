@@ -198,6 +198,10 @@ export default function UsersTable({ users }: { users: AdminUser[] }) {
                   </button>
                 )}
 
+                {u.keyCount > 0 && (
+                  <button onClick={() => router.push(`/admin/users/${u.id}`)}>View dashboard</button>
+                )}
+
                 <button
                   className="adm-danger"
                   disabled={busy === u.id || u.isSelf}
