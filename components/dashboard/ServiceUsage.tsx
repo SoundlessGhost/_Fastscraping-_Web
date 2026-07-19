@@ -99,6 +99,7 @@ export default function ServiceUsage({
   // A custom [start,end] window overrides the preset ranges when set.
   const [customRange, setCustomRange] = useState<DateRange | null>(null);
   const [calOpen, setCalOpen] = useState(false);
+  const [dayCalOpen, setDayCalOpen] = useState(false);
   const [usage, setUsage] = useState<NormalizedUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -664,14 +665,29 @@ export default function ServiceUsage({
             <div className="dash-card-t">
               Day breakdown <small>requests on a specific date (UTC)</small>
             </div>
-            <input
-              type="date"
-              className="su-date"
-              value={pickedDate}
-              min={known[0] ?? undefined}
-              max={today}
-              onChange={(e) => setPickedDate(e.target.value || today)}
-            />
+            <div className="su-daypick">
+              <button type="button" className="su-date" onClick={() => setDayCalOpen((o) => !o)}>
+                {longDate(pickedDate)}
+              </button>
+              {dayCalOpen && (
+                <>
+                  <div className="su-cal-scrim" onClick={() => setDayCalOpen(false)} aria-hidden="true" />
+                  <div className="su-cal-pop su-cal-pop--up">
+                    <RangeCalendar
+                      single
+                      min={calBounds.min}
+                      max={calBounds.max}
+                      value={{ start: pickedDate, end: pickedDate }}
+                      onApply={(r) => {
+                        setPickedDate(r.start);
+                        setDayCalOpen(false);
+                      }}
+                      onClose={() => setDayCalOpen(false)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="su-day-body">

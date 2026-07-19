@@ -28,12 +28,15 @@ export default function RangeCalendar({
   min,
   max,
   value,
+  single = false,
   onApply,
   onClose,
 }: {
   min: string;
   max: string;
   value: DateRange | null;
+  /// One-date mode (Day breakdown): a click selects and applies immediately.
+  single?: boolean;
   onApply: (r: DateRange) => void;
   onClose: () => void;
 }) {
@@ -58,6 +61,10 @@ export default function RangeCalendar({
 
   function clickDay(date: string) {
     if (!inBounds(date)) return;
+    if (single) {
+      onApply({ start: date, end: date });
+      return;
+    }
     if (!start || end) {
       // starting a fresh selection
       setStart(date);
@@ -124,20 +131,30 @@ export default function RangeCalendar({
 
       <div className="cal-foot">
         <span className="cal-sel">
-          {start ? (end ? `${fmt(start)} – ${fmt(end)}` : `${fmt(start)} → pick end`) : "Pick a start date"}
+          {single
+            ? start
+              ? fmt(start)
+              : "Pick a date"
+            : start
+              ? end
+                ? `${fmt(start)} – ${fmt(end)}`
+                : `${fmt(start)} → pick end`
+              : "Pick a start date"}
         </span>
         <div className="cal-acts">
           <button type="button" className="cal-btn cal-cancel" onClick={onClose}>
-            Cancel
+            {single ? "Close" : "Cancel"}
           </button>
-          <button
-            type="button"
-            className="cal-btn cal-apply"
-            disabled={!start || !end}
-            onClick={() => start && end && onApply({ start, end })}
-          >
-            Apply
-          </button>
+          {!single && (
+            <button
+              type="button"
+              className="cal-btn cal-apply"
+              disabled={!start || !end}
+              onClick={() => start && end && onApply({ start, end })}
+            >
+              Apply
+            </button>
+          )}
         </div>
       </div>
     </div>

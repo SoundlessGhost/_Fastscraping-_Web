@@ -920,7 +920,12 @@
   border-radius: 999px;
   padding: 7px 12px;
   cursor: pointer;
+  transition: border-color 0.15s ease;
 }
+.su-date:hover { border-color: var(--ink-2); }
+.su-daypick { position: relative; }
+/* the Day-breakdown card sits at the page bottom, so its picker opens upward */
+.su-cal-pop--up { top: auto; bottom: calc(100% + 8px); }
 .su-date:focus { outline: none; border-color: var(--accent); }
 .su-day-body {
   display: flex;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { SessionUser } from "@/lib/auth/session";
@@ -22,6 +22,15 @@ export default function AdminShell({ user, children }: { user: SessionUser; chil
   const router = useRouter();
   const [drawer, setDrawer] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // Persistent "where you are" label for the top bar — longest matching nav wins
+  // so /admin/users/[id] (view-as) still reads as Users.
+  const crumb = useMemo(() => {
+    const match = [...NAV]
+      .sort((a, b) => b.href.length - a.href.length)
+      .find((n) => pathname === n.href || pathname.startsWith(`${n.href}/`));
+    return `Admin · ${match ? match.label : "Overview"}`;
+  }, [pathname]);
 
   async function logout() {
     setBusy(true);
@@ -75,6 +84,7 @@ export default function AdminShell({ user, children }: { user: SessionUser; chil
             <span />
             <span />
           </button>
+          <div className="ds-crumb">{crumb}</div>
           <div className="ds-top-spacer" />
           <span className="ds-tag">admin</span>
           <Link href="/dashboard/settings" className="ds-avatar" title="Account settings">
