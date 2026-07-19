@@ -5,7 +5,10 @@
 
 .ds {
   --side-w: 272px;
-  min-height: 100vh;
+  --topbar-h: 64px;      /* shared by the sidebar head + top bar so their
+                            bottom borders line up into one continuous rule */
+  height: 100vh;
+  overflow: hidden;      /* app-shell: the page itself never scrolls */
   background: var(--bg);
 }
 
@@ -26,7 +29,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 18px 18px 16px;
+  height: var(--topbar-h);
+  padding: 0 18px;
   border-bottom: 1px solid var(--hairline);
 }
 /* The sidebar reuses .brand / .brand-mark from base.css so the logo matches
@@ -62,7 +66,8 @@
   text-decoration: none;
   color: var(--ink-2);
   font-family: var(--font-display);
-  font-size: 15px;
+  font-style: italic;
+  font-size: 17px;
   letter-spacing: 0;
   transition: background 0.14s ease, color 0.14s ease;
 }
@@ -112,7 +117,8 @@
   cursor: pointer;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: 15.5px;
+  font-style: italic;
+  font-size: 17px;
   font-weight: 400;
   letter-spacing: 0;
   text-align: left;
@@ -156,7 +162,8 @@
   text-decoration: none;
   color: var(--ink-2);
   font-family: var(--font-display);
-  font-size: 14px;
+  font-style: italic;
+  font-size: 15px;
   letter-spacing: 0;
   transition: background 0.14s ease, color 0.14s ease;
 }
@@ -186,25 +193,35 @@
 /* ---------- Main column ---------- */
 .ds-main {
   margin-left: var(--side-w);
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
 .ds-top {
-  position: sticky;
-  top: 0;
+  flex: none;
   z-index: 40;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 28px;
-  background: rgba(244, 241, 234, 0.82);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
+  height: var(--topbar-h);
+  padding: 0 28px;
+  background: var(--paper);
   border-bottom: 1px solid var(--hairline);
 }
 .ds-top-spacer { flex: 1; }
+
+/* persistent page context on the left of the top bar */
+.ds-crumb {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  color: var(--ink-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .ds-who {
   display: inline-flex;
@@ -249,11 +266,11 @@
 
 .ds-content {
   flex: 1;
+  min-height: 0;          /* let the flex child shrink so it can scroll */
+  overflow-y: auto;       /* app-shell: only the content area scrolls, so the
+                             scrollbar starts below the top bar (LinkedIn-style) */
   padding: 24px 28px 28px;
   width: 100%;
-  /* Wide enough to use a 1920 screen — a dashboard is scanned, not read like
-     prose, so the usual reading-width cap works against it. */
-  max-width: 1600px;
 }
 
 .ds-scrim { display: none; }
@@ -309,7 +326,8 @@
   text-decoration: none;
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: 15.5px;
+  font-style: italic;
+  font-size: 17px;
   font-weight: 400;
   letter-spacing: 0;
   transition: background 0.14s ease, color 0.14s ease;

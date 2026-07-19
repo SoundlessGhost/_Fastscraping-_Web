@@ -183,8 +183,14 @@ export default function RootLayout({
       </head>
       <body>
         <Header />
-        {children}
-        <Footer />
+        {/* App-shell scroll: the header is the fixed top of a flex column and
+            everything below scrolls in here, so the scrollbar starts under the
+            header (LinkedIn-style). On app routes Header/Footer render null and
+            the dashboard's own .ds fills this region. */}
+        <div className="site-scroll">
+          {children}
+          <Footer />
+        </div>
       </body>
     </html>
   );

@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { buildTree, endpointLabel, type ServiceNode } from "@/lib/services/taxonomy";
+import { buildTree, endpointLabel, platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
+import { regionName } from "@/lib/regions";
 import type { SessionUser } from "@/lib/auth/session";
 import Avatar from "@/components/dashboard/Avatar";
 import { ConfirmProvider } from "@/components/ui/Confirm";
@@ -37,6 +38,23 @@ export default function DashShell({
 
   const tree = useMemo(() => buildTree(services), [services]);
   const activeSlug = pathname.startsWith("/dashboard/s/") ? pathname.split("/")[3] : null;
+
+  // A persistent "where you are" label for the top bar — the page's own H1
+  // scrolls away in the app-shell, so the header keeps the context in view.
+  const crumb = useMemo(() => {
+    if (pathname === "/dashboard") return "Overview";
+    if (pathname === "/dashboard/settings") return "Settings";
+    if (activeSlug) {
+      const s = services.find((x) => x.slug === activeSlug);
+      if (s) {
+        const plat = platformLabel(s.platform);
+        return [plat, s.region ? regionName(s.region) : null, s.name === plat ? null : s.name]
+          .filter(Boolean)
+          .join(" · ");
+      }
+    }
+    return null;
+  }, [pathname, activeSlug, services]);
 
   // Open a platform when it holds the page you are on, or when you have a key
   // in it. Everything else starts folded so the tree stays scannable.
@@ -220,6 +238,7 @@ export default function DashShell({
             <span />
             <span />
           </button>
+          {crumb && <div className="ds-crumb">{crumb}</div>}
           <div className="ds-top-spacer" />
           <Link href="/dashboard/settings" className="ds-avatar" title="Account settings">
             <Avatar user={user} size={32} />

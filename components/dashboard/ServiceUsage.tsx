@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { regionColor, regionName } from "@/lib/regions";
 import type { ServiceNode } from "@/lib/services/taxonomy";
 import type { NormalizedUsage } from "@/lib/services/usage";
+import RangeCalendar, { type DateRange } from "@/components/dashboard/RangeCalendar";
 
 // Usage for one service, drawn from the normalised shape — so a new backend
 // only needs an adapter, never a new chart.
@@ -54,6 +55,19 @@ const dimColor = (k: string) => regionColor(k);
 
 const todayUTC = () => new Date().toISOString().slice(0, 10);
 
+/// Every YYYY-MM-DD from start to end inclusive (UTC) — the custom-range chart
+/// reads these straight out of `byDate`, so no extra fetch is needed.
+function datesBetween(start: string, end: string): string[] {
+  const out: string[] = [];
+  const d = new Date(`${start}T00:00:00Z`);
+  const last = new Date(`${end}T00:00:00Z`);
+  while (d <= last) {
+    out.push(d.toISOString().slice(0, 10));
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  return out;
+}
+
 const fmtAgo = (sec: number) =>
   sec < 60 ? `${sec}s` : sec < 3600 ? `${Math.round(sec / 60)}m` : `${Math.round(sec / 3600)}h`;
 
@@ -82,6 +96,9 @@ export default function ServiceUsage({
   usageUrl?: string;
 }) {
   const [range, setRange] = useState(7);
+  // A custom [start,end] window overrides the preset ranges when set.
+  const [customRange, setCustomRange] = useState<DateRange | null>(null);
+  const [calOpen, setCalOpen] = useState(false);
   const [usage, setUsage] = useState<NormalizedUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,7 +179,17 @@ export default function ServiceUsage({
   }, [updatedAt]);
 
   const all = useMemo(() => usage?.daily ?? [], [usage]);
-  const days = useMemo(() => (all.length > range ? all.slice(-range) : all), [all, range]);
+  const days = useMemo(() => {
+    // A custom range reads day-by-day straight out of byDate; presets slice the
+    // loaded daily window.
+    if (customRange && usage) {
+      return datesBetween(customRange.start, customRange.end).map((date) => {
+        const e = usage.byDate[date];
+        return { date, total: e?.total ?? 0, by: e?.by ?? {} };
+      });
+    }
+    return all.length > range ? all.slice(-range) : all;
+  }, [all, range, customRange, usage]);
 
   // Only regions with traffic *in the visible range* get a colour and a legend
   // slot — otherwise a quiet month shows a legend of things that aren't there.
@@ -197,6 +224,13 @@ export default function ServiceUsage({
   // the daily window — so offer exactly the span we hold figures for.
   const [pickedDate, setPickedDate] = useState<string>(today);
   const known = useMemo(() => Object.keys(usage?.byDate ?? {}).sort(), [usage]);
+  // The span the calendar may offer: from our earliest figure to today (never a
+  // future day, even though byDate zero-fills the rest of the current month).
+  const calBounds = useMemo(() => {
+    if (!known.length) return { min: today, max: today };
+    const last = known[known.length - 1];
+    return { min: known[0], max: last < today ? last : today };
+  }, [known, today]);
   const picked = usage?.byDate[pickedDate] ?? null;
 
   const credits = usage?.credits ?? null;
@@ -224,24 +258,6 @@ export default function ServiceUsage({
           </p>
         </div>
 
-        <div className="dash-controls">
-          <div className="dash-seg">
-            {RANGES.map((it) => (
-              <button key={it.v} className={range === it.v ? "on" : ""} onClick={() => setRange(it.v)}>
-                {it.l}
-              </button>
-            ))}
-          </div>
-          <button
-            className="su-refresh"
-            onClick={() => load("refresh")}
-            disabled={refreshing || loading}
-            title="Fetch the latest numbers now"
-          >
-            <span className={`su-refresh-i ${refreshing ? "is-busy" : ""}`} aria-hidden="true" />
-            Refresh
-          </button>
-        </div>
       </div>
 
       {error && (
@@ -324,16 +340,47 @@ export default function ServiceUsage({
                 {nf.format(Math.round(avg))} / day average
               </small>
             </div>
-            {dims.length > 0 && (
-              <div className="dash-legend">
-                {dims.map((c) => (
-                  <span key={c}>
-                    <i style={{ background: dimColor(c) }} />
-                    {dimLabel(c)}
-                  </span>
+            <div className="su-range">
+              <div className="dash-seg">
+                {RANGES.map((it) => (
+                  <button
+                    key={it.v}
+                    className={!customRange && range === it.v ? "on" : ""}
+                    onClick={() => {
+                      setRange(it.v);
+                      setCustomRange(null);
+                      setCalOpen(false);
+                    }}
+                  >
+                    {it.l}
+                  </button>
                 ))}
+                <button
+                  className={`su-seg-custom${customRange ? " on" : ""}`}
+                  onClick={() => setCalOpen((o) => !o)}
+                  title="Pick a custom date range"
+                >
+                  {customRange ? `${shortDate(customRange.start)} – ${shortDate(customRange.end)}` : "Custom"}
+                </button>
               </div>
-            )}
+              {calOpen && (
+                <>
+                  <div className="su-cal-scrim" onClick={() => setCalOpen(false)} aria-hidden="true" />
+                  <div className="su-cal-pop">
+                    <RangeCalendar
+                      min={calBounds.min}
+                      max={calBounds.max}
+                      value={customRange}
+                      onApply={(r) => {
+                        setCustomRange(r);
+                        setCalOpen(false);
+                      }}
+                      onClose={() => setCalOpen(false)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="dash-chart su-chart">
@@ -537,8 +584,12 @@ export default function ServiceUsage({
                   </div>
                   <div className="dash-health-row">
                     <div className="dash-health-cell">
-                      <div className="dash-health-v ok">{nf.format(jobs.completed)}</div>
+                      <div className="dash-health-v ok">{nf.format(jobs.billable ?? jobs.completed)}</div>
                       <div className="dash-health-l">completed</div>
+                    </div>
+                    <div className="dash-health-cell">
+                      <div className="dash-health-v">{nf.format(jobs.completed)}</div>
+                      <div className="dash-health-l">success</div>
                     </div>
                     {jobs.notFound !== null && (
                       <div className="dash-health-cell">
@@ -549,10 +600,6 @@ export default function ServiceUsage({
                     <div className="dash-health-cell">
                       <div className="dash-health-v bad">{nf.format(jobs.failed)}</div>
                       <div className="dash-health-l">failed</div>
-                    </div>
-                    <div className="dash-health-cell">
-                      <div className="dash-health-v">{nf.format(jobs.pending)}</div>
-                      <div className="dash-health-l">pending</div>
                     </div>
                   </div>
                   <div className="dash-meter">
@@ -566,7 +613,7 @@ export default function ServiceUsage({
                   </div>
                   {jobs.billable !== null && (
                     <div className="su-billnote">
-                      Billable = completed + not found. Failed, captcha and pending jobs aren&apos;t charged.
+                      Completed = success + not found — the jobs you&apos;re charged for. Failed and pending jobs aren&apos;t.
                     </div>
                   )}
                 </div>
