@@ -13,6 +13,24 @@ export interface AppSession {
 
 export const SESSION_COOKIE = "fs_session";
 
+/// A session dies after 14 days of inactivity (idle) or 60 days after it was
+/// created (absolute), whichever comes first — so a lost or abandoned login
+/// can't stay valid indefinitely. Both are derived from timestamps we already
+/// store, so this needs no schema change.
+export const SESSION_IDLE_MS = 14 * 24 * 60 * 60 * 1000;
+export const SESSION_ABSOLUTE_MS = 60 * 24 * 60 * 60 * 1000;
+
+/// True once a session has passed its idle or absolute deadline.
+export function isSessionExpired(
+  s: { createdAt: Date; lastSeenAt: Date },
+  now: number = Date.now(),
+): boolean {
+  return (
+    now - s.lastSeenAt.getTime() > SESSION_IDLE_MS ||
+    now - s.createdAt.getTime() > SESSION_ABSOLUTE_MS
+  );
+}
+
 /// Built lazily (not at module load) so `next build` — which imports this file
 /// without a runtime secret present — doesn't blow up. The secret is validated
 /// the first time a session is actually touched, i.e. at request time.
@@ -94,6 +112,15 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   });
 
   if (!row || row.revokedAt || row.user.status !== "ACTIVE") return null;
+
+  // Expired by idle/absolute deadline: kill it server-side too so it can't be
+  // reused and drops off the account's device list.
+  if (isSessionExpired(row)) {
+    prisma.session
+      .update({ where: { id: row.id }, data: { revokedAt: new Date() } })
+      .catch(() => {});
+    return null;
+  }
 
   // best-effort activity stamp
   prisma.session

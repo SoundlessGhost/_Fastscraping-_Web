@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser, getSessionCookie } from "@/lib/auth/session";
+import { getCurrentUser, getSessionCookie, isSessionExpired } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import Settings, { type DeviceSession } from "@/components/dashboard/Settings";
 
@@ -20,14 +20,16 @@ export default async function AccountSettingsPage() {
     }),
   ]);
 
-  const devices: DeviceSession[] = sessions.map((s) => ({
-    id: s.id,
-    userAgent: s.userAgent,
-    ip: s.ip,
-    lastSeenAt: s.lastSeenAt.toISOString(),
-    createdAt: s.createdAt.toISOString(),
-    isCurrent: s.id === cookie.sessionId,
-  }));
+  const devices: DeviceSession[] = sessions
+    .filter((s) => !isSessionExpired(s))
+    .map((s) => ({
+      id: s.id,
+      userAgent: s.userAgent,
+      ip: s.ip,
+      lastSeenAt: s.lastSeenAt.toISOString(),
+      createdAt: s.createdAt.toISOString(),
+      isCurrent: s.id === cookie.sessionId,
+    }));
 
   return (
     <Settings

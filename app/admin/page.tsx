@@ -1,12 +1,19 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { bootstrapAdminEmails } from "@/lib/auth/admins";
+import { SESSION_IDLE_MS, SESSION_ABSOLUTE_MS } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
 const nf = new Intl.NumberFormat("en-US");
 
 export default async function AdminOverview() {
+  // "Live" sessions match getCurrentUser's rule: not revoked, still inside both
+  // the idle and absolute windows — so the count excludes expired-but-unrevoked.
+  const now = Date.now();
+  const idleCutoff = new Date(now - SESSION_IDLE_MS);
+  const absoluteCutoff = new Date(now - SESSION_ABSOLUTE_MS);
+
   const [users, admins, disabled, unverified, services, live, connections, sessions, recent] =
     await Promise.all([
       prisma.user.count(),
@@ -16,7 +23,13 @@ export default async function AdminOverview() {
       prisma.service.count(),
       prisma.service.count({ where: { status: "ACTIVE" } }),
       prisma.clientService.count(),
-      prisma.session.count({ where: { revokedAt: null } }),
+      prisma.session.count({
+        where: {
+          revokedAt: null,
+          lastSeenAt: { gte: idleCutoff },
+          createdAt: { gte: absoluteCutoff },
+        },
+      }),
       prisma.auditLog.findMany({
         take: 8,
         orderBy: { createdAt: "desc" },
