@@ -151,19 +151,56 @@
 
 /* ---------- Connect ---------- */
 .cn {
-  display: grid;
-  place-items: center;
-  min-height: 60vh;
-  padding: 20px 0;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 6px 0 24px;
 }
+
+.cn-head { margin-bottom: 22px; }
+.cn-head-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cn-title {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+.cn-flag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline-strong);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cn-flag--live { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+.cn-lead {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+  margin: 12px 0 0;
+}
+
+.cn-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
 .cn-box {
   width: 100%;
-  max-width: 460px;
   background: var(--card, var(--paper));
   border: 1px solid var(--hairline);
   border-radius: 16px;
-  padding: 30px;
+  padding: 28px;
 }
+.cn-box--soon { background: var(--paper); }
 .cn-t {
   font-family: var(--font-display);
   font-size: 24px;
@@ -176,6 +213,92 @@
   line-height: 1.6;
   color: var(--ink-2);
   margin: 0 0 22px;
+}
+
+/* right rail: a skeleton of the connected view + what it unlocks */
+.cn-preview {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: 22px;
+}
+.cn-pv-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.cn-pv-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.cn-pv-tile {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+.cn-pv-tl {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.cn-pv-tv {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--muted-2);
+  margin-top: 3px;
+  line-height: 1;
+}
+.cn-pv-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 84px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.cn-pv-bar {
+  flex: 1;
+  background: var(--accent-soft);
+  border-radius: 3px 3px 0 0;
+  min-height: 6px;
+}
+.cn-pv-bar:nth-child(6) { background: var(--accent); opacity: 0.5; }
+.cn-feat { list-style: none; margin: 0; padding: 0; display: grid; gap: 13px; }
+.cn-feat-row { display: grid; grid-template-columns: auto 1fr; gap: 11px; align-items: start; }
+.cn-feat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-top: 6px; }
+.cn-feat b { font-size: 13.5px; color: var(--ink); font-weight: 600; }
+.cn-feat-d { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+
+/* how-it-works strip */
+.cn-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--hairline);
+}
+.cn-step { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; }
+.cn-step-n {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; flex: none;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  color: var(--accent); background: var(--accent-soft);
+}
+.cn-step-t { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.cn-step-d { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 3px 0 0; }
+
+@media (max-width: 760px) {
+  .cn-grid { grid-template-columns: 1fr; }
+  .cn-steps { grid-template-columns: 1fr; gap: 14px; }
 }
 .cn-l {
   display: block;
