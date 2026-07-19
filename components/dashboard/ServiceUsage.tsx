@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { regionColor, regionName } from "@/lib/regions";
-import type { ServiceNode } from "@/lib/services/taxonomy";
+import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import type { NormalizedUsage } from "@/lib/services/usage";
 import RangeCalendar, { type DateRange } from "@/components/dashboard/RangeCalendar";
 
@@ -238,12 +238,36 @@ export default function ServiceUsage({
   const limits = usage?.limits ?? null;
   const jobs = usage?.jobs ?? null;
 
+  // "Yesterday" reads straight from byDate (the daily window always holds it).
+  const yesterday = useMemo(() => {
+    const d = new Date(`${today}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+  }, [today]);
+  const yesterdayTotal = usage?.byDate[yesterday]?.total ?? 0;
+
+  // A cleaner header: the technical path (platform · region) becomes a small
+  // uppercase eyebrow, and the big title is the full service name + "Usage".
+  const platLabel = platformLabel(service.platform);
+  const displayName = service.name;
+  const eyebrow = [
+    displayName.toLowerCase() === platLabel.toLowerCase() ? null : platLabel,
+    service.region ? regionName(service.region) : null,
+    // skip the endpoint when the title already contains it (e.g. "pdp" in "PDP (get_pc)")
+    service.endpoint && !displayName.toLowerCase().includes(service.endpoint.toLowerCase())
+      ? service.endpoint
+      : null,
+  ]
+    .filter(Boolean)
+    .join("  ");
+
   return (
     <>
       <div className="ds-head">
         <div>
+          {eyebrow && <p className="su-eyebrow">{eyebrow}</p>}
           <h1 className="dash-title">
-            {title} <em>usage</em>
+            {displayName} <em>Usage</em>
           </h1>
           <p className="dash-meta">
             owner <b>{usage?.owner ?? "—"}</b> · all times UTC
@@ -274,6 +298,11 @@ export default function ServiceUsage({
           <div className="dash-stat-k">Today</div>
           <div className="dash-stat-v">{usage ? nf.format(usage.totals.today) : "—"}</div>
           <div className="dash-stat-s">requests so far · UTC</div>
+        </div>
+        <div className="dash-stat">
+          <div className="dash-stat-k">Yesterday</div>
+          <div className="dash-stat-v">{usage ? nf.format(yesterdayTotal) : "—"}</div>
+          <div className="dash-stat-s">full day · UTC</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">Last 7 days</div>

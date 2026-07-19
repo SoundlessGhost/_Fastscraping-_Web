@@ -82,6 +82,15 @@
   padding: 40px 0 28px;
   flex-wrap: wrap;
 }
+.su-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  word-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 7px;
+}
 .dash-title {
   font-family: var(--font-display);
   font-size: clamp(30px, 3.2vw, 44px);
@@ -152,7 +161,7 @@
 /* ---------- Stat strip ---------- */
 .dash-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }

@@ -15,7 +15,11 @@
 /* ---------- Overview ---------- */
 .ov-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* auto-fit + a max cap: on a wide desktop a single card stretches to a
+     comfortable ~620px instead of collapsing to a narrow auto-fill column,
+     while multiple cards still wrap. min(100%, …) keeps it from overflowing
+     on very narrow screens. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 620px));
   gap: 16px;
 }
 
@@ -40,10 +44,11 @@
   margin-bottom: 16px;
 }
 .ov-card-t {
-  font-size: 14.5px;
+  font-family: var(--font-mono);
+  font-size: 13px;
   font-weight: 500;
   color: var(--ink);
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .ov-nums {
