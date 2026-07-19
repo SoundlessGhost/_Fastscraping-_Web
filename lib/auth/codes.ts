@@ -9,6 +9,11 @@ export const RESEND_COOLDOWN_SECONDS = 60;
 /// transactional-email budget from a client (or someone targeting an address)
 /// spamming code requests.
 export const RESET_MAX_PER_DAY = 3;
+/// Same protection for signup verification emails. A little more generous than
+/// reset, since a genuine new user may legitimately retry a few times, but low
+/// enough that hammering one address can't burn a meaningful slice of the daily
+/// email quota. (Distributed/alias abuse is covered by the login/IP throttle.)
+export const SIGNUP_MAX_PER_DAY = 5;
 
 /**
  * Issues a fresh 6-digit code for an email+purpose. Any earlier unused codes are

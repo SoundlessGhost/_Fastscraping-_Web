@@ -6,6 +6,7 @@ import {
   randomInt,
   timingSafeEqual,
 } from "node:crypto";
+import { encryptionKey } from "@/lib/env";
 
 /**
  * Client API keys are stored encrypted at rest, never in plaintext.
@@ -15,8 +16,7 @@ import {
 const VERSION = "v1";
 
 function key(): Buffer {
-  const raw = process.env.ENCRYPTION_KEY;
-  if (!raw) throw new Error("ENCRYPTION_KEY is not set");
+  const raw = encryptionKey(); // validated: set + not a placeholder
   // Accept either 64 hex chars or any passphrase (hashed to 32 bytes).
   const buf = /^[0-9a-fA-F]{64}$/.test(raw)
     ? Buffer.from(raw, "hex")

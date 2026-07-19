@@ -9,6 +9,14 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
+  // Force HTTPS for a year. includeSubDomains covers every *.fastscraping.com —
+  // safe because they're all served by the same Caddy (auto-HTTPS); it does NOT
+  // touch the bare-IP backends. `preload` is intentionally omitted (it's a hard
+  // commitment that requires submitting to the browser preload list).
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains",
+  },
 ];
 
 const nextConfig: NextConfig = {

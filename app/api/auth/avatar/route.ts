@@ -37,7 +37,11 @@ export async function POST(req: Request) {
 
   let webp: Buffer;
   try {
-    webp = await sharp(Buffer.from(await file.arrayBuffer()))
+    // limitInputPixels caps the *decoded* dimensions, not the file size: a tiny
+    // highly-compressed file ("decompression bomb") can claim to be gigapixels
+    // and exhaust memory before resize. 32 MP is far above any real avatar.
+    webp = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 32_000_000 })
+      .timeout({ seconds: 15 })
       .rotate() // honour EXIF orientation, or phone photos come out sideways
       .resize(SIDE, SIDE, { fit: "cover", position: "attention" })
       .webp({ quality: 82 })

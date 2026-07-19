@@ -49,7 +49,8 @@ model User {
   role                 Role       @default(CLIENT)
   status               UserStatus @default(ACTIVE)
   emailVerifiedAt      DateTime?
-  /// Enforces the "password can only change once every 30 days" rule.
+  /// When the password was last changed. Kept for the record only — the old
+  /// "once every 30 days" lock was removed (2026-07-19).
   lastPasswordChangeAt DateTime?
   createdAt            DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
@@ -161,6 +162,19 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// Failed-login ledger for rate limiting. One row per failed attempt, keyed by
+/// "email:<addr>" (throttles a single account being brute-forced) and
+/// "ip:<addr>" (throttles one source spraying many accounts). Rows age out of a
+/// short window and are pruned opportunistically, so this table stays small.
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@index([createdAt])
 }
 
 /// Trail of admin/user actions.

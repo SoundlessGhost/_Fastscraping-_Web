@@ -17,13 +17,3 @@ export function passwordProblem(plain: string): string | null {
   }
   return null;
 }
-
-/** Business rule: a password may only be changed once every 30 days. */
-export const PASSWORD_CHANGE_DAYS = 30;
-
-export function daysUntilPasswordChangeAllowed(lastChange: Date | null): number {
-  if (!lastChange) return 0;
-  const elapsed = Date.now() - lastChange.getTime();
-  const remaining = PASSWORD_CHANGE_DAYS * 24 * 60 * 60 * 1000 - elapsed;
-  return remaining <= 0 ? 0 : Math.ceil(remaining / (24 * 60 * 60 * 1000));
-}

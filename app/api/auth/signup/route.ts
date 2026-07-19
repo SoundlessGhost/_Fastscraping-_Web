@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { issueCode } from "@/lib/auth/codes";
+import { issueCode, SIGNUP_MAX_PER_DAY } from "@/lib/auth/codes";
 import { sendSignupCode } from "@/lib/auth/email";
 
 export const runtime = "nodejs";
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const issued = await issueCode(email, "SIGNUP");
+  const issued = await issueCode(email, "SIGNUP", { maxPerDay: SIGNUP_MAX_PER_DAY });
   if (!issued.ok) {
     return NextResponse.json(
       { ok: false, error: issued.error, retryAfter: issued.retryAfter },

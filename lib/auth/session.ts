@@ -1,6 +1,7 @@
 import { getIronSession, type SessionOptions } from "iron-session";
 import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/db";
+import { sessionSecret } from "@/lib/env";
 
 /**
  * The cookie carries only a session id; the session itself lives in Postgres so
@@ -12,21 +13,26 @@ export interface AppSession {
 
 export const SESSION_COOKIE = "fs_session";
 
-export const sessionOptions: SessionOptions = {
-  password: process.env.SESSION_SECRET ?? "",
-  cookieName: SESSION_COOKIE,
-  ttl: 0, // stay logged in until logout or revoke
-  cookieOptions: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 400,
-  },
-};
+/// Built lazily (not at module load) so `next build` — which imports this file
+/// without a runtime secret present — doesn't blow up. The secret is validated
+/// the first time a session is actually touched, i.e. at request time.
+function sessionOptions(): SessionOptions {
+  return {
+    password: sessionSecret(),
+    cookieName: SESSION_COOKIE,
+    ttl: 0, // stay logged in until logout or revoke
+    cookieOptions: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 400,
+    },
+  };
+}
 
 export async function getSessionCookie() {
-  return getIronSession<AppSession>(await cookies(), sessionOptions);
+  return getIronSession<AppSession>(await cookies(), sessionOptions());
 }
 
 export async function createSession(userId: string) {

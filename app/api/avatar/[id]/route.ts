@@ -15,6 +15,12 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
   if (!me) return new NextResponse(null, { status: 401 });
 
   const { id } = await ctx.params;
+  // A signed-in user may only fetch their own avatar; admins can fetch anyone's
+  // (the users table + view-as render client avatars). Anything else is a 404 —
+  // same response as a missing avatar, so ids stay non-enumerable.
+  if (id !== me.id && me.role !== "ADMIN") {
+    return new NextResponse(null, { status: 404 });
+  }
   const avatar = await prisma.avatar.findUnique({ where: { userId: id } });
   if (!avatar) return new NextResponse(null, { status: 404 });
 
