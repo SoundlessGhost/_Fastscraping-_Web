@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { verifyPassword } from "@/lib/auth/password";
+import { verifyPassword, DUMMY_PASSWORD_HASH } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { isBootstrapAdmin } from "@/lib/auth/admins";
 import {
@@ -42,6 +42,9 @@ export async function POST(req: Request) {
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user?.passwordHash) {
+    // Spend the same bcrypt time as a real check so "no such account" isn't
+    // distinguishable by response timing.
+    await verifyPassword(parsed.data.password, DUMMY_PASSWORD_HASH);
     await recordLoginFailure(email, ip);
     return NextResponse.json({ ok: false, error: INVALID }, { status: 401 });
   }
