@@ -159,6 +159,28 @@ function readJobs(jobs: Record<string, unknown>): Jobs {
   };
 }
 
+/// Bill off the jobs table, not the orchestrator's `request_count` meter.
+///
+/// `request_count` (which the backend reports as `credits.used`) counts every
+/// job a client *submits* — it includes jobs that later failed, and it was
+/// reset when the prepaid package was set up. So it matches neither the stated
+/// policy (failed / captcha / pending aren't charged) nor the client's real
+/// history. `jobs.billable` = completed + not_found is exactly what the client
+/// is charged for, counted from their first request — so we show that as "used"
+/// and derive "remaining" from it.
+///
+/// Only override when there's a real quota to bill against and a billable figure
+/// to use; an unlimited or quota-less key keeps whatever the backend said.
+function billFromBillable(credits: Credits | null, jobs: Jobs | null): Credits | null {
+  if (!credits || credits.unlimited || credits.total === null) return credits;
+  if (jobs === null || jobs.billable === null) return credits;
+  return {
+    ...credits,
+    used: jobs.billable,
+    remaining: Math.max(0, credits.total - jobs.billable),
+  };
+}
+
 /// `monthly_breakdown` is keyed "YYYY-MM" -> { "<day-of-month>": 0 | {region: n,
 /// all: n}, total: {...} }, and is null for a month with no traffic. Flatten it
 /// to real dates so a date picker can just look one up.
@@ -235,7 +257,8 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
     daily.push({ date, total: num(row["all"]), by });
   }
 
-  const jobs = isRecord(raw["jobs"]) ? raw["jobs"] : null;
+  const jobsRaw = isRecord(raw["jobs"]) ? raw["jobs"] : null;
+  const jobs = jobsRaw ? readJobs(jobsRaw) : null;
 
   const byDate: Record<string, { total: number; by: Record<string, number> }> = {};
   for (const d of daily) byDate[d.date] = { total: d.total, by: d.by };
@@ -244,10 +267,10 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     byDate,
-    credits: readCredits(raw),
+    credits: billFromBillable(readCredits(raw), jobs),
     limits: readLimits(raw),
     keyInfo: readKeyInfo(raw),
-    jobs: jobs ? readJobs(jobs) : null,
+    jobs,
     totals: {
       today: bucket("today"),
       last7: bucket("last_7_days"),
