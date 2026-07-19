@@ -5,16 +5,34 @@ import type { CodePurpose } from "@/lib/generated/prisma/enums";
 export const CODE_TTL_MINUTES = 10;
 export const MAX_ATTEMPTS = 5;
 export const RESEND_COOLDOWN_SECONDS = 60;
+/// Hard daily ceiling on password-reset emails per address — protects our
+/// transactional-email budget from a client (or someone targeting an address)
+/// spamming code requests.
+export const RESET_MAX_PER_DAY = 3;
 
 /**
  * Issues a fresh 6-digit code for an email+purpose. Any earlier unused codes are
  * invalidated so only the newest one works. Returns the plaintext code exactly
  * once — the caller emails it; we only ever store the hash.
+ *
+ * `maxPerDay` caps how many codes may be issued for this email+purpose in a
+ * rolling 24 h — used to keep reset requests from burning the email quota.
  */
 export async function issueCode(
   email: string,
   purpose: CodePurpose,
+  opts?: { maxPerDay?: number },
 ): Promise<{ ok: true; code: string } | { ok: false; error: string; retryAfter?: number }> {
+  if (opts?.maxPerDay) {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const today = await prisma.emailCode.count({
+      where: { email, purpose, createdAt: { gte: since } },
+    });
+    if (today >= opts.maxPerDay) {
+      return { ok: false, error: "Too many code requests today. Please try again tomorrow." };
+    }
+  }
+
   const latest = await prisma.emailCode.findFirst({
     where: { email, purpose, usedAt: null },
     orderBy: { createdAt: "desc" },

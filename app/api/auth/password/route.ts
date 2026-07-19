@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
-import {
-  daysUntilPasswordChangeAllowed,
-  hashPassword,
-  passwordProblem,
-  verifyPassword,
-} from "@/lib/auth/password";
+import { hashPassword, passwordProblem, verifyPassword } from "@/lib/auth/password";
 import { getSessionCookie } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
@@ -17,8 +12,9 @@ const Body = z.object({
   password: z.string().max(200),
 });
 
-/// Change your own password while signed in. Same 30-day rule as the emailed
-/// reset — this is the door next to that one, not a way around it.
+/// Change your own password while signed in — current password + a new one, any
+/// time. If you don't remember the current one, the emailed-code reset is the
+/// other door.
 export async function POST(req: Request) {
   const me = await getCurrentUser();
   if (!me) return NextResponse.json({ ok: false, error: "Not signed in." }, { status: 401 });
@@ -45,17 +41,6 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { ok: false, error: "New password must be different from the current one." },
       { status: 400 },
-    );
-  }
-
-  const waitDays = daysUntilPasswordChangeAllowed(user.lastPasswordChangeAt);
-  if (waitDays > 0) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `Your password was changed recently. You can change it again in ${waitDays} day${waitDays === 1 ? "" : "s"}.`,
-      },
-      { status: 429 },
     );
   }
 

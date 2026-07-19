@@ -2,11 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { buildTree, endpointLabel, platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
-import { regionName } from "@/lib/regions";
+import { usePathname } from "next/navigation";
+import { buildTree, endpointLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import type { SessionUser } from "@/lib/auth/session";
-import Avatar from "@/components/dashboard/Avatar";
+import AccountFoot from "@/components/dashboard/AccountFoot";
 import { ConfirmProvider } from "@/components/ui/Confirm";
 
 // The frame every dashboard page sits in: service tree on the left, account
@@ -32,29 +31,10 @@ export default function DashShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [drawer, setDrawer] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   const tree = useMemo(() => buildTree(services), [services]);
   const activeSlug = pathname.startsWith("/dashboard/s/") ? pathname.split("/")[3] : null;
-
-  // A persistent "where you are" label for the top bar — the page's own H1
-  // scrolls away in the app-shell, so the header keeps the context in view.
-  const crumb = useMemo(() => {
-    if (pathname === "/dashboard") return "Overview";
-    if (pathname === "/dashboard/settings") return "Settings";
-    if (activeSlug) {
-      const s = services.find((x) => x.slug === activeSlug);
-      if (s) {
-        const plat = platformLabel(s.platform);
-        return [plat, s.region ? regionName(s.region) : null, s.name === plat ? null : s.name]
-          .filter(Boolean)
-          .join(" · ");
-      }
-    }
-    return null;
-  }, [pathname, activeSlug, services]);
 
   // Open a platform when it holds the page you are on, or when you have a key
   // in it. Everything else starts folded so the tree stays scannable.
@@ -79,13 +59,6 @@ export default function DashShell({
     else next.add(key);
     setTouched(true);
     setOpened(next);
-  }
-
-  async function logout() {
-    setBusy(true);
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    router.replace("/dashboard/login");
-    router.refresh();
   }
 
   const connectedCount = services.filter((s) => s.connection).length;
@@ -214,40 +187,23 @@ export default function DashShell({
         </nav>
 
         <div className="ds-side-foot">
-          <Link
-            href="/dashboard/settings"
-            className={`ds-item ${pathname === "/dashboard/settings" ? "is-active" : ""}`}
-            onClick={() => setDrawer(false)}
-          >
-            <span className="ds-item-label">Settings</span>
-          </Link>
           {user.role === "ADMIN" && (
             <Link href="/admin" className="ds-item" onClick={() => setDrawer(false)}>
               <span className="ds-item-label">Admin</span>
               <span className="ds-tag">admin</span>
             </Link>
           )}
+          <AccountFoot user={user} />
         </div>
       </aside>
 
       <button className="ds-scrim" onClick={() => setDrawer(false)} aria-hidden="true" tabIndex={-1} />
+      <button className="ds-burger ds-burger--float" onClick={() => setDrawer(true)} aria-label="Open menu">
+        <span />
+        <span />
+      </button>
 
       <div className="ds-main">
-        <header className="ds-top">
-          <button className="ds-burger" onClick={() => setDrawer(true)} aria-label="Open menu">
-            <span />
-            <span />
-          </button>
-          {crumb && <div className="ds-crumb">{crumb}</div>}
-          <div className="ds-top-spacer" />
-          <Link href="/dashboard/settings" className="ds-avatar" title="Account settings">
-            <Avatar user={user} size={32} />
-          </Link>
-          <button className="btn btn-ghost ds-logout" onClick={logout} disabled={busy}>
-            {busy ? "…" : "Log out"}
-          </button>
-        </header>
-
         <main className="ds-content">
           <ConfirmProvider>{children}</ConfirmProvider>
         </main>

@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { SessionUser } from "@/lib/auth/session";
-import Avatar from "@/components/dashboard/Avatar";
+import AccountFoot from "@/components/dashboard/AccountFoot";
 import { ConfirmProvider } from "@/components/ui/Confirm";
 
 // Same frame as the client dashboard (ds-* classes), different nav — so the two
-// sides of the product stay one product.
+// sides of the product stay one product. No top bar: the account row lives in
+// the sidebar footer.
 
 const NAV = [
   { href: "/admin", label: "Overview" },
@@ -19,31 +20,12 @@ const NAV = [
 
 export default function AdminShell({ user, children }: { user: SessionUser; children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [drawer, setDrawer] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  // Persistent "where you are" label for the top bar — longest matching nav wins
-  // so /admin/users/[id] (view-as) still reads as Users.
-  const crumb = useMemo(() => {
-    const match = [...NAV]
-      .sort((a, b) => b.href.length - a.href.length)
-      .find((n) => pathname === n.href || pathname.startsWith(`${n.href}/`));
-    return `Admin · ${match ? match.label : "Overview"}`;
-  }, [pathname]);
-
-  async function logout() {
-    setBusy(true);
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
-    router.replace("/dashboard/login");
-    router.refresh();
-  }
 
   return (
     <div className={`ds ${drawer ? "ds--drawer" : ""}`}>
       <aside className="ds-side">
         <div className="ds-side-head">
-          {/* Same markup as the site header — see DashShell. */}
           <Link href="/admin" className="brand">
             <span className="brand-mark">f</span>
             <span>Fastscraping</span>
@@ -73,28 +55,17 @@ export default function AdminShell({ user, children }: { user: SessionUser; chil
           <Link href="/dashboard" className="ds-item" onClick={() => setDrawer(false)}>
             <span className="ds-item-label">← My dashboard</span>
           </Link>
+          <AccountFoot user={user} />
         </div>
       </aside>
 
       <button className="ds-scrim" onClick={() => setDrawer(false)} aria-hidden="true" tabIndex={-1} />
+      <button className="ds-burger ds-burger--float" onClick={() => setDrawer(true)} aria-label="Open menu">
+        <span />
+        <span />
+      </button>
 
       <div className="ds-main">
-        <header className="ds-top">
-          <button className="ds-burger" onClick={() => setDrawer(true)} aria-label="Open menu">
-            <span />
-            <span />
-          </button>
-          <div className="ds-crumb">{crumb}</div>
-          <div className="ds-top-spacer" />
-          <span className="ds-tag">admin</span>
-          <Link href="/dashboard/settings" className="ds-avatar" title="Account settings">
-            <Avatar user={user} size={32} />
-          </Link>
-          <button className="btn btn-ghost ds-logout" onClick={logout} disabled={busy}>
-            {busy ? "…" : "Log out"}
-          </button>
-        </header>
-
         <main className="ds-content">
           <ConfirmProvider>{children}</ConfirmProvider>
         </main>

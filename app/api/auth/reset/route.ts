@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { consumeCode } from "@/lib/auth/codes";
-import {
-  daysUntilPasswordChangeAllowed,
-  hashPassword,
-  passwordProblem,
-} from "@/lib/auth/password";
+import { hashPassword, passwordProblem } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
@@ -34,18 +30,6 @@ export async function POST(req: Request) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !user.emailVerifiedAt || user.status !== "ACTIVE") {
     return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
-  }
-
-  // Business rule: a password may only be changed once every 30 days.
-  const waitDays = daysUntilPasswordChangeAllowed(user.lastPasswordChangeAt);
-  if (waitDays > 0) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `Your password was changed recently. You can change it again in ${waitDays} day${waitDays === 1 ? "" : "s"}.`,
-      },
-      { status: 429 },
-    );
   }
 
   const check = await consumeCode(email, "RESET", code);

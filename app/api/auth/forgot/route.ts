@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { issueCode } from "@/lib/auth/codes";
+import { issueCode, RESET_MAX_PER_DAY } from "@/lib/auth/codes";
 import { sendResetCode } from "@/lib/auth/email";
 
 export const runtime = "nodejs";
@@ -21,7 +21,9 @@ export async function POST(req: Request) {
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (user?.emailVerifiedAt && user.status === "ACTIVE") {
-    const issued = await issueCode(email, "RESET");
+    // Capped at RESET_MAX_PER_DAY/day per address; over the cap we simply don't
+    // send (still answering ok, so the count stays private).
+    const issued = await issueCode(email, "RESET", { maxPerDay: RESET_MAX_PER_DAY });
     if (issued.ok) await sendResetCode(email, issued.code);
   }
 

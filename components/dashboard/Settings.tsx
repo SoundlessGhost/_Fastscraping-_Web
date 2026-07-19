@@ -9,8 +9,8 @@ import type { SessionUser } from "@/lib/auth/session";
 import AvatarPicker from "@/components/dashboard/AvatarPicker";
 import { useConfirm } from "@/components/ui/Confirm";
 
-// Everything a client manages about themselves: who they are, how they sign in,
-// which keys they've connected, and where they're signed in.
+// Everything a client manages about themselves, laid out as label→control rows
+// (not cards). The /settings sub-pages each render one `section`.
 
 export type DeviceSession = {
   id: string;
@@ -23,8 +23,6 @@ export type DeviceSession = {
 
 function fullName(s: ServiceNode) {
   const platform = platformLabel(s.platform);
-  // For a brand that is its own single service, name and platform are the same
-  // string — "StubHub · StubHub" helps nobody.
   return [platform, s.region ? regionName(s.region) : null, s.name === platform ? null : s.name]
     .filter(Boolean)
     .join(" · ");
@@ -54,13 +52,7 @@ function prettyAgent(ua: string | null): string {
 const fmtWhen = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-/// One connected service. The key arrives with the page, so Reveal is a pure
-/// toggle — no request, nothing to wait for.
-///
-/// Remove only forgets the key here; the service's own backend, and the usage
-/// on it, are untouched. To see usage again the client just pastes the key
-/// back — which is the point: a wrong or rotated key is theirs to fix without
-/// waiting on us.
+/// One connected service key row.
 function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -123,17 +115,17 @@ export default function Settings({
   user,
   services,
   keys,
-  passwordWaitDays,
   memberSince,
   devices,
+  section = "all",
 }: {
   user: SessionUser;
   services: ServiceNode[];
   /// slug -> the client's own key, decrypted for this page only.
   keys: Record<string, string>;
-  passwordWaitDays: number;
   memberSince: string | null;
   devices: DeviceSession[];
+  section?: "general" | "keys" | "account" | "all";
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -142,6 +134,10 @@ export default function Settings({
   const [profileBusy, setProfileBusy] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pwBusy, setPwBusy] = useState(false);
+  // Password has two doors: change with the current password, or reset with an
+  // emailed code.
+  const [pwMode, setPwMode] = useState<"change" | "forgot">("change");
+  const [codeSent, setCodeSent] = useState(false);
   const [sessBusy, setSessBusy] = useState(false);
 
   async function saveProfile(e: React.FormEvent<HTMLFormElement>) {
@@ -202,6 +198,70 @@ export default function Settings({
     }
   }
 
+  async function sendResetCode() {
+    setPwBusy(true);
+    setPwMsg(null);
+    try {
+      const res = await fetch("/api/auth/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email }),
+      });
+      if (res.ok) {
+        setCodeSent(true);
+        setPwMsg({ ok: true, text: `A 6-digit code is on its way to ${user.email}. Enter it below.` });
+      } else {
+        const b = await res.json().catch(() => ({}));
+        setPwMsg({ ok: false, text: b.error ?? "Could not send a code. Try again." });
+      }
+    } catch {
+      setPwMsg({ ok: false, text: "Network error." });
+    } finally {
+      setPwBusy(false);
+    }
+  }
+
+  async function resetWithCode(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const password = String(fd.get("password") ?? "");
+    if (password !== String(fd.get("confirm") ?? "")) {
+      setPwMsg({ ok: false, text: "The two new passwords do not match." });
+      return;
+    }
+
+    setPwBusy(true);
+    setPwMsg(null);
+    try {
+      const res = await fetch("/api/auth/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, code: String(fd.get("code") ?? "").trim(), password }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setPwMode("change");
+        setCodeSent(false);
+        setPwMsg({ ok: true, text: "Password reset. Other devices were signed out." });
+        form.reset();
+        router.refresh();
+      } else {
+        setPwMsg({ ok: false, text: body.error ?? "Could not reset password." });
+      }
+    } catch {
+      setPwMsg({ ok: false, text: "Network error." });
+    } finally {
+      setPwBusy(false);
+    }
+  }
+
+  function switchPwMode(mode: "change" | "forgot") {
+    setPwMode(mode);
+    setCodeSent(false);
+    setPwMsg(null);
+  }
+
   async function signOutOthers() {
     const ok = await confirm({
       title: "Sign out of every other device?",
@@ -216,121 +276,174 @@ export default function Settings({
     router.refresh();
   }
 
-  const locked = passwordWaitDays > 0;
+  async function logoutAll() {
+    const ok = await confirm({
+      title: "Log out of all devices?",
+      body: "You'll be signed out here and everywhere else, and sent back to the login page.",
+      confirmLabel: "Log out everywhere",
+      danger: true,
+    });
+    if (!ok) return;
+    setSessBusy(true);
+    await fetch("/api/auth/sessions", { method: "DELETE" }).catch(() => {}); // other devices
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {}); // this one
+    router.replace("/dashboard/login");
+    router.refresh();
+  }
+
   const others = devices.filter((d) => !d.isCurrent);
+
+  const heading =
+    section === "keys" ? (
+      <>API <em>keys</em></>
+    ) : section === "account" ? (
+      <>Account <em>&amp; security</em></>
+    ) : (
+      <>Your <em>profile</em></>
+    );
 
   return (
     <>
       <div className="ds-head">
-        <div>
-          <h1 className="dash-title">
-            Account <em>settings</em>
-          </h1>
-          <p className="dash-meta">
-            <b>{user.email}</b>
-            {memberSince && (
-              <> · member since {new Date(memberSince).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</>
-            )}
-          </p>
-        </div>
+        <h1 className="dash-title">{heading}</h1>
       </div>
 
-      <div className="st-grid">
-        {/* PROFILE */}
-        <form className="dash-card st-card" onSubmit={saveProfile}>
-          <div className="dash-card-h">
-            <div className="dash-card-t">Profile</div>
-          </div>
-          <div className="st-body">
-            <AvatarPicker user={user} />
-
-            <div className="st-two">
-              <div>
-                <label className="cn-l" htmlFor="firstName">
-                  First name
-                </label>
-                <input id="firstName" name="firstName" className="cn-in" defaultValue={user.firstName ?? ""} disabled={profileBusy} />
+      {(section === "general" || section === "all") && (
+        <div className="set-page">
+          {/* PROFILE */}
+          <section className="set-sec">
+            <h2 className="set-sec-h">Profile</h2>
+            <form onSubmit={saveProfile}>
+              <div className="set-row">
+                <div className="set-row-l">Photo</div>
+                <div className="set-row-c set-row-c--wide">
+                  <AvatarPicker user={user} />
+                </div>
               </div>
-              <div>
-                <label className="cn-l" htmlFor="lastName">
-                  Last name
-                </label>
-                <input id="lastName" name="lastName" className="cn-in" defaultValue={user.lastName ?? ""} disabled={profileBusy} />
+              <div className="set-row">
+                <label className="set-row-l" htmlFor="firstName">First name</label>
+                <div className="set-row-c">
+                  <input id="firstName" name="firstName" className="cn-in" defaultValue={user.firstName ?? ""} disabled={profileBusy} />
+                </div>
               </div>
-            </div>
-
-            <div className="st-two">
-              <div>
-                <label className="cn-l" htmlFor="company">
-                  Company
-                </label>
-                <input id="company" name="company" className="cn-in" defaultValue={user.company ?? ""} disabled={profileBusy} />
+              <div className="set-row">
+                <label className="set-row-l" htmlFor="lastName">Last name</label>
+                <div className="set-row-c">
+                  <input id="lastName" name="lastName" className="cn-in" defaultValue={user.lastName ?? ""} disabled={profileBusy} />
+                </div>
               </div>
-              <div>
-                <label className="cn-l" htmlFor="email">
-                  Email <i className="st-hint">your sign-in</i>
-                </label>
-                <input id="email" className="cn-in st-ro" value={user.email} readOnly disabled />
+              <div className="set-row">
+                <label className="set-row-l" htmlFor="company">Company</label>
+                <div className="set-row-c">
+                  <input id="company" name="company" className="cn-in" defaultValue={user.company ?? ""} disabled={profileBusy} />
+                </div>
               </div>
-            </div>
-
-            <div className="st-foot">
-              <button className="btn btn-ghost st-btn" disabled={profileBusy}>
-                {profileBusy ? "Saving…" : "Save changes"}
-              </button>
-              {profileMsg && <p className={profileMsg.ok ? "st-ok" : "cn-err"}>{profileMsg.text}</p>}
-            </div>
-          </div>
-        </form>
-
-        {/* PASSWORD */}
-        <form className="dash-card st-card" onSubmit={changePassword}>
-          <div className="dash-card-h">
-            <div className="dash-card-t">
-              Password <small>changeable once every 30 days</small>
-            </div>
-          </div>
-          <div className="st-body">
-            {locked ? (
-              <p className="st-lock">
-                Your password was changed recently. You can change it again in <b>{passwordWaitDays}</b> day
-                {passwordWaitDays === 1 ? "" : "s"}.
-              </p>
-            ) : (
-              <>
-                <label className="cn-l" htmlFor="currentPassword">
-                  Current password
-                </label>
-                <input id="currentPassword" name="currentPassword" type="password" className="cn-in" autoComplete="current-password" disabled={pwBusy} />
-
-                <label className="cn-l" htmlFor="password">
-                  New password
-                </label>
-                <input id="password" name="password" type="password" className="cn-in" autoComplete="new-password" disabled={pwBusy} />
-
-                <label className="cn-l" htmlFor="confirm">
-                  Repeat new password
-                </label>
-                <input id="confirm" name="confirm" type="password" className="cn-in" autoComplete="new-password" disabled={pwBusy} />
-
-                {pwMsg && <p className={pwMsg.ok ? "st-ok" : "cn-err"}>{pwMsg.text}</p>}
-                <button className="btn btn-ghost st-btn" disabled={pwBusy}>
-                  {pwBusy ? "Changing…" : "Change password"}
+              <div className="set-row">
+                <div className="set-row-l">
+                  <span>Email</span>
+                  <small>your sign-in</small>
+                </div>
+                <div className="set-row-c">
+                  <input className="cn-in st-ro" value={user.email} readOnly disabled />
+                </div>
+              </div>
+              <div className="set-act">
+                <button className="btn btn-ghost st-btn" disabled={profileBusy}>
+                  {profileBusy ? "Saving…" : "Save changes"}
                 </button>
-              </>
-            )}
-            {locked && pwMsg && <p className={pwMsg.ok ? "st-ok" : "cn-err"}>{pwMsg.text}</p>}
-          </div>
-        </form>
+                {profileMsg && <p className={profileMsg.ok ? "st-ok" : "cn-err"}>{profileMsg.text}</p>}
+              </div>
+            </form>
+          </section>
 
-        {/* API KEYS */}
-        <div className="dash-card st-card st-card--wide">
-          <div className="dash-card-h">
-            <div className="dash-card-t">
-              API keys <small>one key per service</small>
-            </div>
-          </div>
-          <div className="st-body">
+          {/* PASSWORD */}
+          <section className="set-sec">
+            <h2 className="set-sec-h">
+              Password <small>{pwMode === "forgot" ? "reset with an emailed code" : "current password + a new one"}</small>
+            </h2>
+
+            {pwMode === "change" ? (
+              <form onSubmit={changePassword}>
+                <div className="set-row">
+                  <label className="set-row-l" htmlFor="currentPassword">Current password</label>
+                  <div className="set-row-c">
+                    <input
+                      id="currentPassword"
+                      name="currentPassword"
+                      type="password"
+                      className="cn-in"
+                      autoComplete="off"
+                      readOnly
+                      onFocus={(e) => e.currentTarget.removeAttribute("readonly")}
+                      disabled={pwBusy}
+                    />
+                  </div>
+                </div>
+                <div className="set-row">
+                  <label className="set-row-l" htmlFor="password">New password</label>
+                  <div className="set-row-c">
+                    <input id="password" name="password" type="password" className="cn-in" autoComplete="new-password" disabled={pwBusy} />
+                  </div>
+                </div>
+                <div className="set-row">
+                  <label className="set-row-l" htmlFor="confirm">Repeat new password</label>
+                  <div className="set-row-c">
+                    <input id="confirm" name="confirm" type="password" className="cn-in" autoComplete="new-password" disabled={pwBusy} />
+                  </div>
+                </div>
+                <div className="set-act">
+                  <button className="btn btn-ghost st-btn" disabled={pwBusy}>{pwBusy ? "Changing…" : "Change password"}</button>
+                  {pwMsg && <p className={pwMsg.ok ? "st-ok" : "cn-err"}>{pwMsg.text}</p>}
+                  <button type="button" className="st-forgot" onClick={() => switchPwMode("forgot")}>Forgot your current password?</button>
+                </div>
+              </form>
+            ) : !codeSent ? (
+              <div>
+                <p className="cn-note">We&apos;ll email a 6-digit code to <b>{user.email}</b>. Up to 3 a day.</p>
+                {pwMsg && <p className={pwMsg.ok ? "st-ok" : "cn-err"}>{pwMsg.text}</p>}
+                <div className="set-act">
+                  <button type="button" className="btn btn-ghost st-btn" onClick={sendResetCode} disabled={pwBusy}>
+                    {pwBusy ? "Sending…" : "Email me a code"}
+                  </button>
+                  <button type="button" className="st-forgot" onClick={() => switchPwMode("change")}>← Back</button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={resetWithCode}>
+                <div className="set-row">
+                  <label className="set-row-l" htmlFor="code">Code from email</label>
+                  <div className="set-row-c">
+                    <input id="code" name="code" inputMode="numeric" maxLength={6} className="cn-in" autoComplete="one-time-code" placeholder="000000" disabled={pwBusy} />
+                  </div>
+                </div>
+                <div className="set-row">
+                  <label className="set-row-l" htmlFor="rpassword">New password</label>
+                  <div className="set-row-c">
+                    <input id="rpassword" name="password" type="password" className="cn-in" autoComplete="new-password" disabled={pwBusy} />
+                  </div>
+                </div>
+                <div className="set-row">
+                  <label className="set-row-l" htmlFor="rconfirm">Repeat new password</label>
+                  <div className="set-row-c">
+                    <input id="rconfirm" name="confirm" type="password" className="cn-in" autoComplete="new-password" disabled={pwBusy} />
+                  </div>
+                </div>
+                <div className="set-act">
+                  <button className="btn btn-ghost st-btn" disabled={pwBusy}>{pwBusy ? "Resetting…" : "Reset password"}</button>
+                  {pwMsg && <p className={pwMsg.ok ? "st-ok" : "cn-err"}>{pwMsg.text}</p>}
+                  <button type="button" className="st-forgot" onClick={sendResetCode} disabled={pwBusy}>Resend code</button>
+                  <button type="button" className="st-forgot" onClick={() => switchPwMode("change")}>← Back</button>
+                </div>
+              </form>
+            )}
+          </section>
+        </div>
+      )}
+
+      {section === "keys" && (
+        <div className="set-page">
+          <section className="set-sec">
+            <h2 className="set-sec-h">API keys <small>one key per service</small></h2>
             {services.length === 0 ? (
               <p className="st-lock">
                 You haven&apos;t connected any service keys yet. <Link href="/dashboard">Add one →</Link>
@@ -342,41 +455,71 @@ export default function Settings({
                 ))}
               </div>
             )}
-            <p className="cn-note">
-              Keys are stored encrypted and only ever sent to their own service. Need one changed? Email us.
-            </p>
-          </div>
+            <p className="cn-note">Keys are stored encrypted and only ever sent to their own service.</p>
+          </section>
         </div>
+      )}
 
-        {/* SESSIONS */}
-        <div className="dash-card st-card st-card--wide">
-          <div className="dash-card-h">
-            <div className="dash-card-t">
-              Where you&apos;re signed in <small>{devices.length} active</small>
+      {section === "account" && (
+        <div className="set-page">
+          <section className="set-sec">
+            <h2 className="set-sec-h">Account</h2>
+            <div className="set-row">
+              <div className="set-row-l">
+                <span>Log out of all devices</span>
+                <small>Ends every active session, including this one.</small>
+              </div>
+              <div className="set-row-c">
+                <button className="btn btn-ghost st-btn" onClick={logoutAll} disabled={sessBusy}>Log out</button>
+              </div>
             </div>
-            {others.length > 0 && (
-              <button className="adm-link st-linkbtn" onClick={signOutOthers} disabled={sessBusy}>
-                {sessBusy ? "…" : "Sign out other devices"}
-              </button>
-            )}
-          </div>
-          <div className="st-body">
-            <div className="st-sessions">
+            <div className="set-row">
+              <div className="set-row-l">
+                <span>Delete account</span>
+                <small>Email us and we&apos;ll remove it and your data.</small>
+              </div>
+              <div className="set-row-c">
+                <button type="button" className="btn btn-ghost st-btn" disabled>Request deletion</button>
+              </div>
+            </div>
+            <div className="set-row">
+              <div className="set-row-l">Account ID</div>
+              <div className="set-row-c"><code className="set-id">{user.id}</code></div>
+            </div>
+          </section>
+
+          <section className="set-sec">
+            <h2 className="set-sec-h">
+              Active sessions <small>{devices.length} active</small>
+              {others.length > 0 && (
+                <button className="adm-link st-linkbtn" onClick={signOutOthers} disabled={sessBusy}>
+                  {sessBusy ? "…" : "Sign out others"}
+                </button>
+              )}
+            </h2>
+            <div className="set-table">
+              <div className="set-tr set-tr--head">
+                <span>Device</span>
+                <span>IP</span>
+                <span>Signed in</span>
+                <span>Last seen</span>
+              </div>
               {devices.map((d) => (
-                <div className="st-sess" key={d.id}>
-                  <span className={`ds-dot ds-dot--${d.isCurrent ? "on" : "off"}`} />
-                  <span className="st-sess-n">
+                <div className="set-tr" key={d.id}>
+                  <span className="set-td-dev">
+                    <span className={`ds-dot ds-dot--${d.isCurrent ? "on" : "off"}`} />
                     {prettyAgent(d.userAgent)}
-                    {d.isCurrent && <b className="adm-you"> this device</b>}
+                    {d.isCurrent && <b className="adm-you"> current</b>}
                   </span>
-                  <span className="st-sess-m">{d.ip ?? "—"}</span>
-                  <span className="st-sess-m">last seen {fmtWhen(d.lastSeenAt)}</span>
+                  <span>{d.ip ?? "—"}</span>
+                  <span>{fmtWhen(d.createdAt)}</span>
+                  <span>{fmtWhen(d.lastSeenAt)}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         </div>
-      </div>
+      )}
     </>
   );
 }

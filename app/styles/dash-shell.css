@@ -338,3 +338,108 @@
 }
 .ds-plat-solo:hover { background: var(--bg); }
 .ds-plat-solo.is-active { color: var(--accent); font-style: italic; }
+
+/* ---------- Settings-area sidebar nav ---------- */
+.set-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ink-2);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.set-item:hover { background: var(--bg); color: var(--ink); }
+.set-item.is-active { color: var(--accent); }
+.set-ic { width: 17px; height: 17px; flex: none; display: grid; place-items: center; color: var(--muted); }
+.set-ic svg { width: 17px; height: 17px; }
+.set-item:hover .set-ic { color: var(--ink); }
+.set-item.is-active .set-ic { color: var(--accent); }
+
+/* ---------- Account row + menu (sidebar footer) ---------- */
+.ds-acct { position: relative; margin-top: 4px; }
+.ds-acct-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease;
+}
+.ds-acct-trigger:hover,
+.ds-acct-trigger.is-open { background: var(--bg); }
+.ds-acct-name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ds-acct-chev { width: 15px; height: 15px; flex: none; color: var(--muted); transition: transform 0.16s ease; }
+.ds-acct-trigger.is-open .ds-acct-chev { transform: rotate(180deg); }
+
+.ds-acct-scrim { position: fixed; inset: 0; z-index: 70; border: none; background: transparent; padding: 0; cursor: default; }
+.ds-acct-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  /* span the full sidebar width — .ds-side-foot has 10px padding to cancel */
+  left: -10px;
+  right: -10px;
+  z-index: 71;
+  background: var(--paper);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  box-shadow: 0 18px 44px -18px rgba(19, 22, 19, 0.4);
+  padding: 6px;
+}
+.ds-acct-email {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  padding: 6px 10px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--hairline);
+  margin-bottom: 4px;
+}
+.ds-acct-mi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+.ds-acct-mi:hover { background: var(--bg); }
+.ds-acct-mi:disabled { opacity: 0.6; cursor: default; }
+.ds-acct-mi-ic { width: 16px; height: 16px; flex: none; display: grid; place-items: center; color: var(--muted); }
+.ds-acct-mi-ic svg { width: 16px; height: 16px; }
+.ds-acct-sep { height: 1px; background: var(--hairline); margin: 4px 6px; }
+
+/* ---------- Floating burger (there's no top bar to hold it now) ---------- */
+.ds-burger--float { position: fixed; top: 12px; left: 12px; z-index: 45; }
+@media (max-width: 1023px) {
+  /* clear the floating burger so it doesn't sit on the page title */
+  .ds-content { padding-top: 60px; }
+}

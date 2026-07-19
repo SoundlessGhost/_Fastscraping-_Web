@@ -3,5 +3,9 @@
 /// so adding a new shell route only means editing this list.
 export function isAppRoute(pathname: string | null | undefined): boolean {
   if (!pathname) return false;
-  return pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/settings")
+  );
 }
