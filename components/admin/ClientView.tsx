@@ -69,12 +69,15 @@ function RateEditor({
       <button className="adm-rate-btn" onClick={save} disabled={busy}>
         {busy ? "Saving…" : "Save"}
       </button>
+      {/* Always name the service: a client can hold keys for several, each with
+          its own negotiated rate, and the tabs above switch which one this is. */}
       <span className="adm-rate-s">
+        for <b>{serviceLabel}</b>
         {value.trim() === ""
           ? fallback === null
-            ? `no rate set — ${serviceLabel} shows no cost`
-            : `using service default $${fallback.toFixed(2)}`
-          : "client-specific rate"}
+            ? " · no rate set, no cost shown"
+            : ` · using service default $${fallback.toFixed(2)}`
+          : " · client-specific rate"}
       </span>
       {msg && <span className="adm-rate-msg">{msg}</span>}
     </div>
@@ -118,16 +121,6 @@ export default function ClientView({
         </Link>
       </div>
 
-      {active && (
-        <RateEditor
-          userId={userId}
-          slug={active.slug}
-          serviceLabel={fullName(active)}
-          initial={rates[active.slug]?.client ?? null}
-          fallback={rates[active.slug]?.fallback ?? null}
-        />
-      )}
-
       {services.length === 0 ? (
         <div className="dash-empty" style={{ marginTop: 20 }}>
           <div className="dash-empty-t">No connected services</div>
@@ -147,6 +140,18 @@ export default function ClientView({
                 </button>
               ))}
             </div>
+          )}
+
+          {/* Below the tabs on purpose: the rate belongs to the selected
+              service, and rates are negotiated per service, not per account. */}
+          {active && (
+            <RateEditor
+              userId={userId}
+              slug={active.slug}
+              serviceLabel={fullName(active)}
+              initial={rates[active.slug]?.client ?? null}
+              fallback={rates[active.slug]?.fallback ?? null}
+            />
           )}
 
           {active && (
