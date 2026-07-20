@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { adminOr401 } from "@/lib/auth/guard";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage, resolvePricing } from "@/lib/services/usage";
+import { fetchServiceUsage } from "@/lib/services/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -58,10 +58,6 @@ export async function GET(req: NextRequest) {
 
   const { raw, ...data } = result.data;
   void raw;
-
-  // Same hybrid rate the client's own dashboard resolves, so view-as shows the
-  // client the estimated cost they actually see — not a blank card.
-  data.pricing = resolvePricing(data.pricing, link.pricePer1000, service.pricePer1000);
 
   return NextResponse.json({
     ok: true,

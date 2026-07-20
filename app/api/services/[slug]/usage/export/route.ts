@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage, resolvePricing } from "@/lib/services/usage";
+import { fetchServiceUsage } from "@/lib/services/usage";
 import { buildUsageWorkbook, datesBetween } from "@/lib/services/usage-export";
 
 export const runtime = "nodejs";
@@ -56,18 +56,12 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
     return NextResponse.json({ error: result.reason.toUpperCase(), message: result.message }, { status });
   }
 
-  // Same hybrid rate the dashboard shows, so the file can't disagree with it.
-  const usage = {
-    ...result.data,
-    pricing: resolvePricing(result.data.pricing, link.pricePer1000, service.pricePer1000),
-  };
-
   const bytes = await buildUsageWorkbook({
     serviceName: service.name,
     accountEmail: user.email,
     from,
     to,
-    usage,
+    usage: result.data,
   });
 
   const filename = `fastscraping-${service.slug}-usage-${from}_${to}.xlsx`;

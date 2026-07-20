@@ -117,10 +117,6 @@ model Service {
   status       ServiceStatus @default(ACTIVE)
   sortOrder    Int           @default(0)
   notes        String?
-  /// Default USD price per 1,000 billable requests. Null = not priced, and the
-  /// dashboard simply won't show an estimated cost. A backend that reports its
-  /// own `pricing` in /me/usage wins over this; a client override wins over both.
-  pricePer1000 Float?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -139,9 +135,6 @@ model ClientService {
   apiKeyEnc String
   label     String?
   status    ClientServiceStatus @default(ACTIVE)
-  /// Per-client USD price per 1,000 billable requests — overrides the service
-  /// default when set, since rates are negotiated client by client.
-  pricePer1000 Float?
   /// The backend is the source of truth for whether a key is valid; these two
   /// only cache the last answer so the UI can say "key rejected, update it".
   verifiedAt DateTime?

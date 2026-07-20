@@ -34,10 +34,10 @@ export type KeyInfo = {
   createdAt: string | null;
 };
 
-/// What the client pays per 1,000 billable requests. Sourced hybrid-style: a
-/// backend that reports `pricing` wins, otherwise we fall back to the rate
-/// stored against the client link (or the service default) — see
-/// `resolvePricing`, which is what the routes actually call.
+/// What the client pays per 1,000 billable requests, as reported by the service
+/// backend itself — the price lives on the API key, next to its quota and
+/// limits, so there is exactly one source of truth. A backend that reports no
+/// price simply shows no cost.
 export type Pricing = { per1000: number; currency: string };
 
 /// `notFound` = the product genuinely wasn't there, `billable` = completed +
@@ -145,8 +145,9 @@ function readLimits(raw: Record<string, unknown>): Limits | null {
 }
 
 /// Reads a price the backend volunteers. We haven't asked any backend to send
-/// this yet, so accept the plausible spellings rather than one exact shape — if
-/// none is present we fall back to our own stored rate.
+/// The Shopee orchestrator reports `pricing: {per_1000, currency}`; other
+/// backends may spell it differently, so accept the plausible shapes rather
+/// than one exact form. Null when the backend prices nothing.
 function readPricing(raw: Record<string, unknown>): Pricing | null {
   const p = raw["pricing"];
   if (isRecord(p)) {
@@ -157,21 +158,6 @@ function readPricing(raw: Record<string, unknown>): Pricing | null {
   }
   const flat = maybeNum(raw["price_per_1000"] ?? raw["cost_per_1000"]);
   return flat === null ? null : { per1000: flat, currency: "USD" };
-}
-
-/**
- * Hybrid pricing: whatever the backend reports wins (it owns the key), then a
- * per-client rate, then the service default. Null when nothing is configured,
- * which hides the cost card entirely.
- */
-export function resolvePricing(
-  fromBackend: Pricing | null,
-  clientRate: number | null | undefined,
-  serviceRate: number | null | undefined,
-): Pricing | null {
-  if (fromBackend) return fromBackend;
-  const rate = clientRate ?? serviceRate ?? null;
-  return rate === null ? null : { per1000: rate, currency: "USD" };
 }
 
 function readKeyInfo(raw: Record<string, unknown>): KeyInfo | null {

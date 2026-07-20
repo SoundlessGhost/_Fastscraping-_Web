@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage, resolvePricing } from "@/lib/services/usage";
+import { fetchServiceUsage } from "@/lib/services/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -64,9 +64,5 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
 
   const { raw, ...data } = result.data;
   void raw; // the browser gets the normalised shape only
-
-  // Backend price wins; otherwise this client's negotiated rate, else the
-  // service default.
-  data.pricing = resolvePricing(data.pricing, link.pricePer1000, service.pricePer1000);
   return NextResponse.json({ ok: true, interval, service: { slug: service.slug, name: service.name, kind: service.kind }, usage: data });
 }
