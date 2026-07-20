@@ -56,7 +56,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
     return NextResponse.json({ error: result.reason.toUpperCase(), message: result.message }, { status });
   }
 
-  const bytes = await buildUsageWorkbook({ from, to, usage: result.data });
+  const bytes = await buildUsageWorkbook({
+    serviceName: service.name,
+    accountEmail: user.email,
+    from,
+    to,
+    usage: result.data,
+  });
 
   const filename = `fastscraping-${service.slug}-usage-${from}_${to}.xlsx`;
   return new NextResponse(bytes, {

@@ -25,6 +25,8 @@ export function datesBetween(start: string, end: string): string[] {
 }
 
 export type WorkbookInput = {
+  serviceName: string;
+  accountEmail: string;
   from: string;
   to: string;
   usage: NormalizedUsage;
@@ -35,7 +37,7 @@ export type WorkbookInput = {
 export async function buildUsageWorkbook(
   input: WorkbookInput,
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const { from, to, usage } = input;
+  const { serviceName, accountEmail, from, to, usage } = input;
 
   const rows = datesBetween(from, to).map((date) => ({
     date,
@@ -52,6 +54,18 @@ export async function buildUsageWorkbook(
 
   // Ordinary Excel sheet — gridlines and row/column headings left on.
   const ws = wb.addWorksheet("Usage");
+
+  // Says what this file actually is, so it still makes sense months later or in
+  // someone else's inbox: which service, whose account, and over what window.
+  const title = ws.addRow([`${serviceName} — usage`]);
+  title.font = { bold: true, size: 14 };
+  title.height = 22;
+  const sub = ws.addRow([
+    `${from} to ${to} (UTC) · ${rows.length} day${rows.length === 1 ? "" : "s"} · ${accountEmail}`,
+  ]);
+  sub.font = { size: 10, italic: true };
+  sub.height = 16;
+  ws.addRow([]);
 
   const header = ws.addRow(rate === null ? ["Date (UTC)", "Request"] : ["Date (UTC)", "Request", "Cost"]);
   header.height = 18;
@@ -102,8 +116,11 @@ export async function buildUsageWorkbook(
 
   // Excel doesn't auto-fit on open, so size each column to its widest rendered
   // value — a number shows as its formatted text ("399,892", "$1,999.46").
+  // Skips the title block: those are long sentences in column A and would
+  // stretch the date column to their length.
   const widths = [12, 10, 10];
-  ws.eachRow((row) => {
+  ws.eachRow((row, rowNum) => {
+    if (rowNum <= 3) return;
     for (let c = 1; c <= cols; c++) {
       const v = row.getCell(c).value;
       if (v === null || v === undefined) continue;
