@@ -241,6 +241,50 @@
 }
 
 /* ---------- View-as (admin looking at a client's dashboard) ---------- */
+/* Per-client rate editor, sits under the view-as bar. */
+.adm-rate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.adm-rate-k {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.adm-rate-in {
+  width: 110px;
+  padding: 7px 10px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 8px;
+  background: var(--card);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+}
+.adm-rate-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.adm-rate-btn:hover:not(:disabled) { background: var(--bg); }
+.adm-rate-btn:disabled { opacity: .55; cursor: not-allowed; }
+.adm-rate-s { color: var(--muted); font-size: 12px; }
+.adm-rate-msg { color: var(--accent); font-size: 12px; }
+
 .adm-viewbar {
   display: flex;
   align-items: center;

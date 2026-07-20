@@ -31,4 +31,7 @@ export const ServiceInput = z.object({
   status: z.enum(["ACTIVE", "DISABLED"]).default("DISABLED"),
   sortOrder: z.number().int().min(0).max(9999).default(0),
   notes: z.string().max(300).nullable().optional(),
+  /// Default USD price per 1,000 billable requests; a client can override it.
+  /// Null means unpriced, and no cost is shown anywhere.
+  pricePer1000: z.number().min(0).max(100000).nullable().optional(),
 });

@@ -165,6 +165,9 @@
   gap: 12px;
   margin-bottom: 16px;
 }
+/* The estimated-cost card is conditional, so the track count is too — otherwise
+   an unpriced service would sit next to an empty sixth column. */
+.dash-stats--6 { grid-template-columns: repeat(6, 1fr); }
 .dash-stat {
   background: var(--card);
   border: 1px solid var(--hairline);

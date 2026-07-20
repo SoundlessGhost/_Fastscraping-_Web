@@ -86,15 +86,20 @@ function Spinner({ label }: { label?: string }) {
 export default function ServiceUsage({
   service,
   title,
-  // Where to fetch the widest window from. Defaults to the signed-in client's
-  // own endpoint; the admin view-as passes a per-user endpoint instead. Same
+  // Where to fetch the widest window from. Omitted on the signed-in client's own
+  // dashboard; the admin view-as passes a per-user endpoint instead. Same
   // response shape either way, so everything below is unchanged.
-  usageUrl = `/api/services/${service.slug}/usage?interval=${WIDEST}`,
+  usageUrl,
 }: {
   service: ServiceNode;
   title: string;
   usageUrl?: string;
 }) {
+  // The export route resolves the *signed-in* user's own key, so it would answer
+  // for the admin rather than the client being viewed — hide it in view-as.
+  const isViewAs = Boolean(usageUrl);
+  const feedUrl = usageUrl ?? `/api/services/${service.slug}/usage?interval=${WIDEST}`;
+
   const [range, setRange] = useState(7);
   // A custom [start,end] window overrides the preset ranges when set.
   const [customRange, setCustomRange] = useState<DateRange | null>(null);
@@ -107,6 +112,8 @@ export default function ServiceUsage({
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [ago, setAgo] = useState(0);
   const [tip, setTip] = useState<Tip>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [dlError, setDlError] = useState<string | null>(null);
   const inFlight = useRef(false);
 
   const load = useCallback(
@@ -119,7 +126,7 @@ export default function ServiceUsage({
       else setRefreshing(true);
 
       try {
-        const r = await fetch(usageUrl, { cache: "no-store" });
+        const r = await fetch(feedUrl, { cache: "no-store" });
         const body = await r.json().catch(() => ({}));
         if (!r.ok) {
           // A refresh that fails leaves the numbers we already have on screen —
@@ -139,7 +146,7 @@ export default function ServiceUsage({
         setRefreshing(false);
       }
     },
-    [usageUrl],
+    [feedUrl],
   );
 
   useEffect(() => {
@@ -200,6 +207,52 @@ export default function ServiceUsage({
     return seen;
   }, [days]);
 
+  // Estimated spend, computed on the same basis as the "Used" credit figure
+  // (billable requests = completed + not found), so the two can never disagree.
+  // Falls back to lifetime requests for a backend that reports no credits.
+  const cost = useMemo(() => {
+    const price = usage?.pricing;
+    if (!usage || !price) return null;
+    const billed = usage.credits?.used ?? usage.totals.lifetime;
+    const code = /^[A-Z]{3}$/.test(price.currency) ? price.currency : "USD";
+    const money = (n: number) =>
+      new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(n);
+    return { amount: money((billed / 1000) * price.per1000), rate: money(price.per1000) };
+  }, [usage]);
+
+  // Downloads exactly the window on screen: the sheet is built from the same
+  // first/last dates the chart is drawing, so "what you see is what you get".
+  const download = useCallback(async () => {
+    if (downloading || days.length === 0) return;
+    setDownloading(true);
+    setDlError(null);
+
+    const from = days[0]!.date;
+    const to = days[days.length - 1]!.date;
+    try {
+      const r = await fetch(`/api/services/${service.slug}/usage/export?from=${from}&to=${to}`, {
+        cache: "no-store",
+      });
+      if (!r.ok) {
+        setDlError("Download failed.");
+        return;
+      }
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fastscraping-${service.slug}-usage-${from}_${to}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDlError("Download failed.");
+    } finally {
+      setDownloading(false);
+    }
+  }, [downloading, days, service.slug]);
+
   const top = Math.max(1, ...days.map((d) => d.total));
   const yOf = (v: number) => PADT + plotH - (v / top) * plotH;
   const colW = days.length ? plotW / days.length : 0;
@@ -214,10 +267,10 @@ export default function ServiceUsage({
   // The heaviest days in view, biggest first — quiet days are not interesting
   // here, so they never make the list. A service with no Job-health card hands
   // the whole right column to this panel, so we fill it with more days rather
-  // than leave three rows floating in the empty space.
+  // than leave the list floating in the empty space.
   const busiestDays = useMemo(() => {
     const ranked = days.filter((d) => d.total > 0).sort((a, b) => b.total - a.total);
-    return ranked.slice(0, usage?.jobs ? 3 : 6);
+    return ranked.slice(0, usage?.jobs ? 5 : 8);
   }, [days, usage?.jobs]);
   const today = todayUTC();
 
@@ -293,11 +346,11 @@ export default function ServiceUsage({
       )}
 
       {/* STAT STRIP */}
-      <div className="dash-stats">
+      <div className={`dash-stats${cost ? " dash-stats--6" : ""}`}>
         <div className="dash-stat">
           <div className="dash-stat-k">Today</div>
           <div className="dash-stat-v">{usage ? nf.format(usage.totals.today) : "—"}</div>
-          <div className="dash-stat-s">requests so far · UTC</div>
+          <div className="dash-stat-s">req so far · UTC</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">Yesterday</div>
@@ -314,11 +367,21 @@ export default function ServiceUsage({
           <div className="dash-stat-v">{usage ? nf.format(usage.totals.thisMonth) : "—"}</div>
           <div className="dash-stat-s">rolling 30 days</div>
         </div>
-        <div className="dash-stat dash-stat--dark">
+        {/* The dark treatment marks the end of the strip, so it belongs to
+            whichever card is last — cost when priced, Lifetime otherwise. */}
+        <div className={`dash-stat${cost ? "" : " dash-stat--dark"}`}>
           <div className="dash-stat-k">Lifetime</div>
           <div className="dash-stat-v">{usage ? nf.format(usage.totals.lifetime) : "—"}</div>
-          <div className="dash-stat-s">since first request</div>
+          <div className="dash-stat-s">since first req</div>
         </div>
+        {/* Only when a rate is configured — better no card than a confident $0. */}
+        {cost && (
+          <div className="dash-stat dash-stat--dark">
+            <div className="dash-stat-k">Estimated cost</div>
+            <div className="dash-stat-v">{cost.amount}</div>
+            <div className="dash-stat-s">{cost.rate} per 1,000 req</div>
+          </div>
+        )}
       </div>
 
       {/* CREDITS — only when the backend reports them */}
@@ -393,6 +456,27 @@ export default function ServiceUsage({
                   {customRange ? `${shortDate(customRange.start)} – ${shortDate(customRange.end)}` : "Custom"}
                 </button>
               </div>
+
+              {!isViewAs && (
+                <button
+                  className="su-dl"
+                  onClick={download}
+                  disabled={downloading || loading || days.length === 0}
+                  title="Download this range as an Excel file"
+                >
+                  <svg className="su-dl-ic" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M8 2v8m0 0L5 7m3 3 3-3M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {downloading ? "Preparing…" : "Download"}
+                </button>
+              )}
+              {dlError && <span className="su-dl-err">{dlError}</span>}
               {calOpen && (
                 <>
                   <div className="su-cal-scrim" onClick={() => setCalOpen(false)} aria-hidden="true" />

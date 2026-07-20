@@ -24,6 +24,7 @@ export default async function AdminServices() {
     status: s.status,
     sortOrder: s.sortOrder,
     notes: s.notes,
+    pricePer1000: s.pricePer1000,
     clients: s._count.clientServices,
   }));
 

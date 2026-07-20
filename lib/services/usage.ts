@@ -34,6 +34,12 @@ export type KeyInfo = {
   createdAt: string | null;
 };
 
+/// What the client pays per 1,000 billable requests. Sourced hybrid-style: a
+/// backend that reports `pricing` wins, otherwise we fall back to the rate
+/// stored against the client link (or the service default) — see
+/// `resolvePricing`, which is what the routes actually call.
+export type Pricing = { per1000: number; currency: string };
+
 /// `notFound` = the product genuinely wasn't there, `billable` = completed +
 /// notFound. The orchestrator charges for those two and not for failed /
 /// captcha / pending, so its own totals count billable jobs only — the UI has
@@ -49,6 +55,8 @@ export type Jobs = {
 
 export type NormalizedUsage = {
   owner: string | null;
+  /// Null until a rate is known — the cost card is hidden rather than showing $0.
+  pricing: Pricing | null;
   /// Every date we know a figure for, keyed YYYY-MM-DD. Wider than `daily`:
   /// the backend also reports a day-by-day breakdown of this month and last,
   /// which is what the date picker reaches into.
@@ -134,6 +142,36 @@ function readLimits(raw: Record<string, unknown>): Limits | null {
     perDay: maybeNum(l["per_day"]),
     concurrency: maybeNum(l["concurrency"]),
   };
+}
+
+/// Reads a price the backend volunteers. We haven't asked any backend to send
+/// this yet, so accept the plausible spellings rather than one exact shape — if
+/// none is present we fall back to our own stored rate.
+function readPricing(raw: Record<string, unknown>): Pricing | null {
+  const p = raw["pricing"];
+  if (isRecord(p)) {
+    const per = maybeNum(p["per_1000"] ?? p["per1000"] ?? p["price_per_1000"]);
+    if (per !== null) {
+      return { per1000: per, currency: typeof p["currency"] === "string" ? p["currency"] : "USD" };
+    }
+  }
+  const flat = maybeNum(raw["price_per_1000"] ?? raw["cost_per_1000"]);
+  return flat === null ? null : { per1000: flat, currency: "USD" };
+}
+
+/**
+ * Hybrid pricing: whatever the backend reports wins (it owns the key), then a
+ * per-client rate, then the service default. Null when nothing is configured,
+ * which hides the cost card entirely.
+ */
+export function resolvePricing(
+  fromBackend: Pricing | null,
+  clientRate: number | null | undefined,
+  serviceRate: number | null | undefined,
+): Pricing | null {
+  if (fromBackend) return fromBackend;
+  const rate = clientRate ?? serviceRate ?? null;
+  return rate === null ? null : { per1000: rate, currency: "USD" };
 }
 
 function readKeyInfo(raw: Record<string, unknown>): KeyInfo | null {
@@ -266,6 +304,7 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
 
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    pricing: readPricing(raw),
     byDate,
     credits: billFromBillable(readCredits(raw), jobs),
     limits: readLimits(raw),
@@ -312,6 +351,7 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
 
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    pricing: readPricing(raw),
     byDate,
     credits: readCredits(raw),
     limits: readLimits(raw),
@@ -383,6 +423,7 @@ function adaptHomegate(raw: Record<string, unknown>): NormalizedUsage {
 
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    pricing: readPricing(raw),
     byDate,
     credits: readCredits(raw),
     limits: readLimits(raw),

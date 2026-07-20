@@ -793,9 +793,11 @@
   flex: 1;
   padding: 0;
   display: grid;
-  grid-auto-rows: minmax(42px, max-content);
+  /* Tuned so five rows occupy about what three used to: the panel is sized by
+     the column beside it, and taller rows made the whole card grow. */
+  grid-auto-rows: minmax(28px, max-content);
   align-content: center;
-  gap: 14px;
+  gap: 8px;
   min-height: 0;
 }
 .su-top-row {
@@ -803,7 +805,7 @@
   grid-template-columns: 16px 66px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  min-height: 30px;
+  min-height: 26px;
 }
 .su-top-rank {
   font-family: var(--font-mono);
@@ -835,8 +837,31 @@
 
 
 /* ---------- Custom date-range picker ---------- */
-.su-range { position: relative; display: flex; }
+.su-range { position: relative; display: flex; align-items: center; }
 .su-seg-custom { white-space: nowrap; }
+
+/* Sits beside the range control and borrows its pill language. */
+.su-dl {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+.su-dl:hover:not(:disabled) { color: var(--ink); border-color: var(--hairline-strong); }
+.su-dl:disabled { opacity: .55; cursor: not-allowed; }
+.su-dl-ic { width: 13px; height: 13px; flex: none; }
+.su-dl-err { margin-left: 8px; font-size: 12px; color: #a03a20; white-space: nowrap; }
 
 .su-cal-scrim { position: fixed; inset: 0; z-index: 90; }
 .su-cal-pop {

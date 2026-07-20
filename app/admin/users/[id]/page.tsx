@@ -44,6 +44,13 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
     };
   });
 
+  // What this client pays per 1,000 requests, per service — the override plus
+  // the service default it falls back to, so the editor can show both.
+  const rates: Record<string, { client: number | null; fallback: number | null }> = {};
+  for (const cs of user.clientServices) {
+    rates[cs.service.slug] = { client: cs.pricePer1000, fallback: cs.service.pricePer1000 };
+  }
+
   return (
     <>
       <div className="ds-head">
@@ -57,7 +64,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
         </div>
       </div>
 
-      <ClientView userId={user.id} email={user.email} services={services} />
+      <ClientView userId={user.id} email={user.email} services={services} rates={rates} />
     </>
   );
 }

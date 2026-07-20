@@ -20,6 +20,8 @@ export type AdminService = {
   status: "ACTIVE" | "DISABLED";
   sortOrder: number;
   notes: string | null;
+  /// Default USD price per 1,000 billable requests. Null = unpriced.
+  pricePer1000: number | null;
   /// How many clients hold a key for it — shown before a destructive delete.
   clients: number;
 };
@@ -41,6 +43,7 @@ const EMPTY: Draft = {
   status: "DISABLED",
   sortOrder: 0,
   notes: "",
+  pricePer1000: null,
 };
 
 /// Slug is derived from the taxonomy so it stays predictable, but stays
@@ -123,6 +126,11 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
       status: draft.status,
       sortOrder: Number(draft.sortOrder) || 0,
       notes: draft.notes?.trim() || null,
+      // Blank means "unpriced", which is different from free — keep it null.
+      pricePer1000:
+        draft.pricePer1000 === null || String(draft.pricePer1000).trim() === ""
+          ? null
+          : Number(draft.pricePer1000),
     };
 
     try {
@@ -265,6 +273,22 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
               <label>
                 <span className="cn-l">Sort order</span>
                 <input className="cn-in" type="number" value={draft.sortOrder} onChange={(e) => set("sortOrder", Number(e.target.value))} />
+              </label>
+              <label>
+                <span className="cn-l">
+                  Price / 1,000 <i>USD, default</i>
+                </span>
+                <input
+                  className="cn-in"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="e.g. 5.00 — blank = unpriced"
+                  value={draft.pricePer1000 ?? ""}
+                  onChange={(e) =>
+                    set("pricePer1000", e.target.value === "" ? null : Number(e.target.value))
+                  }
+                />
               </label>
             </div>
 
