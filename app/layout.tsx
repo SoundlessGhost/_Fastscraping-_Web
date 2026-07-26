@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ScrollReset from "@/components/ScrollReset";
 import "./styles/base.css";
 import "./globals.css";
 import "./styles/nav-mobile.css";
@@ -182,6 +183,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <ScrollReset />
         <Header />
         {/* App-shell scroll: the header is the fixed top of a flex column and
             everything below scrolls in here, so the scrollbar starts under the

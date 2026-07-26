@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { isAppRoute } from "@/lib/chrome";
+import { isAppRoute, scrollShellTop } from "@/lib/chrome";
 
 type PageMeta = { cta: string; ctaHref: string; status: string };
 
@@ -50,9 +50,11 @@ export default function Header() {
 
   const sameRouteScroll =
     (href: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // Already on this page: don't re-navigate, just glide back to the top.
+      // The scroll lives in .site-scroll, not window — see scrollShellTop.
       if (href === pathname) {
         e.preventDefault();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        scrollShellTop();
       }
       setOpen(false);
     };

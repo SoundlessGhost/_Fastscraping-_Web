@@ -1034,7 +1034,9 @@
 
   .dash-col .dash-card { padding: 14px 18px 12px; }
   .dash-col .dash-card-h { margin-bottom: 8px; }
-  .dash-health-v { font-size: 22px; }
+  /* No fixed font here — the cqi clamp on .dash-health-v already fits the
+     numbers to the (now full-width) card, and a fixed size overflowed 7-digit
+     counts on a narrow phone. */
   .dash-health-row { margin-bottom: 8px; }
   .dash-health-l { margin-top: 4px; }
   .su-billnote { padding: 4px 18px 8px; font-size: 10px; }

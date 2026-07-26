@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { MouseEvent } from "react";
-import { isAppRoute } from "@/lib/chrome";
+import { isAppRoute, scrollShellTop } from "@/lib/chrome";
 
 export default function Footer() {
   const pathname = usePathname();
   if (isAppRoute(pathname)) return null;
   const scrollTopIfHome = (e: MouseEvent<HTMLAnchorElement>) => {
+    // The shell scrolls in .site-scroll, not window — see scrollShellTop.
     if (pathname === "/") {
       e.preventDefault();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollShellTop();
     }
   };
   return (
