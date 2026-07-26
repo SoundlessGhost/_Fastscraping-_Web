@@ -312,10 +312,8 @@
   grid-auto-columns: 1fr;
   gap: 0;
   margin-bottom: 12px;
-  /* Size the numbers to THIS row's width, not the viewport: four figures share
-     one narrow card, so a 7-digit count (1,366,535) would collide with its
-     neighbour at a fixed size. cqi scales them down to fit however wide the
-     card ends up. */
+  /* Lets the numbers size to the card's width (not the viewport) so 7-digit
+     counts fit without shrinking to nothing. */
   container-type: inline-size;
 }
 .dash-health-cell {
@@ -327,14 +325,13 @@
 .dash-health-cell:not(:first-child) { padding-left: 10px; }
 .dash-health-v {
   font-family: var(--font-display);
-  /* ~4.2% of the card width per figure: fits a 9-char number (7 digits + 2
-     commas) in a quarter-card with margin to spare, and never grows past 26px. */
-  font-size: clamp(13px, 4.2cqi, 26px);
+  /* Caps at 24px (down from 30) and eases smaller as the card narrows, so
+     7-digit counts read large but don't crowd their neighbours. */
+  font-size: clamp(20px, 7.2cqi, 24px);
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 .dash-health-v.ok { color: var(--accent); }
 .dash-health-v.bad { color: var(--hot); }
@@ -364,6 +361,8 @@
   color: var(--muted);
 }
 .dash-meter-s b { color: var(--accent); font-weight: 500; }
+/* The success rate — the headline figure of this line — reads bold + black. */
+.su-succ { font-weight: 700; color: var(--ink); }
 
 /* Top regions */
 .dash-regions {

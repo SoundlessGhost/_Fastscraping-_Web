@@ -262,6 +262,7 @@ export default function ServiceUsage({
 
   const rangeTotal = days.reduce((s, d) => s + d.total, 0);
   const avg = days.length ? rangeTotal / days.length : 0;
+  const avgTxt = `avg ${fmtAxis(Math.round(avg))}`;
   const busiest = days.reduce<Point | null>((b, d) => (!b || d.total > b.total ? d : b), null);
 
   // The heaviest days in view, biggest first — quiet days are not interesting
@@ -532,33 +533,6 @@ export default function ServiceUsage({
                   </g>
                 ))}
 
-                {/* average line — the "is today normal?" reference */}
-                {avg > 0 && days.length > 1 && (
-                  <g>
-                    <line
-                      x1={PADL}
-                      x2={VBW - PADR}
-                      y1={yOf(avg)}
-                      y2={yOf(avg)}
-                      stroke="#131613"
-                      strokeWidth={1}
-                      strokeDasharray="3 4"
-                      opacity={0.4}
-                    />
-                    <text
-                      x={VBW - PADR}
-                      y={yOf(avg) - 6}
-                      textAnchor="end"
-                      fontSize="9"
-                      fontWeight="500"
-                      fontFamily="var(--font-mono)"
-                      fill="#6b6e69"
-                    >
-                      avg {fmtAxis(Math.round(avg))}
-                    </text>
-                  </g>
-                )}
-
                 {days.map((d, i) => {
                   const cx = PADL + colW * (i + 0.5);
                   const isToday = d.date === today;
@@ -655,6 +629,44 @@ export default function ServiceUsage({
                   </text>
                 )}
 
+                {/* average line — drawn AFTER the bars so a busy day never hides
+                    it, with a light plate behind the label so it stays legible
+                    where the line crosses a tall bar */}
+                {avg > 0 && days.length > 1 && (
+                  <g>
+                    <line
+                      x1={PADL}
+                      x2={VBW - PADR}
+                      y1={yOf(avg)}
+                      y2={yOf(avg)}
+                      stroke="#131613"
+                      strokeWidth={1}
+                      strokeDasharray="3 4"
+                      opacity={0.55}
+                    />
+                    <rect
+                      x={VBW - PADR - avgTxt.length * 5.4 - 6}
+                      y={yOf(avg) - 16}
+                      width={avgTxt.length * 5.4 + 8}
+                      height={13}
+                      fill="#faf8f3"
+                      opacity={0.85}
+                      rx={3}
+                    />
+                    <text
+                      x={VBW - PADR - 2}
+                      y={yOf(avg) - 6}
+                      textAnchor="end"
+                      fontSize="9"
+                      fontWeight="600"
+                      fontFamily="var(--font-mono)"
+                      fill="#131613"
+                    >
+                      {avgTxt}
+                    </text>
+                  </g>
+                )}
+
                 {/* baseline */}
                 <line
                   x1={PADL}
@@ -721,8 +733,14 @@ export default function ServiceUsage({
                     <span className="m-bad" style={{ width: jobs.total ? `${(jobs.failed / jobs.total) * 100}%` : "0%" }} />
                   </div>
                   <div className="dash-meter-s">
-                    {jobs.total ? `${((jobs.completed / jobs.total) * 100).toFixed(1)}% success` : "no jobs yet"} ·{" "}
-                    {nf.format(jobs.total)} total
+                    {jobs.total ? (
+                      <>
+                        <span className="su-succ">{((jobs.completed / jobs.total) * 100).toFixed(1)}%</span> success
+                      </>
+                    ) : (
+                      "no jobs yet"
+                    )}{" "}
+                    · {nf.format(jobs.total)} total
                     {jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
                   </div>
                   {jobs.billable !== null && (
