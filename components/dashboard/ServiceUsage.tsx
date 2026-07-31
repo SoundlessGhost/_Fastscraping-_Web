@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { regionColor, regionName } from "@/lib/regions";
 import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
-import type { NormalizedUsage } from "@/lib/services/usage";
+import { projectRegion, type NormalizedUsage } from "@/lib/services/usage";
 import RangeCalendar, { type DateRange } from "@/components/dashboard/RangeCalendar";
 
 // Usage for one service, drawn from the normalised shape — so a new backend
@@ -216,25 +216,9 @@ export default function ServiceUsage({
   // The page renders from this, not from `usage` — one marketplace's slice when
   // a region is picked, the whole key otherwise. Traffic only: credits, limits
   // and job health are reported per key, so they keep reading `usage` below.
-  const view = useMemo<NormalizedUsage | null>(() => {
-    if (!usage) return null;
-    if (!region) return usage;
-    const byDate: NormalizedUsage["byDate"] = {};
-    for (const [date, e] of Object.entries(usage.byDate)) {
-      const n = e.by[region] ?? 0;
-      byDate[date] = { total: n, by: n > 0 ? { [region]: n } : {} };
-    }
-    return {
-      ...usage,
-      byDate,
-      totals: usage.regions?.[region] ?? { today: 0, last7: 0, last30: 0, thisMonth: 0, lifetime: 0 },
-      daily: usage.daily.map((d) => {
-        const n = d.by[region] ?? 0;
-        return { date: d.date, total: n, by: n > 0 ? { [region]: n } : {} };
-      }),
-      dims: [region],
-    };
-  }, [usage, region]);
+  // The export route runs the same projection, so the sheet can't disagree with
+  // what is on screen.
+  const view = useMemo(() => (usage ? projectRegion(usage, region) : null), [usage, region]);
 
   const all = useMemo(() => view?.daily ?? [], [view]);
   const days = useMemo(() => {
@@ -273,8 +257,13 @@ export default function ServiceUsage({
     return { amount: money((billed / 1000) * price.per1000), rate: money(price.per1000) };
   }, [usage, view, region]);
 
-  // Downloads exactly the window on screen: the sheet is built from the same
-  // first/last dates the chart is drawing, so "what you see is what you get".
+  // Downloads exactly what is on screen: the same first/last dates the chart is
+  // drawing, and the same region it is filtered to — so "what you see is what
+  // you get" holds for the region switcher too, not just the date range.
+  //
+  // The region also goes in the filename. Two sheets for the same week that
+  // differ only in market would otherwise land in Downloads under one name, and
+  // the second silently becomes "… (1)" with no way to tell them apart.
   const download = useCallback(async () => {
     if (downloading || days.length === 0) return;
     setDownloading(true);
@@ -282,8 +271,10 @@ export default function ServiceUsage({
 
     const from = days[0]!.date;
     const to = days[days.length - 1]!.date;
+    const q = new URLSearchParams({ from, to });
+    if (region) q.set("region", region);
     try {
-      const r = await fetch(`/api/services/${service.slug}/usage/export?from=${from}&to=${to}`, {
+      const r = await fetch(`/api/services/${service.slug}/usage/export?${q}`, {
         cache: "no-store",
       });
       if (!r.ok) {
@@ -294,7 +285,7 @@ export default function ServiceUsage({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `fastscraping-${service.slug}-usage-${from}_${to}.xlsx`;
+      a.download = `fastscraping-${service.slug}${region ? `-${region}` : ""}-usage-${from}_${to}.xlsx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -304,7 +295,7 @@ export default function ServiceUsage({
     } finally {
       setDownloading(false);
     }
-  }, [downloading, days, service.slug]);
+  }, [downloading, days, service.slug, region]);
 
   const top = Math.max(1, ...days.map((d) => d.total));
   const yOf = (v: number) => PADT + plotH - (v / top) * plotH;

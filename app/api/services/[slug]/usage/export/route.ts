@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage } from "@/lib/services/usage";
+import { fetchServiceUsage, projectRegion } from "@/lib/services/usage";
 import { buildUsageWorkbook, datesBetween } from "@/lib/services/usage-export";
 
 export const runtime = "nodejs";
@@ -15,6 +15,9 @@ const WIDEST = 30;
 /// wider request can't produce more data — this is just an abuse ceiling.
 const MAX_SPAN_DAYS = 400;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+/// Same alphabet the catalog uses for a region code — this lands in a filename,
+/// so nothing that could steer a path or a header gets through.
+const REGION_CODE = /^[a-z0-9_-]{1,40}$/;
 
 function bad(error: string, status: number) {
   return NextResponse.json({ error }, { status });
@@ -32,6 +35,11 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   if (!ISO_DATE.test(from) || !ISO_DATE.test(to) || from > to) return bad("BAD_RANGE", 400);
   const span = datesBetween(from, to).length;
   if (span === 0 || span > MAX_SPAN_DAYS) return bad("BAD_RANGE", 400);
+
+  // Which market to export, matching the page's region switcher. Absent = all of
+  // them, which is the whole-key total.
+  const region = req.nextUrl.searchParams.get("region");
+  if (region !== null && !REGION_CODE.test(region)) return bad("BAD_REGION", 400);
 
   const { slug } = await ctx.params;
   const service = await prisma.service.findUnique({
@@ -56,15 +64,21 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
     return NextResponse.json({ error: result.reason.toUpperCase(), message: result.message }, { status });
   }
 
+  // A region the backend doesn't report has to fail loudly. Falling through to
+  // the unfiltered report would hand back every market's traffic in a file named
+  // after one of them — worse than no download at all.
+  if (region !== null && !result.data.regions?.[region]) return bad("UNKNOWN_REGION", 400);
+
   const bytes = await buildUsageWorkbook({
     serviceName: service.name,
     accountEmail: user.email,
     from,
     to,
-    usage: result.data,
+    region,
+    usage: projectRegion(result.data, region),
   });
 
-  const filename = `fastscraping-${service.slug}-usage-${from}_${to}.xlsx`;
+  const filename = `fastscraping-${service.slug}${region ? `-${region}` : ""}-usage-${from}_${to}.xlsx`;
   return new NextResponse(bytes, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

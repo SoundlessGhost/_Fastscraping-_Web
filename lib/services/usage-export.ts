@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs";
+import { regionName } from "@/lib/regions";
 import type { NormalizedUsage } from "@/lib/services/usage";
 
 // The client-facing usage export: one plain sheet, three columns — the day, how
@@ -29,6 +30,10 @@ export type WorkbookInput = {
   accountEmail: string;
   from: string;
   to: string;
+  /// Which market these figures cover, or null for all of them. Named in the
+  /// sheet as well as the filename — a file that has been renamed, mailed on or
+  /// opened months later still has to say which market it counts.
+  region?: string | null;
   usage: NormalizedUsage;
 };
 
@@ -37,7 +42,7 @@ export type WorkbookInput = {
 export async function buildUsageWorkbook(
   input: WorkbookInput,
 ): Promise<Uint8Array<ArrayBuffer>> {
-  const { serviceName, accountEmail, from, to, usage } = input;
+  const { serviceName, accountEmail, from, to, region = null, usage } = input;
 
   const rows = datesBetween(from, to).map((date) => ({
     date,
@@ -57,11 +62,15 @@ export async function buildUsageWorkbook(
 
   // Says what this file actually is, so it still makes sense months later or in
   // someone else's inbox: which service, whose account, and over what window.
-  const title = ws.addRow([`${serviceName} — usage`]);
+  const title = ws.addRow([
+    `${serviceName} — usage${region ? ` — ${regionName(region)}` : ""}`,
+  ]);
   title.font = { bold: true, size: 14 };
   title.height = 22;
   const sub = ws.addRow([
-    `${from} to ${to} (UTC) · ${rows.length} day${rows.length === 1 ? "" : "s"} · ${accountEmail}`,
+    `${from} to ${to} (UTC) · ${rows.length} day${rows.length === 1 ? "" : "s"} · ${accountEmail}` +
+      // Spelled out both ways round so neither file can be mistaken for the other.
+      (region ? ` · ${regionName(region)} only` : usage.regions ? " · all regions" : ""),
   ]);
   sub.font = { size: 10, italic: true };
   sub.height = 16;

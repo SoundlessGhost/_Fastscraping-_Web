@@ -574,6 +574,37 @@ function adaptTemu(raw: Record<string, unknown>): NormalizedUsage {
   };
 }
 
+/// One region's slice of a usage report, in the same shape — so the page, the
+/// chart and the spreadsheet can all be built from one object without either
+/// side re-deriving the filter and drifting from the other.
+///
+/// Traffic only. Credits, limits, job health and the rate are reported per key,
+/// so they pass through untouched; a caller showing them beside one region has
+/// to say they cover the whole key.
+///
+/// Returns the report unchanged when there is nothing to filter to — no region
+/// asked for, or a backend that never split by one.
+export function projectRegion(usage: NormalizedUsage, region: string | null): NormalizedUsage {
+  if (!region || !usage.regions?.[region]) return usage;
+
+  const byDate: NormalizedUsage["byDate"] = {};
+  for (const [date, e] of Object.entries(usage.byDate)) {
+    const n = e.by[region] ?? 0;
+    byDate[date] = { total: n, by: n > 0 ? { [region]: n } : {} };
+  }
+
+  return {
+    ...usage,
+    byDate,
+    totals: usage.regions[region],
+    daily: usage.daily.map((d) => {
+      const n = d.by[region] ?? 0;
+      return { date: d.date, total: n, by: n > 0 ? { [region]: n } : {} };
+    }),
+    dims: [region],
+  };
+}
+
 export function normalizeUsage(kind: string, raw: unknown): NormalizedUsage | null {
   if (!isRecord(raw)) return null;
   switch (kind) {
