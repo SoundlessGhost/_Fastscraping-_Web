@@ -250,8 +250,12 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
               </label>
               <label>
                 <span className="cn-l">Adapter <i>kind</i></span>
+                {/* One option per adapter in lib/services/usage.ts — a kind with
+                    no adapter silently falls back to the generic reader. */}
                 <select className="cn-in" value={draft.kind} onChange={(e) => set("kind", e.target.value)}>
                   <option value="shopee-usage">shopee-usage</option>
+                  <option value="homegate-usage">homegate-usage</option>
+                  <option value="temu-usage">temu-usage</option>
                   <option value="generic">generic</option>
                 </select>
               </label>

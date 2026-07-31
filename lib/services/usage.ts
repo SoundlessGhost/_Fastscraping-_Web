@@ -357,13 +357,16 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
   };
 }
 
-/// Homegate's `monthly_breakdown` is flatter than Shopee's: each month is
-/// `{ "<day>": count, ..., "total": n }` — plain integers, no region, no
-/// per-day object. Flatten to real dates, keeping zeros (a known 0 is an
-/// answer). "total" and any non-numeric day key are skipped.
-function readHomegateDays(raw: Record<string, unknown>): Record<string, number> {
+/// The homegate-v2 framework's `monthly_breakdown` is flatter than Shopee's:
+/// each month is `{ "<day>": count, ..., "total": n }` — plain integers, no
+/// region, no per-day object — and a month with no traffic is `null`. Flatten
+/// to real dates, keeping zeros (a known 0 is an answer). "total" and any
+/// non-numeric day key are skipped.
+///
+/// Shared by every backend on that framework (Homegate, Temu), including the
+/// per-region copies Temu nests inside `by_region`.
+function flattenDayMap(mb: unknown): Record<string, number> {
   const out: Record<string, number> = {};
-  const mb = raw["monthly_breakdown"];
   if (!isRecord(mb)) return out;
   for (const [month, days] of Object.entries(mb)) {
     if (!isRecord(days)) continue;
@@ -373,6 +376,25 @@ function readHomegateDays(raw: Record<string, unknown>): Record<string, number> 
     }
   }
   return out;
+}
+
+function readHomegateDays(raw: Record<string, unknown>): Record<string, number> {
+  return flattenDayMap(raw["monthly_breakdown"]);
+}
+
+/// Last-n-calendar-days helpers (UTC) for the backends that report `today` and
+/// `this_month` but no rolling windows — those get summed from the breakdown.
+function dayWindow(dayMap: Record<string, number>) {
+  const now = new Date();
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const dayBack = (i: number) =>
+    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
+  const sumLast = (n: number) => {
+    let s = 0;
+    for (let i = 0; i < n; i++) s += dayMap[iso(dayBack(i))] ?? 0;
+    return s;
+  };
+  return { iso, dayBack, sumLast };
 }
 
 /// The Homegate v2 backend (`GET /me/usage`): a single stream of requests, no
@@ -386,15 +408,7 @@ function adaptHomegate(raw: Record<string, unknown>): NormalizedUsage {
 
   // Sum the last n calendar days (UTC) out of the breakdown — this is what the
   // "Last 7 days" stat and the chart window need, and the backend omits them.
-  const now = new Date();
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  const dayBack = (i: number) =>
-    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i));
-  const sumLast = (n: number) => {
-    let s = 0;
-    for (let i = 0; i < n; i++) s += dayMap[iso(dayBack(i))] ?? 0;
-    return s;
-  };
+  const { iso, dayBack, sumLast } = dayWindow(dayMap);
 
   // Daily series for the last 30 days, oldest -> newest, matching Shopee so the
   // same chart/date-picker code renders it.
@@ -429,6 +443,83 @@ function adaptHomegate(raw: Record<string, unknown>): NormalizedUsage {
   };
 }
 
+/// The Temu broker (`GET /me/usage`) reports the same `totals` +
+/// `monthly_breakdown` shape as Homegate — same homegate-v2 framework — but adds
+/// a `by_region` block: one entry per marketplace, each carrying its own
+/// day-by-day breakdown. That split is the whole point of the service, since a
+/// single key covers six marketplaces (us · ca · br · cl · mx · ar) and the
+/// region is a parameter of the request, not a separate backend. So this reads
+/// the split and feeds the stacked chart rather than falling through to the flat
+/// Homegate reader, which would collapse all six into one band.
+///
+/// Requests made before the broker became region-aware carry no region, and the
+/// backend groups them under `"unknown"`. Kept as its own band rather than
+/// dropped — they are real requests the client made.
+///
+/// Day totals come from the top-level breakdown, never from summing the regions:
+/// the two are counted by separate queries, so trusting the total the backend
+/// states keeps the chart honest if a region ever goes unreported.
+function adaptTemu(raw: Record<string, unknown>): NormalizedUsage {
+  const totals = isRecord(raw["totals"]) ? raw["totals"] : {};
+  const combined = flattenDayMap(raw["monthly_breakdown"]);
+
+  const regionsRaw = isRecord(raw["by_region"]) ? raw["by_region"] : {};
+  const perRegion: Array<{ code: string; days: Record<string, number>; lifetime: number }> = [];
+  for (const [code, block] of Object.entries(regionsRaw)) {
+    if (!isRecord(block)) continue;
+    perRegion.push({
+      code,
+      days: flattenDayMap(block["monthly_breakdown"]),
+      lifetime: num(block["lifetime"]),
+    });
+  }
+  // Busiest first: the legend then reads in the order a client cares about, and
+  // the chart stacks its biggest band at the bottom.
+  perRegion.sort((a, b) => b.lifetime - a.lifetime);
+
+  const byDate: Record<string, { total: number; by: Record<string, number> }> = {};
+  for (const [date, total] of Object.entries(combined)) byDate[date] = { total, by: {} };
+  for (const { code, days } of perRegion) {
+    for (const [date, n] of Object.entries(days)) {
+      if (n <= 0) continue;
+      const slot = (byDate[date] ??= { total: n, by: {} });
+      slot.by[code] = n;
+    }
+  }
+
+  const { iso, dayBack, sumLast } = dayWindow(combined);
+
+  // Last 30 days, oldest -> newest, matching Shopee so the same chart and
+  // date-picker code renders it.
+  const daily: UsagePoint[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const date = iso(dayBack(i));
+    const e = byDate[date];
+    daily.push({ date, total: e?.total ?? 0, by: e?.by ?? {} });
+  }
+
+  return {
+    owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
+    pricing: readPricing(raw),
+    byDate,
+    credits: readCredits(raw),
+    limits: readLimits(raw),
+    keyInfo: readKeyInfo(raw),
+    jobs: null, // the broker's /me/usage reports no completed/failed/pending split
+    totals: {
+      today: num(totals["today"]),
+      last7: sumLast(7),
+      last30: sumLast(30),
+      thisMonth: num(totals["this_month"]),
+      lifetime: num(totals["lifetime"]),
+    },
+    dimension: "region",
+    dims: perRegion.filter((r) => r.lifetime > 0).map((r) => r.code),
+    daily,
+    raw,
+  };
+}
+
 export function normalizeUsage(kind: string, raw: unknown): NormalizedUsage | null {
   if (!isRecord(raw)) return null;
   switch (kind) {
@@ -436,6 +527,8 @@ export function normalizeUsage(kind: string, raw: unknown): NormalizedUsage | nu
       return adaptShopee(raw);
     case "homegate-usage":
       return adaptHomegate(raw);
+    case "temu-usage":
+      return adaptTemu(raw);
     default:
       return adaptGeneric(raw);
   }

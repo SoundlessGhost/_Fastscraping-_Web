@@ -15,10 +15,18 @@ export const REGIONS: Record<string, { name: string; color: string }> = {
   cl: { name: "Chile", color: "#8a6b3d" },
   co: { name: "Colombia", color: "#b03a5b" },
   us: { name: "United States", color: "#2f6f9f" },
+  ca: { name: "Canada", color: "#a12f2a" },
   ch: { name: "Switzerland", color: "#b8342c" },
   de: { name: "Germany", color: "#5a5a52" },
   fr: { name: "France", color: "#3b5ea8" },
   gb: { name: "United Kingdom", color: "#6b4a8a" },
+
+  // Not a market: the bucket a backend uses for requests it can't attribute to
+  // one. The Temu broker groups every job from before it became region-aware
+  // here, so it carries real traffic and needs a name and a colour of its own —
+  // a neutral grey, so it never reads as a country in the legend. Kept last so
+  // REGION_ORDER puts it after the real markets.
+  unknown: { name: "Unknown", color: "#8f8b84" },
 };
 
 // Stable display order for region lists / chart stacks.
