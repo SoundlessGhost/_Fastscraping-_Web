@@ -53,6 +53,9 @@ export type Jobs = {
   billable: number | null;
 };
 
+/// The same five figures the stat strip shows, for one dimension key.
+export type DimTotals = { today: number; last7: number; last30: number; thisMonth: number; lifetime: number };
+
 export type NormalizedUsage = {
   owner: string | null;
   /// Null until a rate is known — the cost card is hidden rather than showing $0.
@@ -66,6 +69,15 @@ export type NormalizedUsage = {
   keyInfo: KeyInfo | null;
   jobs: Jobs | null;
   totals: { today: number; last7: number; last30: number; thisMonth: number; lifetime: number };
+  /// Per-dimension totals, keyed the same way as `dims` — what the stat strip
+  /// shows once the page is filtered to one region. Null for a backend that
+  /// reports a single undifferentiated stream, which is also how the UI decides
+  /// whether to offer a region switcher at all.
+  ///
+  /// Only traffic lives here. Credits, rate limits and job health stay off it on
+  /// purpose: every backend reports those per *key*, not per region, so a
+  /// per-region copy would be invented rather than measured.
+  regions: Record<string, DimTotals> | null;
   /// What the stacked chart splits by ("region"), or null when the backend
   /// reports a single undifferentiated number.
   dimension: string | null;
@@ -288,6 +300,28 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
   for (const d of daily) byDate[d.date] = { total: d.total, by: d.by };
   Object.assign(byDate, readMonthlyBreakdown(raw));
 
+  // The same buckets, read per region instead of at `all` — every market this
+  // key has touched, whether or not it has traffic in the visible window.
+  const regionCodes = new Set<string>(dims);
+  for (const name of ["today", "last_7_days", "last_30_days", "this_month", "lifetime"]) {
+    const b = totals[name];
+    if (isRecord(b)) for (const k of Object.keys(b)) if (k !== "all") regionCodes.add(k);
+  }
+  const perRegion = (name: string, code: string): number => {
+    const b = totals[name];
+    return isRecord(b) ? num(b[code]) : 0;
+  };
+  const regions: Record<string, DimTotals> = {};
+  for (const code of regionCodes) {
+    regions[code] = {
+      today: perRegion("today", code),
+      last7: perRegion("last_7_days", code),
+      last30: perRegion("last_30_days", code),
+      thisMonth: perRegion("this_month", code),
+      lifetime: perRegion("lifetime", code),
+    };
+  }
+
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     pricing: readPricing(raw),
@@ -303,6 +337,7 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
       thisMonth: bucket("this_month"),
       lifetime: bucket("lifetime"),
     },
+    regions: Object.keys(regions).length ? regions : null,
     dimension: "region",
     dims,
     daily,
@@ -350,6 +385,7 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
       thisMonth: bucket("this_month"),
       lifetime: bucket("lifetime") || num(raw["request_count"]),
     },
+    regions: null,
     dimension: null,
     dims: [],
     daily,
@@ -436,6 +472,7 @@ function adaptHomegate(raw: Record<string, unknown>): NormalizedUsage {
       thisMonth: num(totals["this_month"]),
       lifetime: num(totals["lifetime"]),
     },
+    regions: null, // Homegate reports one undifferentiated stream
     dimension: null,
     dims: [],
     daily,
@@ -464,13 +501,14 @@ function adaptTemu(raw: Record<string, unknown>): NormalizedUsage {
   const combined = flattenDayMap(raw["monthly_breakdown"]);
 
   const regionsRaw = isRecord(raw["by_region"]) ? raw["by_region"] : {};
-  const perRegion: Array<{ code: string; days: Record<string, number>; lifetime: number }> = [];
+  const perRegion: Array<{ code: string; days: Record<string, number>; lifetime: number; block: Record<string, unknown> }> = [];
   for (const [code, block] of Object.entries(regionsRaw)) {
     if (!isRecord(block)) continue;
     perRegion.push({
       code,
       days: flattenDayMap(block["monthly_breakdown"]),
       lifetime: num(block["lifetime"]),
+      block,
     });
   }
   // Busiest first: the legend then reads in the order a client cares about, and
@@ -498,6 +536,21 @@ function adaptTemu(raw: Record<string, unknown>): NormalizedUsage {
     daily.push({ date, total: e?.total ?? 0, by: e?.by ?? {} });
   }
 
+  // `today`, `this_month` and `lifetime` are stated per region; the two rolling
+  // windows are not, so they get summed from that region's own day map exactly
+  // the way the combined figures are.
+  const regions: Record<string, DimTotals> = {};
+  for (const { code, days, block } of perRegion) {
+    const w = dayWindow(days);
+    regions[code] = {
+      today: num(block["today"]),
+      last7: w.sumLast(7),
+      last30: w.sumLast(30),
+      thisMonth: num(block["this_month"]),
+      lifetime: num(block["lifetime"]),
+    };
+  }
+
   return {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     pricing: readPricing(raw),
@@ -513,6 +566,7 @@ function adaptTemu(raw: Record<string, unknown>): NormalizedUsage {
       thisMonth: num(totals["this_month"]),
       lifetime: num(totals["lifetime"]),
     },
+    regions: Object.keys(regions).length ? regions : null,
     dimension: "region",
     dims: perRegion.filter((r) => r.lifetime > 0).map((r) => r.code),
     daily,

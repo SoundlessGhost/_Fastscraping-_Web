@@ -836,6 +836,45 @@
 }
 
 
+/* ---------- Region switcher ----------
+   Sits in the page header's right slot, above the stat strip, and borrows the
+   range control's pill language so the two read as the same kind of control.
+   Only rendered for a backend that splits by region. */
+.su-regions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.su-regions-l {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* Codes are short, so they can sit tighter than the range buttons. */
+.su-regseg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+}
+.su-regdot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+/* On the selected (inverted) button a mid-tone dot can disappear into the dark
+   fill — a hairline ring keeps every colour readable. */
+.su-regseg button.on .su-regdot { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.55); }
+
+@media (max-width: 560px) {
+  .su-regions { width: 100%; justify-content: flex-start; }
+}
+
 /* ---------- Custom date-range picker ---------- */
 .su-range { position: relative; display: flex; align-items: center; }
 .su-seg-custom { white-space: nowrap; }

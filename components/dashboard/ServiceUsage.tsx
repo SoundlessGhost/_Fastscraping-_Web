@@ -53,6 +53,11 @@ const fmtAxis = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(v % 1000 === 0
 const dimLabel = (k: string) => regionName(k);
 const dimColor = (k: string) => regionColor(k);
 
+/// Compact label for the region switcher. Six full country names will not fit on
+/// one row, and the switcher sits above the stat strip where width is tight —
+/// the chart legend and each button's tooltip still carry the full name.
+const shortRegion = (k: string) => (k.length <= 3 ? k : k.slice(0, 3)).toUpperCase();
+
 const todayUTC = () => new Date().toISOString().slice(0, 10);
 
 /// Every YYYY-MM-DD from start to end inclusive (UTC) — the custom-range chart
@@ -101,6 +106,9 @@ export default function ServiceUsage({
   const feedUrl = usageUrl ?? `/api/services/${service.slug}/usage?interval=${WIDEST}`;
 
   const [range, setRange] = useState(7);
+  // Which marketplace the page is showing. null = all of them, which is the
+  // stacked view. Only offered when the backend splits by region at all.
+  const [region, setRegion] = useState<string | null>(null);
   // A custom [start,end] window overrides the preset ranges when set.
   const [customRange, setCustomRange] = useState<DateRange | null>(null);
   const [calOpen, setCalOpen] = useState(false);
@@ -186,18 +194,60 @@ export default function ServiceUsage({
     return () => window.clearInterval(id);
   }, [updatedAt]);
 
-  const all = useMemo(() => usage?.daily ?? [], [usage]);
+  // Every region this key has ever touched, busiest first — the switcher's
+  // options. Read from `regions` rather than the visible days so a market stays
+  // selectable on a week it happened to be quiet.
+  const regionKeys = useMemo(() => {
+    if (!usage?.regions) return [];
+    const keys = Object.entries(usage.regions)
+      .filter(([, t]) => t.lifetime > 0)
+      .sort((a, b) => b[1].lifetime - a[1].lifetime)
+      .map(([k]) => k);
+    // One market is not a choice — don't put a switcher on a single-region service.
+    return keys.length > 1 ? keys : [];
+  }, [usage]);
+
+  // A selected region became empty (or the service stopped splitting): fall back
+  // to all, rather than leaving the page filtered to something with no data.
+  useEffect(() => {
+    if (region && !regionKeys.includes(region)) setRegion(null);
+  }, [region, regionKeys]);
+
+  // The page renders from this, not from `usage` — one marketplace's slice when
+  // a region is picked, the whole key otherwise. Traffic only: credits, limits
+  // and job health are reported per key, so they keep reading `usage` below.
+  const view = useMemo<NormalizedUsage | null>(() => {
+    if (!usage) return null;
+    if (!region) return usage;
+    const byDate: NormalizedUsage["byDate"] = {};
+    for (const [date, e] of Object.entries(usage.byDate)) {
+      const n = e.by[region] ?? 0;
+      byDate[date] = { total: n, by: n > 0 ? { [region]: n } : {} };
+    }
+    return {
+      ...usage,
+      byDate,
+      totals: usage.regions?.[region] ?? { today: 0, last7: 0, last30: 0, thisMonth: 0, lifetime: 0 },
+      daily: usage.daily.map((d) => {
+        const n = d.by[region] ?? 0;
+        return { date: d.date, total: n, by: n > 0 ? { [region]: n } : {} };
+      }),
+      dims: [region],
+    };
+  }, [usage, region]);
+
+  const all = useMemo(() => view?.daily ?? [], [view]);
   const days = useMemo(() => {
     // A custom range reads day-by-day straight out of byDate; presets slice the
     // loaded daily window.
-    if (customRange && usage) {
+    if (customRange && view) {
       return datesBetween(customRange.start, customRange.end).map((date) => {
-        const e = usage.byDate[date];
+        const e = view.byDate[date];
         return { date, total: e?.total ?? 0, by: e?.by ?? {} };
       });
     }
     return all.length > range ? all.slice(-range) : all;
-  }, [all, range, customRange, usage]);
+  }, [all, range, customRange, view]);
 
   // Only regions with traffic *in the visible range* get a colour and a legend
   // slot — otherwise a quiet month shows a legend of things that aren't there.
@@ -212,13 +262,16 @@ export default function ServiceUsage({
   // Falls back to lifetime requests for a backend that reports no credits.
   const cost = useMemo(() => {
     const price = usage?.pricing;
-    if (!usage || !price) return null;
-    const billed = usage.credits?.used ?? usage.totals.lifetime;
+    if (!usage || !view || !price) return null;
+    // Follows whatever traffic is on screen: the key's billed total normally, or
+    // the selected market's own requests when the page is filtered to one —
+    // credits are a key-level quota and can't answer for a single region.
+    const billed = region ? view.totals.lifetime : (usage.credits?.used ?? usage.totals.lifetime);
     const code = /^[A-Z]{3}$/.test(price.currency) ? price.currency : "USD";
     const money = (n: number) =>
       new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(n);
     return { amount: money((billed / 1000) * price.per1000), rate: money(price.per1000) };
-  }, [usage]);
+  }, [usage, view, region]);
 
   // Downloads exactly the window on screen: the sheet is built from the same
   // first/last dates the chart is drawing, so "what you see is what you get".
@@ -278,7 +331,7 @@ export default function ServiceUsage({
   // Date picker: the backend reports this month and last day-by-day, on top of
   // the daily window — so offer exactly the span we hold figures for.
   const [pickedDate, setPickedDate] = useState<string>(today);
-  const known = useMemo(() => Object.keys(usage?.byDate ?? {}).sort(), [usage]);
+  const known = useMemo(() => Object.keys(view?.byDate ?? {}).sort(), [view]);
   // The span the calendar may offer: from our earliest figure to today (never a
   // future day, even though byDate zero-fills the rest of the current month).
   const calBounds = useMemo(() => {
@@ -286,7 +339,7 @@ export default function ServiceUsage({
     const last = known[known.length - 1];
     return { min: known[0], max: last < today ? last : today };
   }, [known, today]);
-  const picked = usage?.byDate[pickedDate] ?? null;
+  const picked = view?.byDate[pickedDate] ?? null;
 
   const credits = usage?.credits ?? null;
   const limits = usage?.limits ?? null;
@@ -298,7 +351,7 @@ export default function ServiceUsage({
     d.setUTCDate(d.getUTCDate() - 1);
     return d.toISOString().slice(0, 10);
   }, [today]);
-  const yesterdayTotal = usage?.byDate[yesterday]?.total ?? 0;
+  const yesterdayTotal = view?.byDate[yesterday]?.total ?? 0;
 
   // A cleaner header: the technical path (platform · region) becomes a small
   // uppercase eyebrow, and the big title is the full service name + "Usage".
@@ -337,6 +390,36 @@ export default function ServiceUsage({
           </p>
         </div>
 
+        {/* Region switcher — only for a backend that splits by region, and only
+            when there is more than one to switch between. Everything below the
+            header (stat strip, chart, day breakdown) follows this. */}
+        {regionKeys.length > 0 && (
+          <div className="su-regions">
+            <span className="su-regions-l">Region</span>
+            <div className="dash-seg su-regseg">
+              <button
+                className={region === null ? "on" : ""}
+                onClick={() => setRegion(null)}
+                title="Every marketplace, stacked"
+              >
+                All
+              </button>
+              {regionKeys.map((code) => (
+                <button
+                  key={code}
+                  className={region === code ? "on" : ""}
+                  onClick={() => setRegion(code)}
+                  title={dimLabel(code)}
+                >
+                  {/* The chart's colour for this market, so the button and its
+                      band in the stack read as the same thing. */}
+                  <i className="su-regdot" style={{ background: dimColor(code) }} aria-hidden="true" />
+                  {shortRegion(code)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -350,29 +433,29 @@ export default function ServiceUsage({
       <div className={`dash-stats${cost ? " dash-stats--6" : ""}`}>
         <div className="dash-stat">
           <div className="dash-stat-k">Today</div>
-          <div className="dash-stat-v">{usage ? nf.format(usage.totals.today) : "—"}</div>
+          <div className="dash-stat-v">{view ? nf.format(view.totals.today) : "—"}</div>
           <div className="dash-stat-s">req so far · UTC</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">Yesterday</div>
-          <div className="dash-stat-v">{usage ? nf.format(yesterdayTotal) : "—"}</div>
+          <div className="dash-stat-v">{view ? nf.format(yesterdayTotal) : "—"}</div>
           <div className="dash-stat-s">full day · UTC</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">Last 7 days</div>
-          <div className="dash-stat-v">{usage ? nf.format(usage.totals.last7) : "—"}</div>
-          <div className="dash-stat-s">avg {usage ? nf.format(Math.round(usage.totals.last7 / 7)) : "0"} / day</div>
+          <div className="dash-stat-v">{view ? nf.format(view.totals.last7) : "—"}</div>
+          <div className="dash-stat-s">avg {view ? nf.format(Math.round(view.totals.last7 / 7)) : "0"} / day</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">This month</div>
-          <div className="dash-stat-v">{usage ? nf.format(usage.totals.thisMonth) : "—"}</div>
+          <div className="dash-stat-v">{view ? nf.format(view.totals.thisMonth) : "—"}</div>
           <div className="dash-stat-s">rolling 30 days</div>
         </div>
         {/* The dark treatment marks the end of the strip, so it belongs to
             whichever card is last — cost when priced, Lifetime otherwise. */}
         <div className={`dash-stat${cost ? "" : " dash-stat--dark"}`}>
           <div className="dash-stat-k">Lifetime</div>
-          <div className="dash-stat-v">{usage ? nf.format(usage.totals.lifetime) : "—"}</div>
+          <div className="dash-stat-v">{view ? nf.format(view.totals.lifetime) : "—"}</div>
           <div className="dash-stat-s">since first req</div>
         </div>
         {/* Only when a rate is configured — better no card than a confident $0. */}
