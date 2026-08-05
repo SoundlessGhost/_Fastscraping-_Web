@@ -30,6 +30,11 @@ enum ServiceStatus {
   DISABLED
 }
 
+enum InvoiceStatus {
+  UNPAID
+  PAID
+}
+
 enum ClientServiceStatus {
   ACTIVE
   DISABLED
@@ -174,6 +179,37 @@ model LoginAttempt {
   createdAt DateTime @default(now())
 
   @@index([key, createdAt])
+  @@index([createdAt])
+}
+
+/// A billable invoice we send a client for scraping usage. The public page lives
+/// at /invoice/{id}/{token}; the token is an unguessable secret so the URL can
+/// be shared without anyone enumerating other clients' invoices. Payment is a
+/// plain link to an SSLCommerz page the admin pastes in — this row just displays
+/// the bill and links out.
+model Invoice {
+  id            String        @id @default(cuid())
+  /// URL secret — required to view; wrong/missing => 404.
+  token         String
+  /// Human-facing number, e.g. INV-8F3A2C. Unique for reference.
+  number        String        @unique
+  clientName    String
+  clientEmail   String?
+  clientAddress String?
+  /// Line items: [{ description, quantity, unitPrice }] in `currency`.
+  items         Json
+  currency      String        @default("USD")
+  /// Flat tax added on top of the line-item subtotal (0 = none).
+  taxAmount     Float         @default(0)
+  notes         String?
+  status        InvoiceStatus @default(UNPAID)
+  /// The SSLCommerz payment URL the "Proceed to Payment" button opens.
+  paymentUrl    String?
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
   @@index([createdAt])
 }
 
