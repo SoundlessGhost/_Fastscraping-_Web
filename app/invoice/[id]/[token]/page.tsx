@@ -34,9 +34,9 @@ export default async function InvoicePage({
       <div className="inv-card">
         {/* header */}
         <div className="inv-top">
-          <div className="inv-brand">
-            <span className="inv-brand-mark">f</span>
-            <span className="inv-brand-name">Fastscraping</span>
+          <div className="brand inv-brand">
+            <span className="brand-mark">f</span>
+            <span>Fastscraping</span>
           </div>
           <div className="inv-top-r">
             <div className="inv-label">Invoice</div>

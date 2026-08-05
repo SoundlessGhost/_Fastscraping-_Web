@@ -30,29 +30,19 @@
   padding-bottom: 22px;
   border-bottom: 1px solid var(--hairline);
 }
+/* Uses the real site logo (.brand / .brand-mark from base.css — italic
+   wordmark), just sized up a touch for the invoice header. */
 .inv-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  gap: 11px;
 }
-.inv-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 20px;
-  line-height: 1;
+.inv-brand .brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-size: 23px;
 }
-.inv-brand-name {
-  font-family: var(--font-display);
-  font-size: 22px;
-  color: var(--ink);
+.inv-brand > span:not(.brand-mark) {
+  font-size: 25px;
 }
 .inv-top-r {
   text-align: right;

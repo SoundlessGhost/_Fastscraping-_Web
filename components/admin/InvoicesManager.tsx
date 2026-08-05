@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useConfirm } from "@/components/ui/Confirm";
+import RangeCalendar from "@/components/dashboard/RangeCalendar";
 import { computeTotals, lineAmount, money, type InvoiceItem } from "@/lib/invoice";
 
 export type AdminInvoice = {
@@ -28,6 +29,94 @@ type Draft = Omit<AdminInvoice, "total" | "createdAt" | "token">;
 
 const todayYmd = () => new Date().toISOString().slice(0, 10);
 
+const addDays = (ymd: string, n: number) => {
+  const d = new Date(`${ymd}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+
+const fmtField = (ymd: string) =>
+  ymd
+    ? new Date(`${ymd}T00:00:00Z`).toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      })
+    : "";
+
+/// A date input that opens the site's own calendar (single-date mode) instead
+/// of the browser's native picker, so it matches the dashboard.
+function DateField({
+  label,
+  hint,
+  value,
+  onChange,
+  min,
+  max,
+  clearable,
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  min: string;
+  max: string;
+  clearable?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <label>
+      <span className="cn-l">
+        {label} {hint && <i>{hint}</i>}
+      </span>
+      <div className="invx-datewrap">
+        <button
+          type="button"
+          className={`cn-in invx-datebtn${value ? "" : " is-empty"}`}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {value ? fmtField(value) : "Pick a date"}
+        </button>
+        {clearable && value && (
+          <button
+            type="button"
+            className="invx-dateclear"
+            onClick={() => onChange("")}
+            aria-label="Clear date"
+          >
+            ×
+          </button>
+        )}
+        {open && (
+          <>
+            <button
+              type="button"
+              className="invx-cal-scrim"
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+              tabIndex={-1}
+            />
+            <div className="invx-cal-pop">
+              <RangeCalendar
+                single
+                min={min}
+                max={max}
+                value={value ? { start: value, end: value } : null}
+                onApply={(r) => {
+                  onChange(r.start);
+                  setOpen(false);
+                }}
+                onClose={() => setOpen(false)}
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </label>
+  );
+}
+
 const blankDraft = (): Draft => ({
   id: "",
   number: "",
@@ -41,7 +130,7 @@ const blankDraft = (): Draft => ({
   paymentUrl: "",
   status: "UNPAID",
   issueDate: todayYmd(),
-  dueDate: "",
+  dueDate: addDays(todayYmd(), 20),
 });
 
 // Relative path — identical on server and client, so the <a href> hydrates
@@ -58,6 +147,10 @@ export default function InvoicesManager({ invoices }: { invoices: AdminInvoice[]
   const [copied, setCopied] = useState<string | null>(null);
 
   const isEdit = !!draft?.id;
+  // Generous bounds for the date picker (invoice dates aren't tied to a data window).
+  const year = new Date().getUTCFullYear();
+  const dateMin = `${year - 2}-01-01`;
+  const dateMax = `${year + 2}-12-31`;
   const totals = useMemo(
     () => computeTotals(draft?.items ?? [], draft?.taxAmount ?? 0),
     [draft?.items, draft?.taxAmount],
@@ -281,14 +374,22 @@ export default function InvoicesManager({ invoices }: { invoices: AdminInvoice[]
                   <option value="PAID">Paid</option>
                 </select>
               </label>
-              <label>
-                <span className="cn-l">Issue date</span>
-                <input className="cn-in" type="date" value={draft.issueDate} onChange={(e) => set("issueDate", e.target.value)} />
-              </label>
-              <label>
-                <span className="cn-l">Due date <i>optional</i></span>
-                <input className="cn-in" type="date" value={draft.dueDate} onChange={(e) => set("dueDate", e.target.value)} />
-              </label>
+              <DateField
+                label="Issue date"
+                value={draft.issueDate}
+                onChange={(v) => set("issueDate", v)}
+                min={dateMin}
+                max={dateMax}
+              />
+              <DateField
+                label="Due date"
+                hint="optional"
+                clearable
+                value={draft.dueDate}
+                onChange={(v) => set("dueDate", v)}
+                min={dateMin}
+                max={dateMax}
+              />
             </div>
 
             <label>

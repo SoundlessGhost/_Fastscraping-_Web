@@ -415,6 +415,47 @@
   font-size: 13px;
 }
 
+/* date field: a button that opens the site calendar (not the native picker) */
+.invx-datewrap { position: relative; }
+.invx-datebtn {
+  text-align: left;
+  cursor: pointer;
+  padding-right: 30px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.invx-datebtn.is-empty { color: var(--muted); }
+.invx-dateclear {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.invx-dateclear:hover { color: var(--ink); background: var(--bg); }
+.invx-cal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: none;
+  background: transparent;
+}
+.invx-cal-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 91;
+}
+
 @media (max-width: 900px) {
   .invx-item {
     grid-template-columns: 1fr 1fr;
