@@ -121,22 +121,20 @@ export default async function InvoicePage({
             <span>Total due</span>
             <span>{money(total, cur)}</span>
           </div>
+          {/* optional BDT line — the admin sets the rate per invoice */}
+          {inv.bdtRate ? (
+            <>
+              <div className="inv-total-row inv-grand inv-bdt-total">
+                <span>Total due (BDT)</span>
+                <span>{bdt(total * inv.bdtRate)}</span>
+              </div>
+              <div className="inv-bdt-sub">payable in BDT at checkout</div>
+              <div className="inv-bdt-rate">
+                1 {cur} = {inv.bdtRate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT
+              </div>
+            </>
+          ) : null}
         </div>
-
-        {/* optional BDT conversion — the admin sets the rate per invoice */}
-        {inv.bdtRate ? (
-          <details className="inv-bdt">
-            <summary>
-              Convert to BDT <span className="inv-bdt-chev" aria-hidden="true">▾</span>
-            </summary>
-            <div className="inv-bdt-body">
-              <span className="inv-bdt-amt">{bdt(total * inv.bdtRate)}</span>
-              <span className="inv-bdt-rate">
-                1 {cur} = {bdt(inv.bdtRate)} · paid in {cur} at checkout
-              </span>
-            </div>
-          </details>
-        ) : null}
 
         {/* pay */}
         {!paid && inv.paymentUrl ? (
