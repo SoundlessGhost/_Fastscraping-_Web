@@ -169,6 +169,23 @@ model Session {
   @@index([userId])
 }
 
+/// A verification (OTP) code pulled from the central mailbox — the Temu-codes
+/// dashboard. De-duped by the email's Message-ID so re-ingesting the same inbox
+/// never doubles a row. `account` is who the mail was for (Delivered-To), so one
+/// central inbox can serve many forwarded mailboxes.
+model OtpCode {
+  id         String   @id @default(cuid())
+  messageId  String   @unique
+  account    String
+  fromAddr   String
+  subject    String
+  code       String
+  receivedAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([receivedAt])
+}
+
 /// Failed-login ledger for rate limiting. One row per failed attempt, keyed by
 /// "email:<addr>" (throttles a single account being brute-forced) and
 /// "ip:<addr>" (throttles one source spraying many accounts). Rows age out of a
