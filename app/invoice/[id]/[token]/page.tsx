@@ -85,67 +85,75 @@ export default async function InvoicePage({
           </div>
         </div>
 
-        {/* line items */}
-        <div className="inv-table" role="table">
-          <div className="inv-tr inv-tr--head" role="row">
-            <span className="inv-c-sl">#</span>
-            <span className="inv-c-desc">Description</span>
-            <span className="inv-c-qty">Qty</span>
-            <span className="inv-c-price">Unit price</span>
-            <span className="inv-c-amt">Amount</span>
-          </div>
-          {items.map((it, i) => (
-            <div className="inv-tr" role="row" key={i}>
-              <span className="inv-c-sl">{i + 1}</span>
-              <span className="inv-c-desc">{it.description}</span>
-              <span className="inv-c-qty">{new Intl.NumberFormat("en-US").format(it.quantity)}</span>
-              <span className="inv-c-price">{moneyUnit(it.unitPrice, cur)}</span>
-              <span className="inv-c-amt">{money(lineAmount(it), cur)}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* totals */}
-        <div className="inv-totals">
-          <div className="inv-total-row">
-            <span>Subtotal</span>
-            <span>{money(subtotal, cur)}</span>
-          </div>
-          {tax > 0 && (
-            <div className="inv-total-row">
-              <span>Tax</span>
-              <span>{money(tax, cur)}</span>
-            </div>
-          )}
-          <div className="inv-total-row inv-grand">
-            <span>Total due</span>
-            <span>{money(total, cur)}</span>
-          </div>
-          {/* optional BDT line — the admin sets the rate per invoice */}
-          {inv.bdtRate ? (
-            <>
-              <div className="inv-total-row inv-grand inv-bdt-total">
-                <span>Total due (BDT)</span>
-                <span>{bdt(total * inv.bdtRate)}</span>
+        {/* body: line items on the left, a summary + pay panel on the right */}
+        <div className="inv-body">
+          <div className="inv-main">
+            {/* line items */}
+            <div className="inv-table" role="table">
+              <div className="inv-tr inv-tr--head" role="row">
+                <span className="inv-c-sl">#</span>
+                <span className="inv-c-desc">Description</span>
+                <span className="inv-c-qty">Qty</span>
+                <span className="inv-c-price">Unit price</span>
+                <span className="inv-c-amt">Amount</span>
               </div>
-              <div className="inv-bdt-sub">payable in BDT at checkout</div>
-              <div className="inv-bdt-rate">
-                1 {cur} = {inv.bdtRate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT
-              </div>
-            </>
-          ) : null}
-        </div>
+              {items.map((it, i) => (
+                <div className="inv-tr" role="row" key={i}>
+                  <span className="inv-c-sl">{i + 1}</span>
+                  <span className="inv-c-desc">{it.description}</span>
+                  <span className="inv-c-qty">{new Intl.NumberFormat("en-US").format(it.quantity)}</span>
+                  <span className="inv-c-price">{moneyUnit(it.unitPrice, cur)}</span>
+                  <span className="inv-c-amt">{money(lineAmount(it), cur)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        {/* pay */}
-        {!paid && inv.paymentUrl ? (
-          <a className="inv-pay" href={inv.paymentUrl} target="_blank" rel="noopener noreferrer">
-            Proceed to Payment <span aria-hidden="true">→</span>
-          </a>
-        ) : paid ? (
-          <div className="inv-paidnote">This invoice has been paid. Thank you.</div>
-        ) : (
-          <div className="inv-paidnote">A payment link will be added shortly.</div>
-        )}
+          {/* summary + pay */}
+          <aside className="inv-aside">
+            <div className="inv-totals">
+              <div className="inv-total-row">
+                <span>Subtotal</span>
+                <span>{money(subtotal, cur)}</span>
+              </div>
+              {tax > 0 && (
+                <div className="inv-total-row">
+                  <span>Tax</span>
+                  <span>{money(tax, cur)}</span>
+                </div>
+              )}
+              <div className="inv-total-row inv-grand">
+                <span>Total due</span>
+                <span>{money(total, cur)}</span>
+              </div>
+              {/* optional BDT line — the admin sets the rate per invoice */}
+              {inv.bdtRate ? (
+                <>
+                  <div className="inv-total-row inv-grand inv-bdt-total">
+                    <span>Total due (BDT)</span>
+                    <span>{bdt(total * inv.bdtRate)}</span>
+                  </div>
+                  <div className="inv-bdt-sub">payable in BDT at checkout</div>
+                  <div className="inv-bdt-rate">
+                    1 {cur} ={" "}
+                    {inv.bdtRate.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BDT
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            {/* pay */}
+            {!paid && inv.paymentUrl ? (
+              <a className="inv-pay" href={inv.paymentUrl} target="_blank" rel="noopener noreferrer">
+                Proceed to Payment <span aria-hidden="true">→</span>
+              </a>
+            ) : paid ? (
+              <div className="inv-paidnote">This invoice has been paid. Thank you.</div>
+            ) : (
+              <div className="inv-paidnote">A payment link will be added shortly.</div>
+            )}
+          </aside>
+        </div>
 
         {inv.notes && <div className="inv-notes">{inv.notes}</div>}
 

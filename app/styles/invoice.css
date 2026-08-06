@@ -6,19 +6,49 @@
 .inv-wrap {
   min-height: 100%;
   background: var(--bg);
-  padding: 40px 20px 64px;
+  padding: 40px 40px 64px;
   display: flex;
   justify-content: center;
 }
 
 .inv-card {
   width: 100%;
-  max-width: 820px;
+  /* fills the page on normal screens; capped so it doesn't sprawl on ultrawide */
+  max-width: 1680px;
   background: var(--card, #fff);
   border: 1px solid var(--hairline);
   border-radius: 18px;
-  padding: 40px 46px 34px;
+  padding: 44px 52px 40px;
   box-shadow: 0 1px 2px rgba(19, 22, 19, 0.04), 0 18px 50px rgba(19, 22, 19, 0.07);
+}
+
+/* ---- wide body: line items on the left, summary + pay on the right ---- */
+.inv-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 348px;
+  gap: 28px;
+  align-items: start;
+  margin-top: 4px;
+}
+.inv-main {
+  min-width: 0;
+}
+.inv-aside {
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 20px 22px 22px;
+  position: sticky;
+  top: 24px;
+}
+/* totals fill the aside instead of hugging the right edge */
+.inv-aside .inv-totals {
+  margin: 0;
+  width: 100%;
+}
+.inv-aside .inv-pay,
+.inv-aside .inv-paidnote {
+  margin-top: 18px;
 }
 
 /* ---- header ---- */
@@ -300,6 +330,17 @@
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--muted);
+}
+
+/* stack the body once the side panel would get too cramped */
+@media (max-width: 960px) {
+  .inv-body {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .inv-aside {
+    position: static;
+  }
 }
 
 @media (max-width: 620px) {
