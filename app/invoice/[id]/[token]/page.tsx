@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
-import { computeTotals, lineAmount, money, moneyUnit, type InvoiceItem } from "@/lib/invoice";
+import { bdt, computeTotals, lineAmount, money, moneyUnit, type InvoiceItem } from "@/lib/invoice";
 import "@/app/styles/invoice.css";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +50,7 @@ export default async function InvoicePage({
           <div className="inv-panel">
             <div className="inv-meta-h">Billed from</div>
             <div className="inv-strong">Fastscraping</div>
-            <div className="inv-muted">Your web scraping team on demand</div>
+            <div className="inv-muted">Dhaka, Bangladesh</div>
             <a className="inv-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com">
               khalid@fastscraping.com
             </a>
@@ -122,6 +122,21 @@ export default async function InvoicePage({
             <span>{money(total, cur)}</span>
           </div>
         </div>
+
+        {/* optional BDT conversion — the admin sets the rate per invoice */}
+        {inv.bdtRate ? (
+          <details className="inv-bdt">
+            <summary>
+              Convert to BDT <span className="inv-bdt-chev" aria-hidden="true">▾</span>
+            </summary>
+            <div className="inv-bdt-body">
+              <span className="inv-bdt-amt">{bdt(total * inv.bdtRate)}</span>
+              <span className="inv-bdt-rate">
+                1 {cur} = {bdt(inv.bdtRate)} · paid in {cur} at checkout
+              </span>
+            </div>
+          </details>
+        ) : null}
 
         {/* pay */}
         {!paid && inv.paymentUrl ? (

@@ -218,6 +218,8 @@ model Invoice {
   currency      String        @default("USD")
   /// Flat tax added on top of the line-item subtotal (0 = none).
   taxAmount     Float         @default(0)
+  /// USD→BDT rate for the optional "Convert to BDT" line. Null = don't show it.
+  bdtRate       Float?
   notes         String?
   status        InvoiceStatus @default(UNPAID)
   /// The SSLCommerz payment URL the "Proceed to Payment" button opens.

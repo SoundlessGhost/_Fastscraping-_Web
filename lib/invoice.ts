@@ -28,6 +28,11 @@ export function money(amount: number, currency = "USD"): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(amount || 0);
 }
 
+/// Bangladeshi taka, e.g. "৳240,000.00" — used for the optional conversion line.
+export function bdt(amount: number): string {
+  return `৳${(amount || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 /// Unit prices can be sub-cent (e.g. $0.005 per request); showing them at the
 /// usual 2 decimals rounds to $0.01 and makes qty × price stop matching the
 /// line amount. Allow up to 4 decimals so the rate reads honestly, while totals
@@ -64,6 +69,8 @@ export const InvoiceInput = z.object({
   items: z.array(Item).min(1, "Add at least one line item."),
   currency: z.string().trim().max(3).default("USD"),
   taxAmount: z.number().min(0).max(1_000_000_000).default(0),
+  /// Null/absent = no BDT conversion shown.
+  bdtRate: z.number().min(0).max(100000).nullable().optional(),
   notes: optText(1000),
   paymentUrl: optText(1000),
   status: z.enum(["UNPAID", "PAID"]).default("UNPAID"),

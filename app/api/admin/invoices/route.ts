@@ -44,6 +44,7 @@ export async function POST(req: Request) {
           items: d.items,
           currency: d.currency || "USD",
           taxAmount: d.taxAmount,
+          bdtRate: d.bdtRate ?? null,
           notes: d.notes,
           paymentUrl: d.paymentUrl,
           status: d.status,

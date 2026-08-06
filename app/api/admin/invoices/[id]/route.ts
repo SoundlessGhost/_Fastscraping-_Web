@@ -36,6 +36,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       items: d.items,
       currency: d.currency || "USD",
       taxAmount: d.taxAmount,
+      bdtRate: d.bdtRate ?? null,
       notes: d.notes,
       paymentUrl: d.paymentUrl,
       status: d.status,

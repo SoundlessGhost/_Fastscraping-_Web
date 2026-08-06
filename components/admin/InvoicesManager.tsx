@@ -16,6 +16,7 @@ export type AdminInvoice = {
   items: InvoiceItem[];
   currency: string;
   taxAmount: number;
+  bdtRate: number | null;
   notes: string;
   paymentUrl: string;
   status: "UNPAID" | "PAID";
@@ -126,6 +127,7 @@ const blankDraft = (): Draft => ({
   items: [{ description: "", quantity: 1, unitPrice: 0 }],
   currency: "USD",
   taxAmount: 0,
+  bdtRate: null,
   notes: "",
   paymentUrl: "",
   status: "UNPAID",
@@ -203,6 +205,7 @@ export default function InvoicesManager({ invoices }: { invoices: AdminInvoice[]
       })),
       currency: (draft.currency || "USD").trim().toUpperCase(),
       taxAmount: Number(draft.taxAmount) || 0,
+      bdtRate: draft.bdtRate === null || String(draft.bdtRate).trim() === "" ? null : Number(draft.bdtRate),
       notes: draft.notes.trim(),
       paymentUrl: draft.paymentUrl.trim(),
       status: draft.status,
@@ -241,6 +244,7 @@ export default function InvoicesManager({ invoices }: { invoices: AdminInvoice[]
         items: inv.items,
         currency: inv.currency,
         taxAmount: inv.taxAmount,
+        bdtRate: inv.bdtRate,
         notes: inv.notes,
         paymentUrl: inv.paymentUrl,
         status: next,
@@ -361,6 +365,20 @@ export default function InvoicesManager({ invoices }: { invoices: AdminInvoice[]
                   step="any"
                   value={draft.taxAmount}
                   onChange={(e) => set("taxAmount", Number(e.target.value))}
+                />
+              </label>
+              <label>
+                <span className="cn-l">
+                  USD → BDT rate <i>optional</i>
+                </span>
+                <input
+                  className="cn-in"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="e.g. 122 — blank hides BDT"
+                  value={draft.bdtRate ?? ""}
+                  onChange={(e) => set("bdtRate", e.target.value === "" ? null : Number(e.target.value))}
                 />
               </label>
               <label>

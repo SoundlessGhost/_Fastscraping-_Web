@@ -22,6 +22,7 @@ export default async function AdminInvoices() {
       items,
       currency: r.currency,
       taxAmount: r.taxAmount,
+      bdtRate: r.bdtRate,
       notes: r.notes ?? "",
       paymentUrl: r.paymentUrl ?? "",
       status: r.status,
