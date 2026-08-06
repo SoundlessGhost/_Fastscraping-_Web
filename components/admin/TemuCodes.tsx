@@ -12,7 +12,7 @@ type Code = {
   fresh: boolean;
 };
 
-const POLL_MS = 5000;
+const POLL_MS = 3000;
 
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleString("en-US", {
@@ -31,9 +31,20 @@ const ago = (iso: string) => {
   return `${Math.round(s / 86400)}d ago`;
 };
 
+type Snapshot = { codes?: Code[]; configured?: boolean; error?: string | null };
+
 /// `apiUrl` lets the same component serve both the admin page (default) and the
 /// public secret-URL page (/codes/{token}) — only the endpoint differs.
-export default function TemuCodes({ apiUrl = "/api/admin/temu-codes" }: { apiUrl?: string }) {
+/// `streamUrl` is the SSE endpoint for real-time push; it defaults to
+/// `${apiUrl}/stream`, so callers only pass `apiUrl`.
+export default function TemuCodes({
+  apiUrl = "/api/admin/temu-codes",
+  streamUrl,
+}: {
+  apiUrl?: string;
+  streamUrl?: string;
+}) {
+  const stream = streamUrl ?? `${apiUrl}/stream`;
   const [codes, setCodes] = useState<Code[]>([]);
   const [configured, setConfigured] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +53,14 @@ export default function TemuCodes({ apiUrl = "/api/admin/temu-codes" }: { apiUrl
   const [query, setQuery] = useState("");
   const [, force] = useState(0); // re-render so the "ago" labels tick
   const inFlight = useRef(false);
+
+  // Apply a snapshot from either the SSE push or the poll — identical shape.
+  const apply = useCallback((d: Snapshot) => {
+    setCodes(d.codes ?? []);
+    setConfigured(!!d.configured);
+    setError(d.error ?? null);
+    setLoading(false);
+  }, []);
 
   const load = useCallback(async () => {
     if (inFlight.current) return;
@@ -53,16 +72,33 @@ export default function TemuCodes({ apiUrl = "/api/admin/temu-codes" }: { apiUrl
         setError(d.error ?? "Could not load codes.");
         return;
       }
-      setCodes(d.codes ?? []);
-      setConfigured(!!d.configured);
-      setError(d.error ?? null);
+      apply(d);
     } catch {
       setError("Network error.");
     } finally {
       inFlight.current = false;
       setLoading(false);
     }
-  }, [apiUrl]);
+  }, [apiUrl, apply]);
+
+  // Real-time push: new codes land the instant the server's IDLE worker sees
+  // them. The browser reconnects EventSource automatically; the poll below is
+  // the safety net if the stream is unavailable.
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof EventSource === "undefined") return;
+    const es = new EventSource(stream);
+    es.addEventListener("codes", (e) => {
+      try {
+        apply(JSON.parse((e as MessageEvent).data) as Snapshot);
+      } catch {
+        /* ignore a malformed frame */
+      }
+    });
+    es.onerror = () => {
+      /* transient — browser retries on its own; the poll covers the gap */
+    };
+    return () => es.close();
+  }, [stream, apply]);
 
   useEffect(() => {
     load();
@@ -109,7 +145,7 @@ export default function TemuCodes({ apiUrl = "/api/admin/temu-codes" }: { apiUrl
             Temu <em>codes</em>
           </h1>
           <p className="dash-meta">
-            incoming verification codes · refreshes every 5s
+            incoming verification codes · live — new codes appear instantly
             {!loading && (
               <>
                 {" "}

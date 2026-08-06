@@ -23,19 +23,14 @@ function maybeIngest(): Promise<IngestResult> | null {
   return inFlight;
 }
 
-export async function getCodes() {
-  let error: string | null = null;
-  const pending = maybeIngest();
-  if (pending) {
-    const r = await pending;
-    if (!r.ok) error = r.error;
-  }
-
+/// DB-only snapshot, no IMAP. The IDLE worker keeps the table current in real
+/// time, so this is what the SSE stream pushes and what the poll falls back to.
+export async function listCodes() {
   const rows = await prisma.otpCode.findMany({ orderBy: { receivedAt: "desc" }, take: 100 });
   const now = Date.now();
   return {
     configured: otpConfigured(),
-    error,
+    error: null as string | null,
     codes: rows.map((r) => ({
       id: r.id,
       account: r.account,
@@ -46,6 +41,19 @@ export async function getCodes() {
       fresh: now - r.receivedAt.getTime() < FRESH_MS,
     })),
   };
+}
+
+/// Poll path: opportunistically ingest (throttled) as a fallback for the IDLE
+/// worker, then return the list.
+export async function getCodes() {
+  let error: string | null = null;
+  const pending = maybeIngest();
+  if (pending) {
+    const r = await pending;
+    if (!r.ok) error = r.error;
+  }
+  const snap = await listCodes();
+  return { ...snap, error: error ?? snap.error };
 }
 
 /// The shared secret in the public URL /codes/{token}. Empty (unset) means the

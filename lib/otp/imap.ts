@@ -18,6 +18,18 @@ export function otpConfigured(): boolean {
   return Boolean(cfg.host && cfg.user && cfg.pass);
 }
 
+/// A fresh IMAP client from the central-inbox env. Shared by the throttled
+/// ingest and the persistent IDLE worker.
+export function newImapClient(): ImapFlow {
+  return new ImapFlow({
+    host: cfg.host,
+    port: cfg.port,
+    secure: true,
+    auth: { user: cfg.user, pass: cfg.pass },
+    logger: false,
+  });
+}
+
 /// How far back to look each poll. Codes expire in minutes, so a short window is
 /// plenty; de-dupe by Message-ID makes re-reading the same mail harmless.
 const LOOKBACK_MS = 24 * 60 * 60 * 1000;
@@ -50,13 +62,7 @@ export type IngestResult = { ok: true; added: number } | { ok: false; error: str
 export async function ingestCodes(): Promise<IngestResult> {
   if (!otpConfigured()) return { ok: false, error: "IMAP not configured" };
 
-  const client = new ImapFlow({
-    host: cfg.host,
-    port: cfg.port,
-    secure: true,
-    auth: { user: cfg.user, pass: cfg.pass },
-    logger: false,
-  });
+  const client = newImapClient();
 
   let added = 0;
   try {

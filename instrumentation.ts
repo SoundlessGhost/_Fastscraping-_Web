@@ -19,5 +19,15 @@ export async function register() {
       // security posture. Docker's restart policy will surface the crash loop.
       process.exit(1);
     }
+
+    // Start the persistent IMAP IDLE worker so new Temu codes push to open pages
+    // in real time. Non-fatal: if it can't start, the throttled poll still serves
+    // codes, so a failure here must never take the server down.
+    try {
+      const { startIdleWorker } = await import("./lib/otp/idle");
+      startIdleWorker();
+    } catch (err) {
+      console.error("[startup] IMAP IDLE worker failed to start:", err);
+    }
   }
 }
