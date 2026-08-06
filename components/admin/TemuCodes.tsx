@@ -51,6 +51,7 @@ export default function TemuCodes({
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const [, force] = useState(0); // re-render so the "ago" labels tick
   const inFlight = useRef(false);
 
@@ -113,6 +114,17 @@ export default function TemuCodes({
     };
   }, [load]);
 
+  // Manual reload on top of the live push + 3 s poll — for when someone just
+  // wants to force a fetch right now.
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await load();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load]);
+
   const copy = async (c: Code) => {
     try {
       await navigator.clipboard.writeText(c.code);
@@ -165,6 +177,9 @@ export default function TemuCodes({
             autoComplete="off"
             spellCheck={false}
           />
+          <button type="button" className="tc-refresh" onClick={refresh} disabled={refreshing}>
+            {refreshing ? "Refreshing…" : "↻ Refresh"}
+          </button>
         </div>
       </div>
 
