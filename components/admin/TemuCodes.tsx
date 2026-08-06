@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Code = {
   id: string;
@@ -12,7 +12,7 @@ type Code = {
   fresh: boolean;
 };
 
-const POLL_MS = 8000;
+const POLL_MS = 5000;
 
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleString("en-US", {
@@ -31,12 +31,15 @@ const ago = (iso: string) => {
   return `${Math.round(s / 86400)}d ago`;
 };
 
-export default function TemuCodes() {
+/// `apiUrl` lets the same component serve both the admin page (default) and the
+/// public secret-URL page (/codes/{token}) — only the endpoint differs.
+export default function TemuCodes({ apiUrl = "/api/admin/temu-codes" }: { apiUrl?: string }) {
   const [codes, setCodes] = useState<Code[]>([]);
   const [configured, setConfigured] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
   const [, force] = useState(0); // re-render so the "ago" labels tick
   const inFlight = useRef(false);
 
@@ -44,7 +47,7 @@ export default function TemuCodes() {
     if (inFlight.current) return;
     inFlight.current = true;
     try {
-      const r = await fetch("/api/admin/temu-codes", { cache: "no-store" });
+      const r = await fetch(apiUrl, { cache: "no-store" });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) {
         setError(d.error ?? "Could not load codes.");
@@ -59,7 +62,7 @@ export default function TemuCodes() {
       inFlight.current = false;
       setLoading(false);
     }
-  }, []);
+  }, [apiUrl]);
 
   useEffect(() => {
     load();
@@ -84,6 +87,20 @@ export default function TemuCodes() {
     }
   };
 
+  // Client-side filter over code / account / sender — the list is small (≤100)
+  // and already sorted newest-first, so filtering keeps that order.
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return codes;
+    return codes.filter(
+      (c) =>
+        c.code.toLowerCase().includes(q) ||
+        c.account.toLowerCase().includes(q) ||
+        c.fromAddr.toLowerCase().includes(q) ||
+        c.subject.toLowerCase().includes(q),
+    );
+  }, [codes, query]);
+
   return (
     <>
       <div className="ds-head">
@@ -92,14 +109,26 @@ export default function TemuCodes() {
             Temu <em>codes</em>
           </h1>
           <p className="dash-meta">
-            incoming verification codes · auto-refreshing
+            incoming verification codes · refreshes every 5s
             {!loading && (
               <>
                 {" "}
-                · <b>{codes.length}</b> recent
+                · <b>{query ? shown.length : codes.length}</b>
+                {query ? ` of ${codes.length}` : ""} recent
               </>
             )}
           </p>
+        </div>
+        <div className="tc-search">
+          <input
+            type="search"
+            className="tc-search-in"
+            placeholder="Search code, account, sender…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+          />
         </div>
       </div>
 
@@ -124,8 +153,10 @@ export default function TemuCodes() {
           <div className="tc-empty">loading…</div>
         ) : codes.length === 0 ? (
           <div className="tc-empty">No codes yet — they appear here within seconds of arriving.</div>
+        ) : shown.length === 0 ? (
+          <div className="tc-empty">No codes match “{query}”.</div>
         ) : (
-          codes.map((c) => (
+          shown.map((c) => (
             <div className={`tc-row${c.fresh ? " is-fresh" : ""}`} key={c.id}>
               <span className="tc-code">
                 {c.code}

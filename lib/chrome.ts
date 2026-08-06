@@ -8,7 +8,8 @@ export function isAppRoute(pathname: string | null | undefined): boolean {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/settings") ||
-    pathname.startsWith("/invoice")
+    pathname.startsWith("/invoice") ||
+    pathname.startsWith("/codes")
   );
 }
 

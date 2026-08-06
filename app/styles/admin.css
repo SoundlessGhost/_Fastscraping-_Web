@@ -550,6 +550,35 @@
   font-size: 13px;
 }
 
+/* search box, sits at the right of the .ds-head */
+.tc-search {
+  flex: 0 1 300px;
+}
+.tc-search-in {
+  width: 100%;
+  border: 1px solid var(--hairline);
+  background: var(--card, var(--paper));
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+.tc-search-in::placeholder { color: var(--muted); }
+.tc-search-in:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft, rgba(14, 93, 68, 0.12));
+}
+
+/* standalone public /codes/{token} page — centered, no admin sidebar */
+.codes-standalone {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
 @media (max-width: 820px) {
   .tc-row {
     grid-template-columns: 100px minmax(0, 1fr) 84px;
@@ -557,6 +586,8 @@
   }
   .tc-row--head, .tc-from { display: none; }
   .tc-code { font-size: 18px; }
+  .tc-search { flex-basis: 100%; }
+  .codes-standalone { padding: 24px 16px 48px; }
 }
 
 @media (max-width: 900px) {
