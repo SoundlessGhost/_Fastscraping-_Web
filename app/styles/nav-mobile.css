@@ -197,10 +197,17 @@ body.nav-open .md-panel { transform: translateX(0); }
   .nav-toggle { display: flex; }
   .topbar-right { gap: 10px; }
   .topbar .topbar-right .btn-primary { padding: 9px 16px; font-size: 13px; }
+  /* The 88px bar is a desktop proportion — it eats too much of a short screen,
+     so the header steps back down once the nav collapses to the hamburger. */
+  .topbar-inner { min-height: 72px; }
+  .topbar .brand-mark { width: 30px; height: 30px; border-radius: 8px; font-size: 19px; }
+  .topbar .brand > span:not(.brand-mark) { font-size: 23px; }
 }
 
 /* Hide the topbar CTA on phones (it lives in the drawer) */
 @media (max-width: 640px) {
   .topbar .topbar-right .btn-primary { display: none; }
-  .topbar-inner { padding: 12px var(--gutter); }
+  .topbar-inner { min-height: 62px; padding: 0 var(--gutter); }
+  .topbar .brand-mark { width: 26px; height: 26px; border-radius: 7px; font-size: 17px; }
+  .topbar .brand > span:not(.brand-mark) { font-size: 20px; }
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import LiveConsole from "@/components/LiveConsole";
+import Hero from "@/components/Hero";
 import BypassVisual from "@/components/BypassVisual";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import KMAvatar from "@/components/KMAvatar";
@@ -29,104 +29,7 @@ const MARQUEE = [
 export default function HomePage() {
   return (
     <>
-      {/* ===================== HERO ===================== */}
-      <section className="hero" data-screen-label="01 Hero">
-        <div className="container hero-grid">
-          <div className="hero-left">
-            <div className="hero-tag">
-              <span className="chip">v8 · 2026</span>
-              <span>Enterprise-grade data extraction</span>
-            </div>
-            <h1 className="display">
-              We handle your{" "}
-              <span className="br">
-                <em>web scraping</em> pipeline.
-              </span>
-            </h1>
-            <p className="hero-sub">
-              Structured data delivered <strong>reliably, at any scale</strong>{" "}
-              — bypassing Cloudflare, DataDome and login walls. No proxy
-              headaches. No infrastructure overhead. No babysitting.
-            </p>
-            <div className="hero-bullets">
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Bypass Cloudflare &amp; Captchas
-              </span>
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Large-scale on demand
-              </span>
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                No proxy hassles
-              </span>
-            </div>
-            <div className="hero-cta">
-              <Link href="#contact" className="btn btn-primary">
-                Free strategy call
-                <span className="arrow">→</span>
-              </Link>
-              <Link href="#solutions" className="btn btn-ghost">
-                View solutions
-              </Link>
-            </div>
-            <div className="hero-meta">
-              <KMAvatar variant="small" />
-              <div>
-                <div style={{ color: "var(--ink)", fontWeight: 500 }}>
-                  Khalid Mahmud Shawon
-                </div>
-                <div>Founder · Replies in &lt; 24h</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-right">
-            <LiveConsole />
-            <div className="pipeline">
-              <span className="node">
-                <span className="badge">SRC</span> Target site
-              </span>
-              <span className="arrow"></span>
-              <span className="node">
-                <span className="badge">FS</span> Fastscraping
-              </span>
-              <span className="arrow"></span>
-              <span className="node">
-                <span className="badge">OUT</span> Your warehouse
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       {/* ===================== MARQUEE ===================== */}
       <section className="marquee">

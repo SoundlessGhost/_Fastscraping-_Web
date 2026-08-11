@@ -38,6 +38,10 @@
 .ds-side-head .brand { min-width: 0; }
 .ds-side-head .brand-mark { flex: none; }
 .ds-side-head .brand span:last-child { white-space: nowrap; }
+/* Upright, like the site header. base.css italicises the wordmark for everyone
+   that reuses .brand, so it has to be turned off per place rather than there —
+   the invoice letterhead still wants it. The "f" in the mark stays italic. */
+.ds-side-head .brand > span:not(.brand-mark) { font-style: normal; }
 .ds-drawer-close {
   display: none;
   border: none;
@@ -66,13 +70,12 @@
   text-decoration: none;
   color: var(--ink-2);
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 17px;
   letter-spacing: 0;
   transition: background 0.14s ease, color 0.14s ease;
 }
 .ds-item:hover { background: var(--bg); color: var(--ink); }
-.ds-item.is-active { color: var(--accent); font-style: italic; }
+.ds-item.is-active { color: var(--accent); }
 .ds-item.is-active .ds-count { color: var(--accent); opacity: 0.75; font-style: normal; }
 .ds-item-label { flex: 1; }
 
@@ -117,7 +120,6 @@
   cursor: pointer;
   color: var(--ink);
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 17px;
   font-weight: 400;
   letter-spacing: 0;
@@ -162,13 +164,12 @@
   text-decoration: none;
   color: var(--ink-2);
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 15px;
   letter-spacing: 0;
   transition: background 0.14s ease, color 0.14s ease;
 }
 .ds-svc:hover { background: var(--bg); color: var(--ink); }
-.ds-svc.is-active { color: var(--accent); font-style: italic; }
+.ds-svc.is-active { color: var(--accent); }
 .ds-svc-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* connection state at a glance */
@@ -330,14 +331,13 @@
   text-decoration: none;
   color: var(--ink);
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 17px;
   font-weight: 400;
   letter-spacing: 0;
   transition: background 0.14s ease, color 0.14s ease;
 }
 .ds-plat-solo:hover { background: var(--bg); }
-.ds-plat-solo.is-active { color: var(--accent); font-style: italic; }
+.ds-plat-solo.is-active { color: var(--accent); }
 
 /* ---------- Settings-area sidebar nav ---------- */
 .set-item {
@@ -349,7 +349,6 @@
   text-decoration: none;
   color: var(--ink-2);
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 16px;
   transition: background 0.14s ease, color 0.14s ease;
 }
