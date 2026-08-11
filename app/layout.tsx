@@ -101,7 +101,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
+    // A real file in public/, not app/apple-icon.svg: Next builds a route for
+    // icon.svg but not for apple-icon.svg, so that path 404'd and iOS had no
+    // home-screen icon. PNG also because Google will not take an SVG for the
+    // structured-data logo below, and one file should serve both.
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
   },
   formatDetection: {
     email: false,
@@ -125,7 +129,7 @@ const organizationLd = {
   name: "Fastscraping",
   alternateName: "Fastscraping — Your web scraping team on demand",
   url: SITE_URL,
-  logo: `${SITE_URL}/apple-icon.svg`,
+  logo: `${SITE_URL}/logo.png`,
   email: "khalid@fastscraping.com",
   foundingDate: "2023",
   founder: {

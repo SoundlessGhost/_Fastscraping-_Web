@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { POSTS, getPost } from "@/lib/blog/posts";
+import { withShareCard, SITE_URL } from "@/lib/seo";
 import "../../styles/blog.css";
 
 export function generateStaticParams() {
@@ -16,7 +17,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) return { title: "Article not found" };
-  return {
+  return withShareCard({
     title: post.title,
     description: post.description,
     alternates: { canonical: `/blog/${post.slug}` },
@@ -32,7 +33,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.description,
     },
-  };
+  });
 }
 
 const fmtDate = (iso: string) =>
@@ -65,7 +66,7 @@ export default async function BlogPost({
       name: "Fastscraping",
       logo: {
         "@type": "ImageObject",
-        url: "https://www.fastscraping.com/apple-icon.svg",
+        url: `${SITE_URL}/logo.png`,
       },
     },
     mainEntityOfPage: `https://www.fastscraping.com/blog/${post.slug}`,
