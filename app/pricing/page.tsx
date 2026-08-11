@@ -4,8 +4,9 @@ import Faq from "@/components/Faq";
 import KMAvatar from "@/components/KMAvatar";
 import "../styles/about.css";import "../styles/pricing.css";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Pricing",
   description:
     "Custom pricing built around your data needs. Quote in < 24 hours, sample in 48–72 hours. No setup fees, month-to-month.",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     title: "Pricing · Fastscraping",
     description: "Custom pricing. Quote in < 24 hours.",
   },
-};
+});
 
 export default function PricingPage() {
   return (

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 import CaseStudiesGrid from "@/components/CaseStudiesGrid";
 import KMAvatar from "@/components/KMAvatar";
 import "../styles/about.css";import "../styles/cases.css";
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Case studies",
   description:
     "Field notes from real Fastscraping client engagements — the brief, the obstacles, the engineering call, and the actual numbers six months later.",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     title: "Case studies · Fastscraping",
     description: "Stories from production pipelines.",
   },
-};
+});
 
 export default function CaseStudiesPage() {
   return (

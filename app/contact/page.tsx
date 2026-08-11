@@ -4,8 +4,9 @@ import TimezoneClocks from "@/components/TimezoneClocks";
 import LetterDate from "@/components/LetterDate";
 import "../styles/about.css";import "../styles/contact.css";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Contact",
   description:
     "Tell us what you need scraped — sites, volume, cadence, delivery — and we'll send a tailored quote within 24 hours.",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     title: "Contact · Fastscraping",
     description: "Quote within 24 hours. Free sample in 48–72 hours.",
   },
-};
+});
 
 export default function ContactPage() {
   return (

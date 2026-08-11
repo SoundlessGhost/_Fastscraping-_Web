@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 import { POSTS } from "@/lib/blog/posts";
 import "../styles/blog.css";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Blog",
   description:
     "Field notes on web scraping at scale — honest writing on anti-bot bypass, managed scraping, and reliable data pipelines.",
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
     title: "Blog · Fastscraping",
     description: "Field notes on web scraping at scale.",
   },
-};
+});
 
 const fmtDate = (iso: string) =>
   new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", {

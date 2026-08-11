@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 import KMAvatar from "@/components/KMAvatar";
 import "../styles/about.css";import "../styles/industries.css";
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Industries",
   description:
     "Six verticals where Fastscraping runs production pipelines today — e-commerce, real estate, talent, ticketing, food delivery, and AI training data.",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
     title: "Industries · Fastscraping",
     description: "Six verticals · 5 countries · 2.4B records/month.",
   },
-};
+});
 
 export default function IndustriesPage() {
   return (

@@ -3,8 +3,9 @@ import SolutionsStack from "@/components/SolutionsStack";
 import KMAvatar from "@/components/KMAvatar";
 import "../styles/about.css";import "../styles/sol.css";import "../styles/sol-stack.css";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Solutions",
   description:
     "Six battle-tested data products — pricing intelligence, marketplace data, job market insights, LinkedIn data, web APIs, and ETL pipelines.",
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     title: "Solutions · Fastscraping",
     description: "Six battle-tested data products.",
   },
-};
+});
 
 export default function SolutionsPage() {
   return (

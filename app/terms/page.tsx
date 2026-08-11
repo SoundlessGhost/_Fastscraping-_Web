@@ -2,8 +2,9 @@ import Link from "next/link";
 import TocSpy from "@/components/TocSpy";
 import "../styles/about.css";import "../styles/legal.css";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Terms of service",
   description:
     "Fastscraping terms of service. You own what we deliver, we own how we build it, we both act in good faith.",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     title: "Terms of service · Fastscraping",
     description: "Month-to-month. No lock-in.",
   },
-};
+});
 
 export default function TermsPage() {
   return (

@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 import KMAvatar from "@/components/KMAvatar";
 import "../styles/about.css";import "../styles/services.css";
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Services",
   description:
     "Eight engineering capabilities for enterprise web scraping — managed scrapers, anti-bot bypass, crawling, real-time APIs, ETL, mobile app data, LinkedIn, white-label partnership.",
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
     title: "Services · Fastscraping",
     description: "Eight engineering capabilities, à la carte.",
   },
-};
+});
 
 export default function ServicesPage() {
   return (

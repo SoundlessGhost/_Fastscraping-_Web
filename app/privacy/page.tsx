@@ -2,8 +2,9 @@ import Link from "next/link";
 import TocSpy from "@/components/TocSpy";
 import "../styles/about.css";import "../styles/legal.css";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "Privacy policy",
   description:
     "How Fastscraping collects, uses, and protects your information. GDPR and CCPA compliant.",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     title: "Privacy policy · Fastscraping",
     description: "GDPR and CCPA compliant.",
   },
-};
+});
 
 export default function PrivacyPage() {
   return (

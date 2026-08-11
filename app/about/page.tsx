@@ -4,8 +4,9 @@ import AnimatedNumber from "@/components/AnimatedNumber";
 import KMAvatar from "@/components/KMAvatar";
 import "../styles/about.css";
 import type { Metadata } from "next";
+import { withShareCard } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withShareCard({
   title: "About",
   description:
     "Fastscraping is a fully managed web scraping service for data teams, AI companies, and enterprises. Founded 2023. Three engineers. 100M+ records / month.",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     title: "About · Fastscraping",
     description: "Founded 2023. Three engineers. 100M+ records per month.",
   },
-};
+});
 
 export default function AboutPage() {
   return (
