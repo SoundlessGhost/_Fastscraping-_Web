@@ -111,7 +111,15 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-base">
-          <div>© 2026 Fastscraping · All rights reserved</div>
+          {/* The page is prerendered, so the server stamps whatever year it was
+              built in. This is a client component, so the browser re-renders the
+              real year on hydration and a stale copyright can't outlive New
+              Year's Day waiting for the next deploy — suppressHydrationWarning
+              because that difference is the point, not a bug. */}
+          <div>
+            © <span suppressHydrationWarning>{new Date().getFullYear()}</span> Fastscraping · All
+            rights reserved
+          </div>
           <div>Built for data teams · Operated from Sirajganj, Ullapara, BD &amp; the cloud</div>
         </div>
       </div>
