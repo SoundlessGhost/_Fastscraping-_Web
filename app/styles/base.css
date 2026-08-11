@@ -1343,10 +1343,14 @@ section.block { padding: 100px 0; }
 .cta-card .actions .btn { flex: 1; justify-content: center; padding: 12px; font-size: 14px; }
 
 /* ---------- Footer ---------- */
-body > footer {
+/* The footer is a child of .site-scroll, not of body — the app-shell rewrite
+   moved it and this rule, still written as `body > footer`, quietly stopped
+   matching. That is why the footer had no padding at all and the copyright line
+   ended up flush against the bottom of the page. */
+.site-scroll > footer {
   border-top: 1px solid var(--hairline);
   margin-top: 80px;
-  padding: 64px 0 36px;
+  padding: 64px 0 56px;
   background: var(--bg);
 }
 .footer-grid {
@@ -1407,7 +1411,9 @@ body > footer {
 .footer-col a { font-size: 14px; color: var(--ink-2); }
 .footer-col a:hover { color: var(--accent); }
 .footer-base {
-  margin-top: 56px;
+  /* Pulled in from 56px: the gap above this rule and the page edge below it now
+     read as one band rather than the line being pushed to the bottom. */
+  margin-top: 36px;
   padding-top: 24px;
   border-top: 1px solid var(--hairline);
   display: flex;
