@@ -130,6 +130,10 @@ export default function LetterForm() {
           <span>My name is</span>
           <input
             type="text"
+            id="lt-name"
+            name="name"
+            autoComplete="name"
+            aria-label="Your name"
             placeholder="(your name)"
             className="short"
             value={name}
@@ -139,6 +143,10 @@ export default function LetterForm() {
           <span>at</span>
           <input
             type="text"
+            id="lt-company"
+            name="organization"
+            autoComplete="organization"
+            aria-label="Company (optional)"
             placeholder="(company)"
             className="company"
             value={company}
@@ -150,6 +158,10 @@ export default function LetterForm() {
           <span>You can reach me at</span>
           <input
             type="email"
+            id="lt-email"
+            name="email"
+            autoComplete="email"
+            aria-label="Your email address"
             placeholder="(your email)"
             className="email"
             value={email}
@@ -167,13 +179,25 @@ export default function LetterForm() {
         </div>
         <div className="lt-row">
           <span>I need data delivered</span>
-          <select value={cadence} onChange={(e) => setCadence(e.target.value)}>
+          <select
+            id="lt-cadence"
+            name="cadence"
+            aria-label="How often you need the data delivered"
+            value={cadence}
+            onChange={(e) => setCadence(e.target.value)}
+          >
             {CADENCE_OPTS.map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>
           <span>via</span>
-          <select value={delivery} onChange={(e) => setDelivery(e.target.value)}>
+          <select
+            id="lt-delivery"
+            name="delivery"
+            aria-label="How the data should be delivered"
+            value={delivery}
+            onChange={(e) => setDelivery(e.target.value)}
+          >
             {DELIVERY_OPTS.map((d) => (
               <option key={d}>{d}</option>
             ))}
@@ -210,6 +234,9 @@ export default function LetterForm() {
         </div>
         <div className="lt-area-wrap">
           <textarea
+            id="lt-message"
+            name="message"
+            aria-label="What you need scraped"
             className="lt-area"
             placeholder="Which websites? Which fields? Any deadlines, NDA, or vendor you'd like us to match? The more specific, the faster we can quote."
             value={message}
