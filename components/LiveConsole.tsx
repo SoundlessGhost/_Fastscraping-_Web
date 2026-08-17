@@ -20,12 +20,12 @@ const PLATFORMS = [
 const ACTIONS = [
   { txt: "200 records", status: "ok", tone: "ok" },
   { txt: "TLS handshake", status: "ok", tone: "ok" },
-  { txt: "Captcha bypass", status: "ok", tone: "ok" },
-  { txt: "DataDome OK", status: "ok", tone: "ok" },
+  { txt: "Schema validated", status: "ok", tone: "ok" },
+  { txt: "Delta detected", status: "ok", tone: "ok" },
   { txt: "Page 47 / 250", status: "ok", tone: "ok" },
   { txt: "Proxy rotated", status: "ok", tone: "warn" },
-  { txt: "Cloudflare passed", status: "ok", tone: "ok" },
-  { txt: "Akamai bypass", status: "ok", tone: "ok" },
+  { txt: "1,240 rows parsed", status: "ok", tone: "ok" },
+  { txt: "Retry 2 · recovered", status: "ok", tone: "ok" },
   { txt: "Stream → S3", status: "ok", tone: "ok" },
 ];
 
@@ -91,7 +91,7 @@ export default function LiveConsole() {
             </div>
           </div>
           <div className="cell">
-            <div className="k">Bypass success</div>
+            <div className="k">Delivery success</div>
             <div className="v green">99.7%</div>
           </div>
           <div className="cell">

@@ -12,24 +12,25 @@ export type Post = {
 
 export const POSTS: Post[] = [
   {
-    slug: "anti-bot-bypass-what-actually-works",
-    title: "Anti-bot bypass, honestly: what we crack and what's genuinely hard",
+    slug: "hard-sources-what-actually-works",
+    title: "Hard sources, honestly: what stays reliable and what genuinely breaks",
     description:
-      "A candid look at bypassing Cloudflare, DataDome, PerimeterX and Akamai at scale — what works reliably, what stays hard, and how we get partial wins on the toughest targets.",
+      "A candid look at collecting public data from sources protected by Cloudflare, DataDome, PerimeterX and Akamai at scale — what stays reliable, what stays hard, and how we still ship on the toughest ones.",
     date: "2026-06-20",
     readMins: 6,
-    tag: "Anti-bot",
+    tag: "Reliability",
     body: (
       <>
         <p>
-          Most scraping vendors promise they bypass &quot;everything.&quot; That&apos;s
-          marketing, not engineering. Anti-bot is an arms race — vendors like Cloudflare,
-          DataDome, PerimeterX and Akamai ship changes weekly. Here is an honest map of
-          what we crack reliably, what stays genuinely hard, and how we still ship data
-          on the toughest targets.
+          Most scraping vendors promise they handle &quot;everything.&quot; That&apos;s
+          marketing, not engineering. Protection stacks from Cloudflare, DataDome,
+          PerimeterX and Akamai ship changes weekly, and a public page that collected
+          cleanly last month can stall tomorrow. Here is an honest map of what stays
+          reliable, what stays genuinely hard, and how we still ship data from the
+          toughest public sources.
         </p>
 
-        <h2>What we crack reliably</h2>
+        <h2>What stays reliable</h2>
         <p>
           The majority of protected sites fall to a properly emulated browser — not a
           headless shell with default fingerprints, but a complete, consistent identity:
@@ -114,7 +115,7 @@ export const POSTS: Post[] = [
         <h2>1. Do it yourself</h2>
         <p>
           Full control, and free if you ignore engineering time — which you shouldn&apos;t.
-          A DIY scraper is cheap until the target adds anti-bot, changes its layout, or
+          A DIY scraper is cheap until the source adds protection, changes its layout, or
           rate-limits you. Then it becomes a standing maintenance burden that competes with
           your actual roadmap. DIY makes sense when the targets are simple and stable, and
           you already have idle engineering capacity.
@@ -124,14 +125,14 @@ export const POSTS: Post[] = [
         <p>
           Bright Data, Oxylabs and similar sell <em>IP addresses</em>, not data. Proxies
           solve one slice of the problem — your origin — but you still build and maintain
-          the scraper, the parser, the anti-bot bypass, the scheduling and the QA. You also
+          the scraper, the parser, the reliability work, the scheduling and the QA. You also
           still get blocked if your fingerprints and behavior don&apos;t hold up. Proxies
           are a component, not a solution.
         </p>
 
         <h2>3. Managed scraping</h2>
         <p>
-          One contract, one team that owns the whole stack: bypass, infrastructure,
+          One contract, one team that owns the whole stack: reliability, infrastructure,
           extraction, QA and delivery. You describe the data; clean records land on your
           schedule. You trade some control for not carrying any of the maintenance. This
           wins when the targets are hard, the data matters to the business, and you&apos;d
@@ -179,7 +180,7 @@ export const POSTS: Post[] = [
             selectors silently return empty or wrong values.
           </li>
           <li>
-            <strong>Anti-bot drift.</strong> A defense you bypassed last month gets an
+            <strong>Protection drift.</strong> A source that collected cleanly last month gets an
             update and starts blocking.
           </li>
           <li>
@@ -253,7 +254,7 @@ export const POSTS: Post[] = [
         <h2>The hard parts</h2>
         <ul>
           <li>
-            <strong>Anti-bot differs per marketplace.</strong> Amazon, eBay and Walmart each
+            <strong>Protection differs per marketplace.</strong> Amazon, eBay and Walmart each
             defend differently; what works on one rarely ports cleanly to another.
           </li>
           <li>

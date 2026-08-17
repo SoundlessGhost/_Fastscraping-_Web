@@ -72,7 +72,7 @@ export default async function Image() {
               maxWidth: 900,
             }}
           >
-            Structured data delivered reliably, at any scale — bypassing Cloudflare, DataDome and login walls.
+            Structured public web data, delivered reliably at any scale — pipelines we build, run and maintain for you.
           </div>
         </div>
 

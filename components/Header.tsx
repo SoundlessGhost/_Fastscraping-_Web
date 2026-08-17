@@ -20,6 +20,8 @@ const PAGE_META: Record<string, PageMeta> = {
   "/contact": { cta: "Write us a note", ctaHref: "/contact#letter", status: "Online · GMT+6" },
   "/privacy": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Reviewed quarterly" },
   "/terms": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Reviewed quarterly" },
+  "/compliance": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Public data only" },
+  "/refund": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Replies in < 24h" },
 };
 
 const NAV = [

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import TocSpy from "@/components/TocSpy";
-import "../styles/about.css";import "../styles/legal.css";
+import "../styles/about.css";
+import "../styles/legal.css";
 import type { Metadata } from "next";
 import { withShareCard } from "@/lib/seo";
 
@@ -39,7 +40,7 @@ export default function TermsPage() {
             </div>
             <div className="lh-stamp">
               <span className="lh-stamp-label">Last updated</span>
-              <span className="lh-stamp-date">23 May · 2026</span>
+              <span className="lh-stamp-date">17 Aug · 2026</span>
             </div>
           </div>
 
@@ -92,8 +93,8 @@ export default function TermsPage() {
                 standard B2B.
               </li>
               <li>
-                Governing law is Bangladesh; we cooperate with international
-                arbitration.
+                Governing law is Wyoming, USA — where Fast Scraping LLC is
+                registered.
               </li>
             </ul>
           </div>
@@ -218,9 +219,13 @@ export default function TermsPage() {
             <article className="prose">
               <p className="prose-intro">
                 These terms govern your use of Fastscraping&apos;s website and
-                services. They form a binding agreement between you (or the
-                entity you represent) and Fastscraping. Please read them —
-                they&apos;re as short as we can make them.
+                services. Fastscraping is the trading name of{" "}
+                <strong>Fast Scraping LLC</strong>, a Wyoming limited liability
+                company at 30 N Gould St, Ste R, Sheridan, WY 82801, United
+                States — the entity you contract with and pay. These terms form
+                a binding agreement between you (or the entity you represent)
+                and Fast Scraping LLC. Please read them — they&apos;re as short
+                as we can make them.
               </p>
 
               <section id="s-accept">
@@ -251,8 +256,8 @@ export default function TermsPage() {
                 <ul>
                   <li>Custom scraper development and operation</li>
                   <li>
-                    Anti-bot bypass for Cloudflare, DataDome, PerimeterX, Akamai
-                    and similar systems
+                    Reliable collection from public sources protected by
+                    Cloudflare, DataDome, PerimeterX, Akamai and similar systems
                   </li>
                   <li>Recurring data delivery pipelines (ETL/ELT)</li>
                   <li>Custom web APIs built on extracted data</li>
@@ -337,6 +342,11 @@ export default function TermsPage() {
                   price change, you may terminate with 30 days&apos; notice at
                   no additional charge.
                 </p>
+                <p>
+                  Cancellation, refunds, and billing disputes are covered in
+                  full by our <Link href="/refund">Refund &amp; cancellation
+                  policy</Link>.
+                </p>
               </section>
 
               <section id="s-use">
@@ -368,6 +378,12 @@ export default function TermsPage() {
                     declined to scrape.
                   </li>
                 </ul>
+                <p>
+                  What we will and won&apos;t collect — publicly accessible data
+                  only, and the categories we refuse outright — is set out in
+                  our <Link href="/compliance">Data compliance &amp; acceptable
+                  use policy</Link>.
+                </p>
               </section>
 
               <section id="s-ownership">
@@ -401,7 +417,7 @@ export default function TermsPage() {
                 <h2>Our tools, our IP.</h2>
                 <p>
                   We retain all rights, title, and interest in our scrapers,
-                  parsers, anti-bot systems, infrastructure, dashboards,
+                  parsers, collection systems, infrastructure, dashboards,
                   methodologies, and any improvements we make to them — even
                   when those improvements are inspired by your engagement.
                 </p>
@@ -450,7 +466,7 @@ export default function TermsPage() {
                 <p>
                   We don&apos;t warrant that source websites will remain
                   available, that their data will remain consistent, or that
-                  anti-bot systems we currently bypass will remain bypassable
+                  sources we currently collect from will remain collectable
                   indefinitely. We&apos;ll make commercially reasonable efforts
                   to adapt — but the web is what the web is.
                 </p>
@@ -526,17 +542,19 @@ export default function TermsPage() {
                 <div className="prose-num">14 · Governing law</div>
                 <h2>Governing law &amp; disputes.</h2>
                 <p>
-                  These terms are governed by the laws of the People&apos;s
-                  Republic of Bangladesh, without regard to conflict-of-laws
-                  principles.
+                  These terms are governed by the laws of the State of Wyoming,
+                  United States, where Fast Scraping LLC is registered, without
+                  regard to conflict-of-laws principles.
                 </p>
                 <p>
                   Any dispute that can&apos;t be resolved by good-faith
                   discussion will be finally settled by binding arbitration
-                  under the rules of the Singapore International Arbitration
-                  Centre (SIAC). The seat of arbitration is Singapore, the
-                  language is English, and the tribunal consists of one
-                  arbitrator.
+                  under the Commercial Arbitration Rules of the American
+                  Arbitration Association (AAA). The seat of arbitration is
+                  Wyoming, the language is English, and the tribunal consists of
+                  one arbitrator. Either party may instead bring a claim in the
+                  state or federal courts located in Wyoming, and both parties
+                  consent to the jurisdiction of those courts.
                 </p>
                 <p>
                   Notwithstanding the above, either party may seek injunctive
@@ -583,7 +601,10 @@ export default function TermsPage() {
                   <dt>WhatsApp</dt>
                   <dd>+880 1788 791 134</dd>
                   <dt>Mail</dt>
-                  <dd>Fastscraping · Sirajganj, Rajshahi · Bangladesh</dd>
+                  <dd>
+                    Fast Scraping LLC · 30 N Gould St, Ste R · Sheridan, WY
+                    82801 · United States
+                  </dd>
                 </dl>
               </section>
 

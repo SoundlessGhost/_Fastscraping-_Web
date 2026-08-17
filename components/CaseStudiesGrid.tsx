@@ -152,7 +152,7 @@ export default function CaseStudiesGrid() {
                     <div className="cs-narr-label">THE BRIEF</div>
                     <p>
                       &quot;Our internal scraper for StubHub and SeatGeek breaks every two
-                      weeks. We need someone who actually owns the bypass problem so we can stop
+                      weeks. We need someone who actually owns the reliability problem so we can stop
                       firefighting and ship product.&quot;
                     </p>
                   </div>
@@ -160,8 +160,8 @@ export default function CaseStudiesGrid() {
                     <div className="cs-narr-label">THE CALL</div>
                     <p>
                       Instead of patching the old scraper, we rebuilt the pipeline around
-                      stealth headless browsers with real TLS fingerprints and rotating
-                      residential identities. We added auto-adaptation for selector drift and
+                      real browser rendering with matched TLS and rotating
+                      residential routes. We added auto-adaptation for selector drift and
                       50+ QA gates per dataset.
                     </p>
                   </div>
@@ -193,9 +193,9 @@ export default function CaseStudiesGrid() {
                 <div className="cs-stack">
                   <span className="cs-stack-label">Stack</span>
                   <div className="cs-stack-tags">
-                    <span>Stealth headless</span>
+                    <span>Browser rendering</span>
                     <span>Residential rotation</span>
-                    <span>Cloudflare bypass</span>
+                    <span>Cloudflare-protected</span>
                     <span>Snowflake delivery</span>
                     <span>50+ QA gates</span>
                   </div>
@@ -330,12 +330,12 @@ export default function CaseStudiesGrid() {
               </div>
               <div className="cs-card-body">
                 <div className="cs-card-meta">
-                  <span className="cs-tag">LinkedIn · Stealth</span>
+                  <span className="cs-tag">LinkedIn · Public</span>
                   <span className="cs-client">Sales intel SaaS</span>
                 </div>
                 <h3>100M+ LinkedIn profiles a month. Zero account bans.</h3>
                 <p>
-                  Replaced cookie-based actors with our cookieless stealth identities. The
+                  Replaced cookie-based actors with our cookieless public-data collection. The
                   previous vendor was losing accounts faster than they could create them.
                 </p>
                 <div className="cs-card-metrics">
@@ -461,7 +461,7 @@ export default function CaseStudiesGrid() {
                 <h3>Real-time SeatGeek inventory at &lt; 60s latency.</h3>
                 <p>
                   Move from hourly batch to sub-minute streaming. Webhook-based delivery into
-                  their pricing engine. PerimeterX layer cracked open in week one.
+                  their pricing engine. The PerimeterX-protected source was stable in week one.
                 </p>
                 <div className="cs-card-metrics">
                   <div>

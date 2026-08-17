@@ -1,6 +1,7 @@
 import Link from "next/link";
 import TocSpy from "@/components/TocSpy";
-import "../styles/about.css";import "../styles/legal.css";
+import "../styles/about.css";
+import "../styles/legal.css";
 import type { Metadata } from "next";
 import { withShareCard } from "@/lib/seo";
 
@@ -40,7 +41,7 @@ export default function PrivacyPage() {
             </div>
             <div className="lh-stamp">
               <span className="lh-stamp-label">Last updated</span>
-              <span className="lh-stamp-date">23 May · 2026</span>
+              <span className="lh-stamp-date">17 Aug · 2026</span>
             </div>
           </div>
 
@@ -204,11 +205,18 @@ export default function PrivacyPage() {
                 <div className="prose-num">01 · Introduction</div>
                 <h2>Who we are.</h2>
                 <p>
-                  Fastscraping is a managed web scraping service operated by Md
-                  Khalid Mahmud Shawon (the &quot;Founder&quot;), based in
-                  Sirajganj, Bangladesh. We help data teams, AI companies, and
-                  enterprises extract structured data from public web sources at
-                  scale.
+                  Fastscraping is the trading name of{" "}
+                  <strong>Fast Scraping LLC</strong>, a limited liability
+                  company registered in Wyoming, United States, at 30 N Gould
+                  St, Ste R, Sheridan, WY 82801. Fast Scraping LLC is the data
+                  controller for this website and the contracting party for our
+                  services. Our delivery team works from Sirajganj, Bangladesh.
+                </p>
+                <p>
+                  We help data teams, AI companies, and enterprises extract
+                  structured data from public web sources at scale. What we will
+                  and won&apos;t collect is set out in our{" "}
+                  <Link href="/compliance">Data compliance policy</Link>.
                 </p>
                 <p>
                   This policy applies to <Link href="/">fastscraping.com</Link>,
@@ -412,7 +420,7 @@ export default function PrivacyPage() {
                   </dd>
                   <dt>Invoices &amp; tax records</dt>
                   <dd>
-                    7 years, as required by Bangladeshi and applicable EU tax
+                    7 years, as required by US federal and applicable EU tax
                     law.
                   </dd>
                   <dt>Server logs</dt>
@@ -523,10 +531,12 @@ export default function PrivacyPage() {
                 <div className="prose-num">09 · International transfers</div>
                 <h2>Where your data lives.</h2>
                 <p>
-                  Our infrastructure runs primarily in the EU (Frankfurt) and
-                  the US (Virginia and Oregon). Bangladesh is where the team is
-                  based, so a copy of metadata may transit through there for
-                  operational purposes.
+                  Fast Scraping LLC is registered in the United States, and our
+                  infrastructure runs primarily in the EU (Frankfurt) and the US
+                  (Virginia and Oregon). Our delivery team works from
+                  Bangladesh, so a copy of metadata may transit through there
+                  for operational purposes — we state this openly because
+                  it&apos;s where your data is actually handled.
                 </p>
                 <p>
                   For data subject to GDPR, transfers outside the EU are covered
@@ -584,7 +594,10 @@ export default function PrivacyPage() {
                   <dt>WhatsApp</dt>
                   <dd>+880 1788 791 134</dd>
                   <dt>Mail</dt>
-                  <dd>Fastscraping · Sirajganj, Rajshahi · Bangladesh</dd>
+                  <dd>
+                    Fast Scraping LLC · 30 N Gould St, Ste R · Sheridan, WY
+                    82801 · United States
+                  </dd>
                 </dl>
                 <p>
                   EU residents may also contact their local data protection

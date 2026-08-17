@@ -6,7 +6,7 @@ import "../styles/about.css";import "../styles/services.css";
 export const metadata: Metadata = withShareCard({
   title: "Services",
   description:
-    "Eight engineering capabilities for enterprise web scraping — managed scrapers, anti-bot bypass, crawling, real-time APIs, ETL, mobile app data, LinkedIn, white-label partnership.",
+    "Eight engineering capabilities for enterprise web data collection — managed scrapers, hard-source reliability, crawling, real-time APIs, ETL, mobile app data, LinkedIn, white-label partnership.",
   alternates: { canonical: "/services" },
   openGraph: {
     title: "Services · Fastscraping",
@@ -99,7 +99,7 @@ export default function ServicesPage() {
               {
                 code: "SVC-02",
                 href: "#s-antibot",
-                name: "Anti-bot engineering",
+                name: "Hard-source reliability",
                 best: "Cloudflare · DataDome · PerimeterX · Akamai",
                 eng: "Included with any pipeline",
                 price: "included",
@@ -233,7 +233,7 @@ export default function ServicesPage() {
                   <div className="sv-cell-h">What we do</div>
                   <ul className="sv-cell-list">
                     <li>Architecture &amp; scraper build</li>
-                    <li>Anti-bot &amp; proxy strategy</li>
+                    <li>Reliability &amp; proxy strategy</li>
                     <li>Deploy &amp; schedule</li>
                     <li>24/7 monitoring + selector-drift auto-adapt</li>
                     <li>50+ QA gates per dataset, per run</li>
@@ -282,10 +282,10 @@ export default function ServicesPage() {
             <div className="sv-spec-body">
               <header className="sv-spec-head">
                 <span className="sv-spec-tag sv-spec-tag--hot">
-                  Anti-bot engineering · the specialty
+                  Reliability engineering · the specialty
                 </span>
                 <h3 className="sv-spec-title">
-                  We bypass what blocks <em>everyone else.</em>
+                  We keep flowing what stalls <em>everyone else.</em>
                 </h3>
                 <p className="sv-spec-pitch">
                   This is the core competency the company is built around. Every
@@ -318,8 +318,8 @@ export default function ServicesPage() {
                     pct: "99.1%",
                   },
                   {
-                    name: "CAPTCHAs",
-                    sub: "reCAPTCHA · hCaptcha · Turnstile",
+                    name: "Rate limiting",
+                    sub: "Adaptive pacing · backoff · retry",
                     pct: "99.5%",
                   },
                   {
@@ -341,10 +341,10 @@ export default function ServicesPage() {
 
               <div className="sv-spec-grid">
                 <div className="sv-spec-cell">
-                  <div className="sv-cell-h">Techniques we use</div>
+                  <div className="sv-cell-h">How we do it</div>
                   <ul className="sv-cell-list">
-                    <li>Stealth headless with TLS fingerprint match</li>
-                    <li>Persistent aged browser profiles</li>
+                    <li>Real browser rendering with matched TLS</li>
+                    <li>Consistent, long-lived browser sessions</li>
                     <li>Residential + mobile proxy rotation</li>
                     <li>Canvas / WebGL / font noise emulation</li>
                     <li>Behavioral mouse &amp; timing models</li>
@@ -363,7 +363,7 @@ export default function ServicesPage() {
                   <div className="sv-cell-h">Pricing</div>
                   <ul className="sv-cell-list">
                     <li>Included in any pipeline · no add-on fee</li>
-                    <li>One-off bypass research available</li>
+                    <li>One-off source feasibility studies available</li>
                     <li>From $4,000 · one-off audits</li>
                   </ul>
                 </div>
@@ -496,7 +496,7 @@ export default function ServicesPage() {
   "query": "wireless headphones",
   "fetched_at": "2026-05-25T14:08:42Z",
   "results": [{ "sku": "B0C33XKZP4", "price_usd": 348.00, "stock": "in_stock" }, ...],
-  "bypassed": ["amazon_botd"],
+  "records": 240,
   "cache": "HIT"
 }`}</pre>
               </div>
@@ -578,8 +578,8 @@ export default function ServicesPage() {
                   {
                     name: "EXTRACT",
                     items: [
-                      "Stealth fetch",
-                      "Anti-bot bypass",
+                      "Fetch",
+                      "Retry + pace",
                       "Parse + validate",
                     ],
                   },
@@ -695,13 +695,13 @@ export default function ServicesPage() {
                   <div className="sv-cell-h">Approach</div>
                   <ul className="sv-cell-list">
                     <li>Traffic capture &amp; protocol mapping</li>
-                    <li>Certificate pinning bypass (Frida · objection)</li>
+                    <li>Device-level traffic inspection</li>
                     <li>API signing &amp; token rotation</li>
                     <li>Real device farm for hard apps</li>
                   </ul>
                 </div>
                 <div className="sv-spec-cell">
-                  <div className="sv-cell-h">Targets we&apos;ve cracked</div>
+                  <div className="sv-cell-h">Sources we cover</div>
                   <ul className="sv-cell-list">
                     <li>DoorDash · Uber Eats · Grubhub</li>
                     <li>StubHub mobile · SeatGeek mobile</li>
@@ -746,7 +746,7 @@ export default function ServicesPage() {
             <div className="sv-spec-rail">
               <div className="sv-spec-num">07</div>
               <div className="sv-spec-code">SVC-07</div>
-              <div className="sv-spec-vert">B2B · LINKEDIN · STEALTH</div>
+              <div className="sv-spec-vert">B2B · LINKEDIN · PUBLIC</div>
             </div>
             <div className="sv-spec-body">
               <header className="sv-spec-head">
@@ -755,7 +755,7 @@ export default function ServicesPage() {
                   100M+ profiles a month. <em>Zero account bans.</em>
                 </h3>
                 <p className="sv-spec-pitch">
-                  Cookieless stealth identities — not just rotating IPs.
+                  Cookieless collection of public profiles — not just rotating IPs.
                   Profiles, companies, jobs and posts at production scale, with
                   a delivery cadence you choose.
                 </p>
@@ -776,7 +776,7 @@ export default function ServicesPage() {
                   <ul className="sv-cell-list">
                     <li>Cookieless — no client account is ever used</li>
                     <li>TLS &amp; browser fingerprint matched to mobile</li>
-                    <li>Aged stealth profiles, never recycled</li>
+                    <li>Long-lived sessions, never recycled</li>
                     <li>Behavioral pacing — not &quot;max speed&quot;</li>
                   </ul>
                 </div>
@@ -859,7 +859,7 @@ export default function ServicesPage() {
                   <ul className="sv-cell-list">
                     <li>Sell data but don&apos;t want to build the stack</li>
                     <li>Need extra capacity for spiky workloads</li>
-                    <li>Want anti-bot expertise without hiring it</li>
+                    <li>Want hard-source expertise without hiring it</li>
                     <li>
                       Have a hard target an in-house team can&apos;t crack
                     </li>
@@ -914,12 +914,12 @@ export default function ServicesPage() {
               <div className="sv-bundle-name">STARTER</div>
               <h3>One source, fully owned.</h3>
               <p>
-                A single tricky scraper, built and run by us with anti-bot
-                bypass included. For teams who need one source done right.
+                A single tricky scraper, built and run by us, hard-source
+                reliability included. For teams who need one source done right.
               </p>
               <ul>
                 <li>One managed scraper</li>
-                <li>Anti-bot included</li>
+                <li>Hard sources included</li>
                 <li>API or webhook delivery</li>
                 <li>24/7 monitoring</li>
               </ul>
@@ -953,7 +953,7 @@ export default function ServicesPage() {
               </p>
               <ul>
                 <li>3–5 managed scrapers</li>
-                <li>Anti-bot · all layers · included</li>
+                <li>Hard sources · all layers · included</li>
                 <li>Custom REST API + warehouse load</li>
                 <li>Dedicated Slack channel</li>
                 <li>Quarterly capacity reviews</li>

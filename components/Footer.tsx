@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { MouseEvent } from "react";
 import { isAppRoute, scrollShellTop } from "@/lib/chrome";
+import { COMPANY, COMPANY_ADDRESS_LINE } from "@/lib/company";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -25,7 +26,7 @@ export default function Footer() {
               <span>Fastscraping</span>
             </Link>
             <p>
-              Your web scraping team on demand. Structured data at scale — no Cloudflare, no captchas, no hassles.
+              Your web scraping team on demand. Structured public web data at scale — no infrastructure, no firefighting, no hassles.
             </p>
             <a
               href="https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com"
@@ -105,8 +106,15 @@ export default function Footer() {
               <li><Link href="/blog">Blog</Link></li>
               <li><Link href="/contact">Contact</Link></li>
               <li><a href="https://linkedin.com/in/md-khalid-mahmud-shawon" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+            </ul>
+          </div>
+          <div className="footer-col">
+            <h4>Legal</h4>
+            <ul>
               <li><Link href="/privacy">Privacy</Link></li>
               <li><Link href="/terms">Terms</Link></li>
+              <li><Link href="/compliance">Compliance</Link></li>
+              <li><Link href="/refund">Refunds</Link></li>
             </ul>
           </div>
         </div>
@@ -116,11 +124,16 @@ export default function Footer() {
               real year on hydration and a stale copyright can't outlive New
               Year's Day waiting for the next deploy — suppressHydrationWarning
               because that difference is the point, not a bug. */}
+          {/* One line: the registered address earns its place here more than
+              "All rights reserved" did — copyright holds without asserting it. */}
           <div>
-            © <span suppressHydrationWarning>{new Date().getFullYear()}</span> Fastscraping · All
-            rights reserved
+            © <span suppressHydrationWarning>{new Date().getFullYear()}</span> {COMPANY.legalName} ·{" "}
+            {COMPANY_ADDRESS_LINE}
           </div>
-          <div>Built for data teams · Operated from Sirajganj, Ullapara, BD &amp; the cloud</div>
+          {/* Short on purpose: the registered address opposite is the long half,
+              and both must stay on one line. Where the team actually sits is
+              disclosed in the privacy policy, which is where GDPR wants it. */}
+          <div>Built for data teams</div>
         </div>
       </div>
     </footer>

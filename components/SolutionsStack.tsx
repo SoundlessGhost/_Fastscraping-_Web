@@ -202,7 +202,7 @@ function LinkedInVisual() {
         <circle r="3" fill="#7ad19a"><animateMotion dur="3.2s" repeatCount="indefinite" begin="1.4s" path="M 400 230 Q 320 190 240 140" /></circle>
       </svg>
       <div className="vf-foot">
-        <span>No cookies · stealth identities · TLS fingerprint match</span>
+        <span>No cookies · public profiles only · matched TLS</span>
         <span><strong>Zero bans · all-time</strong></span>
       </div>
     </div>
@@ -241,12 +241,12 @@ function ApiVisual() {
       "rank_organic": 2
     }
   ],
-  "bypassed": ["amazon_botd"]
+  "records": 240
 }`}</pre>
       <div className="api-foot">
         <span className="api-tag">200 OK</span>
         <span>cache: HIT · region: us-east-1</span>
-        <span className="api-tag api-tag-ok">x-bot-bypass: included</span>
+        <span className="api-tag api-tag-ok">x-source-status: ok</span>
       </div>
     </div>
   );
@@ -257,7 +257,7 @@ type StageRow = { d?: string; t: string; ok?: boolean };
 function PipelineVisual() {
   const stages: { name: string; rows: StageRow[] }[] = [
     { name: "SOURCES", rows: [{ d: "#7e2e8a", t: "StubHub" }, { d: "#ff5b49", t: "SeatGeek" }, { d: "#0a66c2", t: "Ticketmaster" }] },
-    { name: "EXTRACT", rows: [{ ok: true, t: "Stealth fetch" }, { ok: true, t: "Anti-bot bypass" }, { ok: true, t: "Parse · validate" }] },
+    { name: "EXTRACT", rows: [{ ok: true, t: "Fetch" }, { ok: true, t: "Retry · pace" }, { ok: true, t: "Parse · validate" }] },
     { name: "TRANSFORM", rows: [{ ok: true, t: "Schema normalize" }, { ok: true, t: "Dedup · enrich" }, { ok: true, t: "50+ QA checks" }] },
     { name: "DELIVER", rows: [{ d: "#0e5d44", t: "Snowflake" }, { d: "#c79b3a", t: "S3 · Parquet" }, { d: "#2a5d8a", t: "Webhook" }] },
   ];
@@ -395,11 +395,11 @@ const SOLUTIONS: Solution[] = [
     bullets: [
       "Full profile data: experience, skills, education, posts",
       "Company pages: size, growth, hires, tech stack",
-      "Job listings with applicant counts & demographics",
-      "Cookieless stealth — no account ban risk",
+      "Job listings with applicant counts & seniority mix",
+      "Cookieless — no client account is ever used",
       "GDPR-compliant — right-to-be-forgotten honored",
     ],
-    side: { h: "Built for", items: ["Sales intelligence", "Recruiting & talent CRMs", "Investor data products", "Account enrichment"] },
+    side: { h: "Built for", items: ["Sales intelligence", "Recruiting & talent CRMs", "Investor data products", "Account research"] },
     accent: "gold",
     Visual: LinkedInVisual,
     cta: { primary: "Discuss LinkedIn data", secondary: "Or try Scrayz API", link: "https://scrayz.com" },
@@ -535,7 +535,7 @@ const SolutionCard = forwardRef<HTMLElement, CardProps>(function SolutionCard(
                 <div><dt>Cadence</dt><dd>Any · realtime → monthly</dd></div>
                 <div><dt>Delivery</dt><dd>API · S3 · SFTP · webhook</dd></div>
                 <div><dt>Setup</dt><dd>Sample in 48–72h</dd></div>
-                <div><dt>Anti-bot</dt><dd>Included · all layers</dd></div>
+                <div><dt>Hard sources</dt><dd>Included · all layers</dd></div>
               </dl>
             </div>
 

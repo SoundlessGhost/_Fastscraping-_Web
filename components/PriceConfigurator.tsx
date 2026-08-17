@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 const PLATFORMS = [
-  { id: "easy", label: "Easy", lvl: "L1", mult: 1.0, hint: "Static HTML, no anti-bot" },
+  { id: "easy", label: "Easy", lvl: "L1", mult: 1.0, hint: "Static HTML, no protection" },
   { id: "medium", label: "Medium", lvl: "L2", mult: 1.6, hint: "JS-rendered, light bot detection" },
   { id: "hard", label: "Hard", lvl: "L3", mult: 2.4, hint: "Cloudflare / DataDome" },
   { id: "extreme", label: "Extreme", lvl: "L4", mult: 3.6, hint: "PerimeterX, Akamai, auth walls" },
@@ -256,7 +256,7 @@ export default function PriceConfigurator() {
               <span className="ic" style={{ color: "#6fd0a3" }}>
                 ✓
               </span>{" "}
-              Anti-bot bypass · monitoring · support
+              Hard-source reliability · monitoring · support
             </span>
             <span className="v delta">included</span>
           </div>

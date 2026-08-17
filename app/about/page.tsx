@@ -14,7 +14,7 @@ export const metadata: Metadata = withShareCard({
   openGraph: {
     title: "About · Fastscraping",
     description:
-      "Founded 2023. Three engineers. 100M+ records per month. Anti-bot bypass experts.",
+      "Founded 2023. Three engineers. 100M+ records per month. Hard-source reliability experts.",
     url: "/about",
     type: "website",
   },
@@ -86,7 +86,7 @@ export default function AboutPage() {
               <p className="mission-body">
                 We believe every company should have access to the web data they
                 need — without building complex infrastructure, managing proxy
-                pools, or fighting anti-bot systems. We handle the complexity so
+                pools, or chasing sites that keep changing. We handle the complexity so
                 you can focus on what matters: turning data into insights.
               </p>
               <div className="mission-quote">
@@ -122,7 +122,7 @@ export default function AboutPage() {
               <article className="principle">
                 <div className="p-num">03</div>
                 <div className="p-body">
-                  <h3>Anti-bot is our specialty.</h3>
+                  <h3>Hard sources are our specialty.</h3>
                   <p>
                     Not an afterthought. Not &quot;best effort.&quot; It&apos;s
                     the core competency we built the company around.
@@ -185,7 +185,7 @@ export default function AboutPage() {
                 Specializing in <strong>enterprise web scraping</strong>, data
                 pipeline engineering, and LinkedIn API solutions. Built
                 Fastscraping to solve data extraction challenges that other
-                vendors couldn&apos;t handle — Cloudflare-defended targets,
+                vendors couldn&apos;t handle — Cloudflare-protected sources,
                 scaled LinkedIn pipelines, and silent white-label partnerships
                 for agencies.
               </p>
@@ -194,7 +194,7 @@ export default function AboutPage() {
                 <li>
                   <span className="fl-k">Specialty</span>
                   <span className="fl-v">
-                    Anti-bot bypass · Cloudflare, DataDome, PerimeterX
+                    Hard-source reliability · Cloudflare, DataDome, PerimeterX
                   </span>
                 </li>
                 <li>
@@ -206,6 +206,10 @@ export default function AboutPage() {
                 <li>
                   <span className="fl-k">Based in</span>
                   <span className="fl-v">Sirajganj, Rajshahi · Bangladesh</span>
+                </li>
+                <li>
+                  <span className="fl-k">Entity</span>
+                  <span className="fl-v">Fast Scraping LLC · Wyoming, USA</span>
                 </li>
                 <li>
                   <span className="fl-k">Reach</span>
@@ -291,24 +295,25 @@ export default function AboutPage() {
               <div className="member-portrait member-portrait--alt">
                 <Image
                   src="/team/rejwan.png"
-                  alt="MD Rejwan Habib — Head of Anti-Bot Research"
+                  alt="MD Rejwan Habib — Head of Collection Reliability"
                   fill
                   sizes="(min-width: 960px) 25vw, 100vw"
                   style={{ objectFit: "cover" }}
                 />
               </div>
               <div className="member-body">
-                <div className="member-role">Head of Anti-Bot Research</div>
+                <div className="member-role">Head of Collection Reliability</div>
                 <h3 className="member-name">MD Rejwan Habib</h3>
-                <div className="member-title">Anti-Bot Research Lead</div>
+                <div className="member-title">Reliability Research Lead</div>
                 <p>
-                  Expert in bypassing Cloudflare, DataDome, PerimeterX, and
-                  Akamai. Developing cutting-edge stealth browser technology.
+                  Keeps collection stable on sources protected by Cloudflare,
+                  DataDome, PerimeterX and Akamai. Builds our browser-rendering
+                  stack.
                 </p>
                 <div className="member-tags">
                   <span>Cloudflare</span>
                   <span>DataDome</span>
-                  <span>stealth browser</span>
+                  <span>browser rendering</span>
                 </div>
               </div>
             </article>
@@ -416,9 +421,9 @@ export default function AboutPage() {
               </div>
               <h3>Technical excellence.</h3>
               <p>
-                We solve problems others can&apos;t. From Cloudflare to DataDome
-                — we bypass what blocks others. The hard problems are why
-                clients hire us.
+                We solve problems others can&apos;t. The sources that stall
+                every other vendor are the ones we keep flowing. The hard
+                problems are why clients hire us.
               </p>
               <div className="v-tag">depth over breadth</div>
             </article>
@@ -561,7 +566,7 @@ export default function AboutPage() {
             </div>
             <p>
               Two products serving two different audiences — both powered by the
-              same anti-bot and infrastructure stack we&apos;ve been building
+              same collection and infrastructure stack we&apos;ve been building
               since 2023.
             </p>
           </div>
@@ -596,7 +601,7 @@ export default function AboutPage() {
                   <span className="dot"></span> Custom data pipelines
                 </li>
                 <li>
-                  <span className="dot"></span> Anti-bot bypass included
+                  <span className="dot"></span> Hard sources included
                 </li>
                 <li>
                   <span className="dot"></span> Dedicated support
@@ -741,7 +746,7 @@ export default function AboutPage() {
                 <KMAvatar variant="large" />
                 <div>
                   <div className="n">Md Khalid Mahmud Shawon</div>
-                  <div className="r">Founder · The anti-bot expert</div>
+                  <div className="r">Founder · Web data engineering</div>
                 </div>
               </div>
               <div className="meta-row">

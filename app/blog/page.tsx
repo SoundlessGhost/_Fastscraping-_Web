@@ -7,12 +7,12 @@ import "../styles/blog.css";
 export const metadata: Metadata = withShareCard({
   title: "Blog",
   description:
-    "Field notes on web scraping at scale — honest writing on anti-bot bypass, managed scraping, and reliable data pipelines.",
+    "Field notes on web data collection at scale — honest writing on hard sources, managed scraping, and reliable data pipelines.",
   alternates: { canonical: "/blog" },
   openGraph: {
     title: "Blog · Fastscraping",
     description:
-      "Honest, practical writing on anti-bot bypass, managed scraping, and data pipelines.",
+      "Honest, practical writing on hard sources, managed scraping, and data pipelines.",
     url: "/blog",
     type: "website",
   },
@@ -42,7 +42,7 @@ export default function BlogIndex() {
             The <em>scraping</em> journal.
           </h1>
           <p className="blog-deck">
-            Honest, practical writing on anti-bot bypass, managed scraping, and keeping
+            Honest, practical writing on hard sources, managed scraping, and keeping
             data pipelines alive at scale.
           </p>
         </header>

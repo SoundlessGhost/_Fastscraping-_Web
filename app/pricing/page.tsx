@@ -2,7 +2,8 @@ import Link from "next/link";
 import PriceConfigurator from "@/components/PriceConfigurator";
 import Faq from "@/components/Faq";
 import KMAvatar from "@/components/KMAvatar";
-import "../styles/about.css";import "../styles/pricing.css";
+import "../styles/about.css";
+import "../styles/pricing.css";
 import type { Metadata } from "next";
 import { withShareCard } from "@/lib/seo";
 
@@ -81,7 +82,7 @@ export default function PricingPage() {
               <span className="floor-note">for a single-source daily pipeline</span>
             </div>
             <div className="ph-floor-right">
-              <span className="floor-chip">Cloudflare bypass · included</span>
+              <span className="floor-chip">Hard sources · included</span>
               <span className="floor-chip">Infrastructure · included</span>
               <span className="floor-chip">24/7 monitoring · included</span>
             </div>
@@ -114,7 +115,7 @@ export default function PricingPage() {
                   <div className="ol-h">Included by default</div>
                   <ul>
                     <li><span className="check"></span> Any website, any scale</li>
-                    <li><span className="check"></span> Anti-bot bypass included</li>
+                    <li><span className="check"></span> Hard-source reliability included</li>
                     <li><span className="check"></span> SFTP, API, or S3 delivery</li>
                     <li><span className="check"></span> 24/7 monitoring &amp; maintenance</li>
                   </ul>
@@ -153,7 +154,7 @@ export default function PricingPage() {
                   <span className="eyebrow">Why no fixed tiers?</span>
                 </div>
                 <p>
-                  A LinkedIn pipeline for 100K profiles and a daily Cloudflare-defended ticketing
+                  A LinkedIn pipeline for 100K public profiles and a daily Cloudflare-protected ticketing
                   scraper are wildly different engineering jobs. Putting them on the same
                   $99/$299/$999 ladder would either overcharge the simple ones or starve the
                   complex ones.
@@ -198,43 +199,43 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ===================== ANTI-BOT BYPASS ROW ===================== */}
+      {/* ===================== HARD SOURCES ROW ===================== */}
       <section
         className="block"
         style={{ paddingTop: 0 }}
-        data-screen-label="04 Anti-bot"
+        data-screen-label="04 Hard sources"
       >
         <div className="container">
-          <div className="bypass-row">
-            <div className="bypass-row-left">
+          <div className="hardsrc-row">
+            <div className="hardsrc-row-left">
               <span className="eyebrow hot">All included</span>
               <h3>
-                Anti-bot bypass — <em>at no extra cost.</em>
+                Hard sources — <em>at no extra cost.</em>
               </h3>
               <p>
                 Other vendors charge premium fees for &quot;hard sites.&quot; We don&apos;t.
-                If we accept your project, the price you see already includes bypass for every
-                layer on every target.
+                If we accept your project, the price you see already covers the
+                engineering it takes to keep every source in it flowing.
               </p>
             </div>
-            <div className="bypass-row-right">
-              <div className="bypass-chip">
+            <div className="hardsrc-row-right">
+              <div className="hardsrc-chip">
                 <span className="bc-dot" style={{ background: "#f48120" }}></span>Cloudflare
               </div>
-              <div className="bypass-chip">
+              <div className="hardsrc-chip">
                 <span className="bc-dot" style={{ background: "#ff4d6d" }}></span>DataDome
               </div>
-              <div className="bypass-chip">
+              <div className="hardsrc-chip">
                 <span className="bc-dot" style={{ background: "#a560f7" }}></span>PerimeterX
               </div>
-              <div className="bypass-chip">
+              <div className="hardsrc-chip">
                 <span className="bc-dot" style={{ background: "#3d8af7" }}></span>Akamai
               </div>
-              <div className="bypass-chip">
-                <span className="bc-dot" style={{ background: "#7ad19a" }}></span>CAPTCHAs
+              <div className="hardsrc-chip">
+                <span className="bc-dot" style={{ background: "#7ad19a" }}></span>Rate limits
               </div>
-              <div className="bypass-chip">
-                <span className="bc-dot" style={{ background: "#c79b3a" }}></span>Fingerprinting
+              <div className="hardsrc-chip">
+                <span className="bc-dot" style={{ background: "#c79b3a" }}></span>Layout changes
               </div>
             </div>
           </div>
@@ -265,9 +266,9 @@ export default function PricingPage() {
                   <path d="m11 16 4 4 8-8" />
                 </svg>
               </div>
-              <h3>Anti-bot bypass</h3>
+              <h3>Hard-source reliability</h3>
               <p>
-                Cloudflare, DataDome, PerimeterX, Akamai — all bypassed, included in price.
+                Sources behind Cloudflare, DataDome, PerimeterX or Akamai — kept flowing, included in price.
               </p>
               <div className="incl-tag">$0 add-on</div>
             </article>

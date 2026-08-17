@@ -22,23 +22,26 @@ type Event = {
   seed: string;
 };
 
+/// Pipeline telemetry, the way it reads in our own monitoring: fetch, parse,
+/// validate, deliver. Deliberately not framed as beating anyone's defences —
+/// every source here is a public page, and the rate-limit lines are real policy.
 const EVENTS: Event[] = [
-  { seed: "12:18:44", site: "Amazon", badge: "Az", tint: "#FF9E2C", note: "Akamai bypass", status: "200 OK", ok: true },
-  { seed: "12:18:42", site: "Indeed", badge: "In", tint: "#5A8DEE", note: "Cloudflare passed", status: "200 OK", ok: true },
-  { seed: "12:18:41", site: "Starbucks", badge: "Sb", tint: "#3ECF8E", note: "Proxy rotated", status: "ROTATED", ok: false },
+  { seed: "12:18:44", site: "Amazon", badge: "Az", tint: "#FF9E2C", note: "Schema validated", status: "200 OK", ok: true },
+  { seed: "12:18:42", site: "Indeed", badge: "In", tint: "#5A8DEE", note: "1,240 rows parsed", status: "200 OK", ok: true },
+  { seed: "12:18:41", site: "Starbucks", badge: "Sb", tint: "#3ECF8E", note: "Rate limit respected", status: "PACED", ok: false },
   { seed: "12:18:39", site: "StubHub", badge: "Sh", tint: "#B47CF0", note: "Page 47 / 250", status: "200 OK", ok: true },
-  { seed: "12:18:38", site: "ImmoScout24", badge: "Im", tint: "#FF6B6B", note: "DataDome OK", status: "200 OK", ok: true },
-  { seed: "12:18:36", site: "Glassdoor", badge: "Gd", tint: "#3ECF8E", note: "Captcha bypass", status: "200 OK", ok: true },
+  { seed: "12:18:38", site: "ImmoScout24", badge: "Im", tint: "#FF6B6B", note: "Delta detected", status: "200 OK", ok: true },
+  { seed: "12:18:36", site: "Glassdoor", badge: "Gd", tint: "#3ECF8E", note: "Fields mapped", status: "200 OK", ok: true },
   { seed: "12:18:36", site: "SeatGeek", badge: "Sg", tint: "#FF7A45", note: "TLS handshake", status: "200 OK", ok: true },
   { seed: "12:18:35", site: "Zillow", badge: "Zl", tint: "#5A8DEE", note: "Session warmed", status: "200 OK", ok: true },
   { seed: "12:18:33", site: "Booking.com", badge: "Bk", tint: "#2C7BE5", note: "Geo-routed DE", status: "200 OK", ok: true },
-  { seed: "12:18:32", site: "Yelp", badge: "Yp", tint: "#FF6B6B", note: "PerimeterX OK", status: "200 OK", ok: true },
+  { seed: "12:18:32", site: "Yelp", badge: "Yp", tint: "#FF6B6B", note: "Dedupe complete", status: "200 OK", ok: true },
   { seed: "12:18:30", site: "Idealista", badge: "Id", tint: "#3ECF8E", note: "Page 12 / 88", status: "200 OK", ok: true },
-  { seed: "12:18:29", site: "Walmart", badge: "Wm", tint: "#5A8DEE", note: "Fingerprint set", status: "200 OK", ok: true },
-  { seed: "12:18:27", site: "Expedia", badge: "Ex", tint: "#FFC93C", note: "Login wall passed", status: "200 OK", ok: true },
-  { seed: "12:18:26", site: "Target", badge: "Tg", tint: "#FF6B6B", note: "Akamai bypass", status: "200 OK", ok: true },
-  { seed: "12:18:24", site: "Carrefour", badge: "Cf", tint: "#2C7BE5", note: "Proxy rotated", status: "ROTATED", ok: false },
-  { seed: "12:18:23", site: "Rightmove", badge: "Rm", tint: "#3ECF8E", note: "DataDome OK", status: "200 OK", ok: true },
+  { seed: "12:18:29", site: "Walmart", badge: "Wm", tint: "#5A8DEE", note: "Price delta +2.4%", status: "200 OK", ok: true },
+  { seed: "12:18:27", site: "Expedia", badge: "Ex", tint: "#FFC93C", note: "Public listing", status: "200 OK", ok: true },
+  { seed: "12:18:26", site: "Target", badge: "Tg", tint: "#FF6B6B", note: "Retry 2 · recovered", status: "200 OK", ok: true },
+  { seed: "12:18:24", site: "Carrefour", badge: "Cf", tint: "#2C7BE5", note: "Backoff applied", status: "PACED", ok: false },
+  { seed: "12:18:23", site: "Rightmove", badge: "Rm", tint: "#3ECF8E", note: "Delivered to S3", status: "200 OK", ok: true },
 ];
 
 const CELLS = 8;
@@ -46,7 +49,7 @@ const CELLS = 8;
 /// headline for attention, which is the whole reason this replaced a marquee.
 const ROTATE_MS = 2600;
 
-const CHIPS = ["Bypass Cloudflare & Captchas", "Large-scale on demand", "No proxy hassles"];
+const CHIPS = ["Reliable on hard sources", "Large-scale on demand", "No proxy hassles"];
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const stamp = (ms: number) => {
@@ -119,8 +122,8 @@ export default function Hero() {
           </h1>
 
           <p className="hero-lede">
-            Structured data delivered <strong>reliably, at any scale</strong> — bypassing Cloudflare,
-            DataDome and login walls. No proxy headaches. No infrastructure overhead. No babysitting.
+            Structured public web data delivered <strong>reliably, at any scale</strong> — even from
+            the sources everyone else gives up on. No proxy headaches. No infrastructure overhead.
           </p>
 
           <div className="hero-chips">
@@ -160,7 +163,7 @@ export default function Hero() {
           </div>
           <div className="hero-stat">
             <b className="is-accent">99.7%</b>
-            <span>Bypass success</span>
+            <span>Delivery success</span>
           </div>
           <div className="hero-stat">
             <b>42</b>
@@ -203,8 +206,8 @@ export default function Hero() {
 
           <div className="feed-foot">
             <div>
-              <span className="is-live">→ Bypassing</span>
-              <span>Cloudflare · DataDome · PerimeterX · Akamai</span>
+              <span className="is-live">→ Collecting</span>
+              <span>Retail · Real estate · Travel · Talent</span>
             </div>
             <div>
               <span>Delivered to</span>

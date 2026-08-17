@@ -1406,7 +1406,7 @@ section.block { padding: 100px 0; }
 }
 
 /* ---------- Anti-bot diagram ---------- */
-.bypass {
+.hardsrc {
   background: var(--ink);
   color: var(--paper);
   border-radius: var(--r-xl);
@@ -1414,7 +1414,7 @@ section.block { padding: 100px 0; }
   position: relative;
   overflow: hidden;
 }
-.bypass::before {
+.hardsrc::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1423,33 +1423,33 @@ section.block { padding: 100px 0; }
     radial-gradient(circle at 10% 90%, rgba(214, 87, 48, 0.2), transparent 45%);
   pointer-events: none;
 }
-.bypass-inner {
+.hardsrc-inner {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1.3fr;
   gap: 56px;
   align-items: center;
 }
-.bypass h2 {
+.hardsrc h2 {
   font-family: var(--font-display);
   font-size: clamp(40px, 4.5vw, 60px);
   line-height: 1;
   letter-spacing: -0.02em;
   margin-bottom: 20px;
 }
-.bypass h2 em { color: #6fd0a3; font-style: italic; }
-.bypass p {
+.hardsrc h2 em { color: #6fd0a3; font-style: italic; }
+.hardsrc p {
   color: rgba(245, 243, 238, 0.72);
   font-size: 16px;
   line-height: 1.55;
   margin-bottom: 28px;
 }
-.bypass-list {
+.hardsrc-list {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-.bypass-list .item {
+.hardsrc-list .item {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1460,8 +1460,8 @@ section.block { padding: 100px 0; }
   font-family: var(--font-mono);
   font-size: 12.5px;
 }
-.bypass-list .item .name { flex: 1; color: var(--paper); }
-.bypass-list .item .badge {
+.hardsrc-list .item .name { flex: 1; color: var(--paper); }
+.hardsrc-list .item .badge {
   background: rgba(122,209,154,0.16);
   color: #7ad19a;
   padding: 3px 9px;
@@ -1470,9 +1470,9 @@ section.block { padding: 100px 0; }
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.bypass-list .item .pct { color: rgba(245,243,238,0.55); font-size: 11.5px; min-width: 56px; text-align: right; }
+.hardsrc-list .item .pct { color: rgba(245,243,238,0.55); font-size: 11.5px; min-width: 56px; text-align: right; }
 
-.bypass-visual {
+.hardsrc-visual {
   position: relative;
   height: 460px;
   border: 1px solid rgba(255,255,255,0.08);
@@ -1657,10 +1657,13 @@ section.block { padding: 100px 0; }
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 56px;
+  /* brand + Solutions / Industries / Company / Legal */
+  grid-template-columns: 1.4fr 1fr 1fr 0.8fr 0.8fr;
+  gap: 40px;
 }
 .footer-brand .brand { margin-bottom: 16px; }
+/* Footer wordmark sits upright — the italic logotype stays in the header. */
+.footer-brand .brand > span:not(.brand-mark) { font-style: normal; }
 .footer-brand p {
   color: var(--muted);
   font-size: 14px;
@@ -1745,7 +1748,7 @@ section.block { padding: 100px 0; }
   .num:nth-child(2n) { padding-left: 28px; }
   .num:nth-child(2n+1) { padding-right: 28px; border-right: 1px solid var(--hairline); }
   .num:nth-last-child(-n+2) { border-bottom: none; }
-  .bypass-inner { grid-template-columns: 1fr; }
+  .hardsrc-inner { grid-template-columns: 1fr; }
   .compare .row-c { grid-column: span 12; border-right: none; }
   .testimonials .testimonial { grid-column: span 6; }
   .cta { grid-template-columns: 1fr; padding: 48px; }
@@ -1757,6 +1760,12 @@ section.block { padding: 100px 0; }
   .services .svc, .diff-card, .testimonials .testimonial { grid-column: span 12; }
   .numbers-grid { grid-template-columns: 1fr; }
   .numbers-block { padding: 36px 28px; }
-  .bypass { padding: 36px 28px; }
+  .hardsrc { padding: 36px 28px; }
   .cta { padding: 32px 24px; }
+}
+/* Phone: one column, so the long Solutions links stop wrapping mid-word. The
+   home page got this from home-responsive.css, which only it loads — every
+   other page kept the squeezed two-column footer until this rule. */
+@media (max-width: 430px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
 }

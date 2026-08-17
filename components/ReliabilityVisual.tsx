@@ -8,7 +8,7 @@ const SHIELDS = [
   { name: "Turnstile", color: "#7ad19a", angle: 288 },
 ];
 
-export default function BypassVisual() {
+export default function ReliabilityVisual() {
   return (
     <svg
       viewBox="0 0 480 460"

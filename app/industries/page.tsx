@@ -47,7 +47,7 @@ export default function IndustriesPage() {
             <aside className="ind-deck">
               <p>
                 Six verticals where we run production pipelines today. Each one
-                has its own anti-bot stack, its own data conventions, its own
+                has its own protection stack, its own data conventions, its own
                 clients. <strong>Jump to any chapter</strong>, or scroll the
                 atlas top-to-bottom.
               </p>

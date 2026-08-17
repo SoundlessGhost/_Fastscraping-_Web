@@ -7,7 +7,7 @@ const TZ_LABELS: Record<string, string> = {
   us: "San Francisco",
   ny: "New York",
   uk: "London",
-  bd: "Dhaka · us",
+  bd: "Dhaka",
 };
 
 const pad = (n: number) => n.toString().padStart(2, "0");

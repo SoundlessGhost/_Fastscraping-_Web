@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Hero from "@/components/Hero";
-import BypassVisual from "@/components/BypassVisual";
+import ReliabilityVisual from "@/components/ReliabilityVisual";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import KMAvatar from "@/components/KMAvatar";
 import "./styles/home-responsive.css";
@@ -64,7 +64,7 @@ export default function HomePage() {
             </div>
             <p>
               From a single tricky scraper to a full enterprise data pipeline.
-              We own the infrastructure, the anti-bot work, and the maintenance
+              We own the infrastructure, the reliability engineering, and the maintenance
               — you receive clean, structured data on the schedule you need it.
             </p>
           </div>
@@ -114,10 +114,11 @@ export default function HomePage() {
 
             <article className="svc">
               <div className="svc-num">03 · Mobile app data</div>
-              <h3 className="svc-title">Reverse-engineered mobile APIs.</h3>
+              <h3 className="svc-title">Mobile-only public data.</h3>
               <p className="svc-desc">
-                We extract data only available inside iOS and Android apps — by
-                replaying the real protocol, not the web.
+                Some public listings appear only in a company&apos;s iOS or
+                Android app. We collect those through the app&apos;s own public
+                endpoints, not the website.
               </p>
               <div className="svc-foot">
                 <div className="svc-tags">
@@ -188,7 +189,7 @@ export default function HomePage() {
       "price_min_usd": 219,
       "price_med_usd": 372 }
   ],
-  "bypassed": ["cloudflare", "px"],
+  "records": 2,
   "latency_ms": 412
 }`}</pre>
                 </div>
@@ -225,9 +226,9 @@ export default function HomePage() {
               <div className="svc-num">06 · LinkedIn data platform</div>
               <h3 className="svc-title">B2B at the source.</h3>
               <p className="svc-desc">
-                Profiles, companies, jobs and posts — refreshed continuously.
-                Stealth identities, persistent cookies, aged browser profiles.
-                Not just IP rotation.
+                Public profiles, companies, jobs and posts — refreshed
+                continuously, with the session handling and pacing that keeps a
+                feed this large stable. Not just IP rotation.
               </p>
               <div className="svc-foot">
                 <div className="svc-tags">
@@ -281,8 +282,8 @@ export default function HomePage() {
                   <AnimatedNumber to={99} />
                   <em>.7%</em>
                 </div>
-                <div className="l">Anti-bot bypass success</div>
-                <div className="s">Cloudflare, DataDome, PerimeterX</div>
+                <div className="l">Delivery success rate</div>
+                <div className="s">Including sources behind Cloudflare, DataDome, PerimeterX</div>
               </div>
               <div className="num">
                 <div className="v">
@@ -340,11 +341,11 @@ export default function HomePage() {
                   <path d="m9 12 2 2 4-4" />
                 </svg>
               </div>
-              <h3>Anti-bot bypass experts.</h3>
+              <h3>Reliable on the hard sources.</h3>
               <p>
-                We reliably bypass Cloudflare Turnstile, DataDome ML detection,
-                PerimeterX behavioral and Akamai. Most vendors give up — we
-                solve it.
+                Public pages behind Cloudflare, DataDome, PerimeterX or Akamai
+                are where most vendors give up and where collection quietly
+                breaks. Keeping those feeds stable is our engineering specialty.
               </p>
               <div className="tags">
                 <span>Cloudflare</span>
@@ -391,11 +392,12 @@ export default function HomePage() {
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               </div>
-              <h3>Stealth browser identities.</h3>
+              <h3>Real browser sessions.</h3>
               <p>
-                Complete digital identities — unique fingerprints, persistent
-                cookies, aged browser profiles, TLS fingerprint matching. Not
-                just rotating IPs.
+                We render pages in genuine browser environments — correct TLS,
+                real JavaScript execution, consistent session state — so a
+                public page returns what a visitor would see. Not just rotating
+                IPs.
               </p>
               <div className="tags">
                 <span>canvas &amp; webgl</span>
@@ -469,7 +471,7 @@ export default function HomePage() {
               <h3>One throat to choke.</h3>
               <p>
                 One contract, one invoice, one Slack channel. No juggling a
-                proxy vendor + a parser vendor + a captcha vendor + an engineer.
+                proxy vendor + a parser vendor + a monitoring vendor + an engineer.
                 We own the whole stack.
               </p>
               <div className="tags">
@@ -549,64 +551,67 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===================== BYPASS / ANTI-BOT ===================== */}
+      {/* ===================== RELIABILITY ===================== */}
       <section
         className="block"
         style={{ paddingTop: 0 }}
-        id="bypass"
-        data-screen-label="05 Anti-bot"
+        id="reliability"
+        data-screen-label="05 Reliability"
       >
         <div className="container">
-          <div className="bypass">
-            <div className="bypass-inner">
+          <div className="hardsrc">
+            <div className="hardsrc-inner">
               <div>
                 <span
                   className="eyebrow hot"
                   style={{ color: "rgba(255,255,255,0.6)" }}
                 >
-                  Anti-bot expertise
+                  Reliability engineering
                 </span>
                 <h2 style={{ marginTop: 18 }}>
-                  Bypass — <em>every layer.</em>
+                  Stable — <em>every week.</em>
                 </h2>
                 <p>
-                  We don&apos;t ship around hard sites. We unpack each defense
-                  layer — challenge JS, TLS fingerprint, canvas/WebGL noise,
-                  behavioral analytics — and emulate a legitimate browser
-                  end-to-end. The result: stable extraction, week after week,
-                  even on the hardest targets.
+                  We don&apos;t ship around hard sources. Collecting a public
+                  page reliably means behaving like a real browser end-to-end —
+                  correct TLS, real rendering, sane pacing — and re-earning that
+                  every time a site changes. The result: stable extraction, week
+                  after week, from sources that break other pipelines.
                 </p>
-                <div className="bypass-list">
+                {/* Success rate = share of scheduled public-page fetches that
+                    return complete, schema-valid data. No login-gated sources
+                    here — see /compliance. */}
+                <div className="hardsrc-list">
                   <div className="item">
-                    <span className="badge">solved</span>
-                    <span className="name">Cloudflare Turnstile</span>
+                    <span className="badge">stable</span>
+                    <span className="name">Sources behind Cloudflare</span>
                     <span className="pct">99.8%</span>
                   </div>
                   <div className="item">
-                    <span className="badge">solved</span>
-                    <span className="name">DataDome (ML)</span>
+                    <span className="badge">stable</span>
+                    <span className="name">Sources behind DataDome</span>
                     <span className="pct">99.4%</span>
                   </div>
                   <div className="item">
-                    <span className="badge">solved</span>
-                    <span className="name">PerimeterX behavioral</span>
+                    <span className="badge">stable</span>
+                    <span className="name">Sources behind PerimeterX</span>
                     <span className="pct">99.6%</span>
                   </div>
                   <div className="item">
-                    <span className="badge">solved</span>
-                    <span className="name">Akamai Bot Manager</span>
+                    <span className="badge">stable</span>
+                    <span className="name">Sources behind Akamai</span>
                     <span className="pct">99.1%</span>
                   </div>
                   <div className="item">
-                    <span className="badge">solved</span>
-                    <span className="name">Login walls &amp; auth gates</span>
-                    <span className="pct">handled</span>
+                    <span className="badge">stable</span>
+                    <span className="name">Public data only · no logins</span>
+                    <span className="pct">policy</span>
                   </div>
                 </div>
               </div>
-              <div className="bypass-visual">
+              <div className="hardsrc-visual">
                 <div style={{ width: "100%", height: "100%" }}>
-                  <BypassVisual />
+                  <ReliabilityVisual />
                 </div>
               </div>
             </div>
@@ -760,7 +765,7 @@ export default function HomePage() {
                 <KMAvatar variant="large" />
                 <div>
                   <div className="n">Md Khalid Mahmud Shawon</div>
-                  <div className="r">Founder · The anti-bot expert</div>
+                  <div className="r">Founder · Web data engineering</div>
                 </div>
               </div>
               <div className="meta-row">

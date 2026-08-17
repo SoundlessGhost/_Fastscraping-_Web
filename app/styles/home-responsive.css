@@ -194,7 +194,7 @@ body.nav-open .md-panel { transform: translateX(0); }
   section.block { padding: 84px 0; }
   .marquee { margin-top: 84px; }
   .numbers-block { padding: 52px 44px; }
-  .bypass { padding: 52px; }
+  .hardsrc { padding: 52px; }
   .cta { padding: 60px 48px; }
 }
 
@@ -283,8 +283,8 @@ body.nav-open .md-panel { transform: translateX(0); }
   .compare .cmp-head { padding: 16px 20px; }
 
   /* ----- Anti-bot ----- */
-  .bypass { padding: 28px 22px; }
-  .bypass-visual { height: 340px; }
+  .hardsrc { padding: 28px 22px; }
+  .hardsrc-visual { height: 340px; }
 
   /* ----- Testimonials ----- */
   .testimonial { padding: 24px; }

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollReset from "@/components/ScrollReset";
+import { COMPANY } from "@/lib/company";
 import "./styles/base.css";
 import "./globals.css";
 import "./styles/nav-mobile.css";
@@ -41,21 +42,19 @@ export const metadata: Metadata = {
     template: "%s · Fastscraping",
   },
   description:
-    "Managed web scraping service. We build, run and maintain data pipelines that bypass Cloudflare, DataDome, PerimeterX and login walls — clean structured data delivered to your API, warehouse or S3.",
+    "Managed web data extraction service. We build, run and maintain the pipelines that keep public web data flowing reliably — clean structured data delivered to your API, warehouse or S3.",
   applicationName: "Fastscraping",
   authors: [{ name: "Md Khalid Mahmud Shawon", url: SITE_URL }],
   creator: "Md Khalid Mahmud Shawon",
   publisher: "Fastscraping",
   keywords: [
     "web scraping",
-    "data extraction",
-    "enterprise scraping",
-    "Cloudflare bypass",
-    "DataDome bypass",
-    "PerimeterX bypass",
-    "Akamai bypass",
-    "anti-bot bypass",
-    "managed scraping",
+    "web data extraction",
+    "enterprise data collection",
+    "public web data",
+    "managed data pipelines",
+    "data as a service",
+    "structured web data",
     "data pipelines",
     "ETL",
     "LinkedIn data",
@@ -63,9 +62,8 @@ export const metadata: Metadata = {
     "marketplace intelligence",
     "job market data",
     "web data API",
-    "stealth scraping",
+    "large-scale data collection",
     "headless browser",
-    "proxy rotation",
     "Fastscraping",
   ],
   category: "technology",
@@ -78,14 +76,14 @@ export const metadata: Metadata = {
     siteName: "Fastscraping",
     title: "Fastscraping — Your web scraping team on demand",
     description:
-      "Structured data delivered reliably, at any scale — bypassing Cloudflare, DataDome and login walls.",
+      "Structured public web data, delivered reliably at any scale — pipelines we build, run and maintain for you.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "Fastscraping — Your web scraping team on demand",
     description:
-      "Structured data delivered reliably, at any scale — bypassing Cloudflare, DataDome and login walls.",
+      "Structured public web data, delivered reliably at any scale — pipelines we build, run and maintain for you.",
     creator: "@fastscraping",
   },
   robots: {
@@ -126,11 +124,12 @@ export const viewport: Viewport = {
 const organizationLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Fastscraping",
+  name: COMPANY.name,
+  legalName: COMPANY.legalName,
   alternateName: "Fastscraping — Your web scraping team on demand",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
-  email: "khalid@fastscraping.com",
+  email: COMPANY.email,
   foundingDate: "2023",
   founder: {
     "@type": "Person",
@@ -141,18 +140,32 @@ const organizationLd = {
       "https://upwork.com/freelancers/khalidalsaba",
     ],
   },
+  // Registered address of the LLC. The delivery team sits in Bangladesh — that
+  // is the areaServed/location below, not a second postal address.
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Sirajganj",
-    addressRegion: "Rajshahi",
-    addressCountry: "BD",
+    streetAddress: COMPANY.address.street,
+    addressLocality: COMPANY.address.city,
+    addressRegion: COMPANY.address.region,
+    postalCode: COMPANY.address.postalCode,
+    addressCountry: COMPANY.address.countryCode,
+  },
+  location: {
+    "@type": "Place",
+    name: "Operations",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: COMPANY.operations.city,
+      addressRegion: COMPANY.operations.region,
+      addressCountry: "BD",
+    },
   },
   sameAs: [
     "https://linkedin.com/in/md-khalid-mahmud-shawon",
     "https://upwork.com/freelancers/khalidalsaba",
   ],
   description:
-    "Managed enterprise web scraping service for data teams, AI companies and agencies. Anti-bot bypass, custom pipelines, white-label delivery.",
+    "Managed enterprise web data extraction for data teams, AI companies and agencies. Public data only, custom pipelines, white-label delivery.",
 };
 
 const websiteLd = {

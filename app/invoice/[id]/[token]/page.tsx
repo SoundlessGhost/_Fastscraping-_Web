@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { bdt, computeTotals, lineAmount, money, moneyUnit, type InvoiceItem } from "@/lib/invoice";
+import { COMPANY } from "@/lib/company";
 import "@/app/styles/invoice.css";
 
 export const dynamic = "force-dynamic";
@@ -49,8 +50,15 @@ export default async function InvoicePage({
         <div className="inv-parties">
           <div className="inv-panel">
             <div className="inv-meta-h">Billed from</div>
-            <div className="inv-strong">Fastscraping</div>
-            <div className="inv-muted">Dhaka, Bangladesh</div>
+            <div className="inv-strong">{COMPANY.legalName}</div>
+            <div className="inv-muted">
+              {COMPANY.address.street}
+              <br />
+              {COMPANY.address.city}, {COMPANY.address.region}{" "}
+              {COMPANY.address.postalCode}
+              <br />
+              {COMPANY.address.country}
+            </div>
             <a className="inv-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com">
               khalid@fastscraping.com
             </a>

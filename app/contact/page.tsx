@@ -318,6 +318,11 @@ export default function ContactPage() {
                 afternoon. We answer urgent issues 24/7 — non-urgent ones,
                 inside 24 hours.
               </p>
+              <p>
+                You contract with <strong>Fast Scraping LLC</strong>, our US
+                entity — 30 N Gould St, Ste R, Sheridan, WY 82801, United
+                States.
+              </p>
             </div>
 
             <div className="tz-right">

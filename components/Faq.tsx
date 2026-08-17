@@ -29,9 +29,9 @@ const FAQS = [
     a2: "If you want it delivered somewhere we haven't listed, ask. We've built every kind of delivery integration over the years and a custom destination is almost always possible.",
   },
   {
-    q: "What anti-bot systems can you bypass?",
-    a1: "Cloudflare (including Turnstile), DataDome, PerimeterX, Akamai Bot Manager, Imperva, F5 Shape, plus all common CAPTCHA challenges and browser-fingerprint detection.",
-    a2: "Bypass is included in every price — we don't charge extra for \"hard\" sites the way most vendors do.",
+    q: "Can you handle sources behind Cloudflare, DataDome or PerimeterX?",
+    a1: "Yes — public pages protected by Cloudflare (including Turnstile), DataDome, PerimeterX, Akamai Bot Manager, Imperva and F5 Shape are routine for us. We collect public data only; nothing behind a login or paywall.",
+    a2: "That engineering is included in every price — we don't charge extra for \"hard\" sites the way most vendors do.",
   },
   {
     q: "Is there a minimum contract length?",
@@ -40,7 +40,7 @@ const FAQS = [
   },
   {
     q: "What's included in the monthly price?",
-    a1: "Everything to run the pipeline: anti-bot bypass, residential and mobile proxies, headless infrastructure, 24/7 monitoring, alerting, selector-drift auto-adaptation, 50+ QA checks per dataset, and direct access to a dedicated account manager.",
+    a1: "Everything to run the pipeline: hard-source reliability engineering, residential and mobile proxies, headless infrastructure, 24/7 monitoring, alerting, selector-drift auto-adaptation, 50+ QA checks per dataset, and direct access to a dedicated account manager.",
     a2: "What isn't included: unusual one-time backfills, full historical archives, and bespoke ML/parsing work — those we quote separately.",
   },
 ];
