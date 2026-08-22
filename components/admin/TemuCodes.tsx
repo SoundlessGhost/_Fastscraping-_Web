@@ -8,9 +8,12 @@ type Code = {
   fromAddr: string;
   subject: string;
   code: string;
+  source: string;
   receivedAt: string;
   fresh: boolean;
 };
+
+type Brand = { id: string; label: string };
 
 const POLL_MS = 3000;
 
@@ -31,7 +34,7 @@ const ago = (iso: string) => {
   return `${Math.round(s / 86400)}d ago`;
 };
 
-type Snapshot = { codes?: Code[]; configured?: boolean; error?: string | null };
+type Snapshot = { codes?: Code[]; brands?: Brand[]; configured?: boolean; error?: string | null };
 
 /// `apiUrl` lets the same component serve both the admin page (default) and the
 /// public secret-URL page (/codes/{token}) — only the endpoint differs.
@@ -51,6 +54,8 @@ export default function TemuCodes({
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [brand, setBrand] = useState("all");
   const [refreshing, setRefreshing] = useState(false);
   const [, force] = useState(0); // re-render so the "ago" labels tick
   const inFlight = useRef(false);
@@ -58,6 +63,7 @@ export default function TemuCodes({
   // Apply a snapshot from either the SSE push or the poll — identical shape.
   const apply = useCallback((d: Snapshot) => {
     setCodes(d.codes ?? []);
+    if (d.brands) setBrands(d.brands);
     setConfigured(!!d.configured);
     setError(d.error ?? null);
     setLoading(false);
@@ -139,30 +145,40 @@ export default function TemuCodes({
   // and already sorted newest-first, so filtering keeps that order.
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return codes;
-    return codes.filter(
-      (c) =>
+    return codes.filter((c) => {
+      if (brand !== "all" && c.source !== brand) return false;
+      if (!q) return true;
+      return (
         c.code.toLowerCase().includes(q) ||
         c.account.toLowerCase().includes(q) ||
         c.fromAddr.toLowerCase().includes(q) ||
-        c.subject.toLowerCase().includes(q),
-    );
-  }, [codes, query]);
+        c.subject.toLowerCase().includes(q)
+      );
+    });
+  }, [codes, query, brand]);
+
+  /// Per-brand counts for the tab labels, so "Indeed 0" is visible rather than
+  /// leaving someone wondering whether the filter is broken.
+  const counts = useMemo(() => {
+    const m: Record<string, number> = { all: codes.length };
+    for (const c of codes) m[c.source] = (m[c.source] ?? 0) + 1;
+    return m;
+  }, [codes]);
 
   return (
     <>
       <div className="ds-head">
         <div>
           <h1 className="dash-title">
-            Temu <em>codes</em>
+            Verification <em>codes</em>
           </h1>
           <p className="dash-meta">
             incoming verification codes · live — new codes appear instantly
             {!loading && (
               <>
                 {" "}
-                · <b>{query ? shown.length : codes.length}</b>
-                {query ? ` of ${codes.length}` : ""} recent
+                · <b>{shown.length}</b>
+                {shown.length !== codes.length ? ` of ${codes.length}` : ""} recent
               </>
             )}
           </p>
@@ -191,6 +207,24 @@ export default function TemuCodes({
       )}
       {configured && error && <div className="tc-note tc-note--warn">Mailbox: {error}</div>}
 
+      {brands.length > 1 && (
+        <div className="tc-tabs" role="tablist">
+          {[{ id: "all", label: "All" }, ...brands].map((b) => (
+            <button
+              key={b.id}
+              type="button"
+              role="tab"
+              aria-selected={brand === b.id}
+              className={`tc-tab${brand === b.id ? " is-on" : ""}`}
+              onClick={() => setBrand(b.id)}
+            >
+              {b.label}
+              <span className="tc-tab-n">{counts[b.id] ?? 0}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="tc-list">
         <div className="tc-row tc-row--head">
           <span>Code</span>
@@ -205,7 +239,10 @@ export default function TemuCodes({
         ) : codes.length === 0 ? (
           <div className="tc-empty">No codes yet — they appear here within seconds of arriving.</div>
         ) : shown.length === 0 ? (
-          <div className="tc-empty">No codes match “{query}”.</div>
+          <div className="tc-empty">
+            No codes match{query ? ` “${query}”` : ""}
+            {brand !== "all" ? ` in ${brands.find((b) => b.id === brand)?.label ?? brand}` : ""}.
+          </div>
         ) : (
           shown.map((c) => (
             <div className={`tc-row${c.fresh ? " is-fresh" : ""}`} key={c.id}>
@@ -214,6 +251,7 @@ export default function TemuCodes({
                 {c.fresh && <span className="tc-fresh">new</span>}
               </span>
               <span className="tc-account" title={c.account}>
+                <span className={`tc-src tc-src--${c.source}`}>{c.source}</span>
                 {c.account}
               </span>
               <span className="tc-from" title={c.subject}>

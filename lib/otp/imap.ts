@@ -38,8 +38,27 @@ const MAX_MESSAGES = 150;
 /// Drop rows older than this so the table stays small.
 const KEEP_MS = 7 * 24 * 60 * 60 * 1000;
 
-/// 6 digits not glued to other digits — the Temu code shape.
+/// 6 digits not glued to other digits — the shape both brands use.
 const CODE_RE = /(?<!\d)(\d{6})(?!\d)/;
+
+/// The senders we harvest codes from. Both put the code in the subject line
+/// ("... code: 690686"), so no body fetch is needed. Adding a brand is one
+/// entry here — the ingest filter and the dashboard badges both read this list.
+export const BRANDS = [
+  { id: "temu", label: "Temu", match: /temu/i },
+  { id: "indeed", label: "Indeed", match: /indeed/i },
+] as const;
+
+export type BrandId = (typeof BRANDS)[number]["id"];
+
+/// Which brand a message belongs to — matched on sender first, then subject.
+/// Null means "not one of ours", and the ingest skips it.
+export function brandOf(fromAddr: string, subject: string): BrandId | null {
+  for (const b of BRANDS) {
+    if (b.match.test(fromAddr) || b.match.test(subject)) return b.id;
+  }
+  return null;
+}
 
 /// Pull a header value out of the raw header block imapflow returns.
 function headerValue(raw: string, name: string): string | null {
@@ -81,7 +100,7 @@ export async function ingestCodes(): Promise<IngestResult> {
           const env = msg.envelope;
           const subject = env?.subject ?? "";
           const fromAddr = addrOnly(env?.from?.[0]?.address) ?? "";
-          if (!/temu/i.test(fromAddr) && !/temu/i.test(subject)) continue;
+          if (!brandOf(fromAddr, subject)) continue;
 
           const code = subject.match(CODE_RE)?.[1] ?? "";
           if (!code) continue;

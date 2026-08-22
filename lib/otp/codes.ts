@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { ingestCodes, otpConfigured, type IngestResult } from "@/lib/otp/imap";
+import { ingestCodes, otpConfigured, brandOf, BRANDS, type IngestResult } from "@/lib/otp/imap";
 
 // Shared by the admin page and the public secret-URL page. Ingestion is
 // throttled to once per window and de-duped across concurrent requests (a
@@ -31,12 +31,16 @@ export async function listCodes() {
   return {
     configured: otpConfigured(),
     error: null as string | null,
+    // Which brand each code came from is derived from the sender we already
+    // store, so adding a brand needs no migration and no backfill.
+    brands: BRANDS.map((b) => ({ id: b.id, label: b.label })),
     codes: rows.map((r) => ({
       id: r.id,
       account: r.account,
       fromAddr: r.fromAddr,
       subject: r.subject,
       code: r.code,
+      source: brandOf(r.fromAddr, r.subject) ?? "other",
       receivedAt: r.receivedAt.toISOString(),
       fresh: now - r.receivedAt.getTime() < FRESH_MS,
     })),
