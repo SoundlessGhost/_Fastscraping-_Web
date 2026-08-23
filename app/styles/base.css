@@ -73,35 +73,6 @@ img { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; cursor: pointer; }
 
-/* Highlighting text picks up the brand green instead of the browser's blue. */
-::selection { background: var(--accent); color: var(--bg); }
-
-/* Thumb only, no track. What made the default heavy was the grey channel behind
-   the thumb, so the track is transparent and the page shows straight through.
-   `scrollbar-width`/`scrollbar-color` cover Firefox and Chrome 121+; the
-   -webkit- rules cover older Chrome and Safari, which ignore those.
-
-   The thumb is a solid mid-grey rather than a translucent dark one on purpose.
-   Translucent black reads well on the paper background but vanishes against the
-   near-black live-feed band it scrolls past; a mid-tone is darker than the
-   paper and lighter than the band, so it stays visible over both without
-   needing to be re-tinted per section. */
-.site-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #a6a49c transparent;
-}
-.site-scroll::-webkit-scrollbar { width: 11px; background: transparent; }
-.site-scroll::-webkit-scrollbar-track { background: transparent; }
-.site-scroll::-webkit-scrollbar-thumb {
-  background: #a6a49c;
-  border-radius: 999px;
-  /* The transparent border insets the thumb so it reads as a floating pill
-     rather than filling the gutter; background-clip keeps it unpainted. */
-  border: 3px solid transparent;
-  background-clip: content-box;
-}
-.site-scroll::-webkit-scrollbar-thumb:hover { background: #8b897f; background-clip: content-box; }
-
 /* ---------- Reusable ---------- */
 .container {
   width: 100%;
@@ -253,39 +224,6 @@ h1, h2, h3, h4 { margin: 0; }
 .nav a:hover { background: rgba(19,22,19,0.06); }
 .nav a.active { color: var(--ink); font-weight: 500; }
 
-/* Larger header, to the Data River proportions: an 88px bar with the mark and
-   the wordmark scaled up to match.
-
-   Every rule here is scoped to .topbar on purpose. `.brand` / `.brand-mark` are
-   shared — the dashboard sidebar head and the invoice letterhead both reuse
-   them so the logo stays identical everywhere — and sizing the bare class would
-   silently resize both. */
-.topbar-inner {
-  min-height: 88px;
-  padding: 0 var(--gutter);
-}
-.topbar .brand-mark {
-  width: 34px; height: 34px;
-  border-radius: 9px;
-  font-size: 22px;
-}
-.topbar .brand > span:not(.brand-mark) { font-size: 27px; }
-.topbar .nav > a,
-.topbar .nav a.nav-trigger,
-.topbar .nav-trigger { font-size: 19px; }
-.topbar-right .btn-primary { font-size: 19px; padding: 13px 26px; }
-
-/* Upright serif across the header, as the design has it. The italic stays where
-   it carries meaning — the "f" in the mark, and the `em` inside a headline —
-   rather than being the default voice for every serif word up here. Scoped to
-   .topbar so the dashboard sidebar and the invoice letterhead, which share
-   .brand and .brand-mark, keep the treatment they already had. */
-.topbar .brand > span:not(.brand-mark),
-.topbar .nav > a,
-.topbar .nav a.nav-trigger,
-.topbar .nav-trigger,
-.topbar-right .btn-primary,
-.topbar .mm-h { font-style: normal; }
 
 /* ---------- Solutions mega-menu dropdown ---------- */
 .nav-dropdown {
@@ -486,105 +424,57 @@ h1, h2, h3, h4 { margin: 0; }
   100% { transform: scale(1.8); opacity: 0; }
 }
 
-/* ---------- Hero — "Data River" ----------
-   A centered editorial block, then two full-bleed bands: a stats strip and a
-   live extraction feed. Replaced the two-column text/console layout.
-
-   Colours come from the :root tokens at the top of this file, not the values in
-   the design reference — those were sampled off a screenshot and sit a shade
-   off the header and the sections below. The dark band reuses the greens the
-   old console already used for the same job (200 OK / rotated), so a status
-   colour still means the same thing everywhere on the site. */
+/* ---------- Hero ---------- */
 .hero {
-  padding: 0 0 4px;
+  padding: 56px 0 80px;
+  position: relative;
+  overflow: hidden;
 }
-
-/* Meta rule above the headline */
-.hero-rule {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--hairline);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 56px;
+  align-items: start;
 }
-.hero-rule-l,
-.hero-rule-r { display: flex; align-items: center; gap: 14px; }
-.hero-rule-r { color: var(--accent); gap: 9px; }
-.hero-vchip {
-  background: var(--ink);
-  color: var(--bg);
-  padding: 5px 10px;
-  border-radius: var(--r-sm);
-  letter-spacing: 0.1em;
-}
-.hero-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  display: block;
-  animation: heroPulse 2s ease-in-out infinite;
-}
-@keyframes heroPulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.35 } }
-
-/* Headline block */
-.hero-title {
-  margin: 60px auto 0;
-  /* The cap IS the layout — don't remove it, the line break is the composition.
-     16ch lands the break mid-phrase ("We handle your web / scraping pipeline."),
-     which is deliberate: the green italic carries across the turn. */
-  max-width: 16ch;
-  text-align: center;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: 104px;
-  line-height: 0.95;
-  letter-spacing: -0.022em;
-  color: var(--ink);
-}
-.hero-title em { font-style: italic; color: var(--accent); }
-
-.hero-lede {
-  margin: 34px auto 0;
-  max-width: 62ch;
-  text-align: center;
-  font-size: 20px;
-  line-height: 1.55;
-  color: var(--muted);
-  text-wrap: pretty;
-}
-.hero-lede strong { font-weight: 600; color: var(--ink); }
-
-.hero-chips {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 32px;
-}
-.hero-chip {
+.hero-left { padding-top: 24px; }
+.hero-right { padding-top: 24px; }
+.hero-tag {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  border: 1px solid var(--hairline);
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
   background: var(--paper);
-  border-radius: 100px;
-  padding: 9px 18px;
-  font-size: 14.5px;
-  color: var(--ink-2);
+  border: 1px solid var(--hairline);
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
 }
-.hero-chip i { color: var(--accent); font-style: normal; }
+.hero-tag .chip {
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
-/* Not the hero's — the closing CTA on six pages (home, about, industries,
-   pricing, services, solutions) reuses this block. Without the svg sizing the
-   tick renders at its intrinsic size, which Chrome quietly caps and Firefox
-   does not: there it fills the viewport. Kept here rather than deleted with the
-   old hero. */
+.hero h1.display {
+  font-size: clamp(54px, 6.6vw, 96px);
+}
+.hero h1 .br { display: block; }
+
+.hero-sub {
+  margin-top: 28px;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 540px;
+}
+.hero-sub strong { color: var(--ink); font-weight: 500; }
+
 .hero-bullets {
   display: flex;
   flex-wrap: wrap;
@@ -602,209 +492,23 @@ h1, h2, h3, h4 { margin: 0; }
   border: 1px solid var(--hairline);
   border-radius: 999px;
 }
-.hero-bullets svg { width: 14px; height: 14px; color: var(--accent); flex: none; }
+.hero-bullets svg { width: 14px; height: 14px; color: var(--accent); }
 
 .hero-cta {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 36px;
-}
-.hero-btn {
-  display: inline-flex;
-  align-items: center;
   gap: 12px;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 18px 32px;
-  border-radius: 100px;
-  transition: background .18s ease, border-color .18s ease, color .18s ease;
-}
-.hero-btn--solid { background: var(--ink); color: var(--bg); }
-.hero-btn--solid span { opacity: 0.6; }
-.hero-btn--solid:hover { background: var(--accent); color: var(--bg); }
-.hero-btn--ghost {
-  background: transparent;
-  color: var(--ink);
-  padding: 18px 30px;
-  border: 1px solid var(--hairline-strong);
-}
-.hero-btn--ghost:hover { border-color: var(--ink); color: var(--ink); }
-
-.hero-founder {
-  display: flex;
-  justify-content: center;
+  margin-top: 36px;
   align-items: center;
-  gap: 13px;
-  margin-top: 40px;
-  /* Tuned against a 1080p laptop, where the scroll area is ~870px: this lands
-     the stats strip fully on the first screen and the dark feed band directly
-     under it. The strip's bottom edge and the band's top edge are the same
-     line, so one of the two has to give — the numbers win, and all that shows
-     of the band is a few pixels that read as the next section beginning. */
-  padding-bottom: 76px;
-}
-.hero-founder-n { font-size: 14.5px; font-weight: 600; color: var(--ink); }
-.hero-founder-r { font-size: 13.5px; color: var(--muted); }
-
-/* Stats strip — full bleed, content back inside the container */
-.hero-stats {
-  border-top: 1px solid var(--hairline);
-  border-bottom: 1px solid var(--hairline);
-}
-.hero-stats-in { display: grid; grid-template-columns: repeat(3, 1fr); }
-.hero-stat {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  padding: 26px 32px;
-  border-right: 1px solid var(--hairline);
-}
-.hero-stat:first-child { padding-left: 0; }
-.hero-stat:last-child { padding-right: 0; border-right: none; }
-.hero-stat b {
-  font-family: var(--font-mono);
-  font-size: 28px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-}
-.hero-stat b.is-accent { color: var(--accent); }
-.hero-stat span {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* Live feed — full bleed, dark */
-.hero-feed {
-  --river-card: #121917;
-  --river-border: rgba(255, 255, 255, 0.07);
-  --river-text: #eaf2ed;
-  --river-muted: #b4bbb7;
-  --river-dim: #6f7672;
-  --river-meta: #7b827e;
-  --river-live: #7ad19a;
-  --river-warn: #e9c057;
-  background: #0e1311;
-}
-.hero-feed-in { padding-top: 28px; padding-bottom: 30px; }
-
-.feed-head,
-.feed-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
   flex-wrap: wrap;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--river-meta);
 }
-.feed-head { padding-bottom: 18px; border-bottom: 1px solid var(--river-border); }
-.feed-foot {
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid var(--river-border);
-  letter-spacing: 0.1em;
-}
-.feed-foot > div { display: flex; align-items: center; gap: 16px; }
-.feed-foot .is-live { color: var(--river-live); }
-.feed-foot .is-bright { color: var(--river-text); }
-
-.feed-live { display: flex; align-items: center; gap: 10px; color: var(--river-live); }
-.feed-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--river-live);
-  display: block;
-  animation: heroPulse 2.6s ease-in-out infinite;
-}
-
-.feed-grid {
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-.feed-cell {
-  border: 1px solid var(--river-border);
-  border-radius: var(--r-md);
-  background: var(--river-card);
-  padding: 14px 16px;
-  animation: feedCellIn 0.5s ease-out both;
-  min-width: 0;
-}
-@keyframes feedCellIn {
-  from { opacity: 0; transform: translateY(3px) }
-  to { opacity: 1; transform: none }
-}
-
-.feed-cell-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.feed-site { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.feed-site i {
-  width: 20px; height: 20px;
-  border-radius: 5px;
-  color: #0e1311;
+.hero-meta {
+  margin-top: 36px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  font-style: normal;
-  flex-shrink: 0;
+  gap: 18px;
+  color: var(--muted);
+  font-size: 13px;
 }
-/* Long names ("ImmoScout24", "Booking.com") overflow a narrow cell otherwise. */
-.feed-site b {
-  font-family: var(--font-mono);
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--river-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.feed-status {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--river-live);
-}
-.feed-status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: block; }
-.feed-status.is-warn { color: var(--river-warn); }
-
-.feed-cell-sub {
-  margin-top: 11px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--river-dim);
-  min-width: 0;
-}
-.feed-cell-sub > span:not(.feed-note) { flex-shrink: 0; }
-.feed-note {
-  color: var(--river-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-dot, .feed-dot, .feed-cell { animation: none; }
-}
-
 .avatar {
   width: 34px; height: 34px;
   border-radius: 999px;
@@ -1046,12 +750,7 @@ h1, h2, h3, h4 { margin: 0; }
   border-top: 1px solid var(--hairline);
   border-bottom: 1px solid var(--hairline);
   padding: 28px 0;
-  /* Matches the 100px `section.block` opens with, so the gap after the dark feed
-     band reads the same as the one before "Our services". Margin rather than
-     padding on purpose — padding would stretch the bordered paper band itself
-     instead of moving it down. Mirrored at each breakpoint in
-     home-responsive.css, where section.block steps to 84 / 64 / 48. */
-  margin-top: 100px;
+  margin-top: 8px;
   overflow: hidden;
   background: var(--paper);
 }
