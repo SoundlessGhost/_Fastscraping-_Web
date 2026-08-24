@@ -12,61 +12,47 @@ Three faces, defined once as CSS variables in `app/globals.css`:
 
 ---
 
-## Changed on 2026-08-23 — header and hero moved to sans
+## Where things landed, 2026-08-24
 
-Both were Instrument Serif *italic*. They are now Geist, upright. To put either
-back, delete the rule named below — the original serif rule underneath it is
-still in the file and takes over again.
+The site tried sans for the header and the hero headline on 2026-08-23, and both
+were put back to Instrument Serif the next day. What stuck was **removing the
+italic from the header text** — the wordmark and the nav, not the mark.
 
-### 1. Header (top bar)
+### Header (top bar) — `app/styles/base.css`
 
-**File:** `app/styles/base.css` — the block commented *"Header runs in the body sans, upright"*
+The rule is the block commented *"The 'f' tile keeps its italic"*.
 
-| Item | Was | Now |
+| Item | Face | Slant |
 |---|---|---|
-| Brand wordmark "Fastscraping" | Instrument Serif italic, 20px / 27px | Geist 22px, 600 |
-| Brand mark (the "f" tile) | Instrument Serif italic, 17px | Geist 15px, 600 |
-| Nav links (Solutions, Services, …) | Instrument Serif italic, 17px | Geist 14.5px |
-| Solutions dropdown trigger | Instrument Serif italic, 17px | Geist 14.5px |
-| "Talk to Khalid" CTA | Instrument Serif italic, 16px | Geist 14px |
+| Brand mark, the "f" tile | Instrument Serif 17px | **italic** — the slant is the mark |
+| Brand wordmark "Fastscraping" | Instrument Serif 20px | upright — matches the footer |
+| Nav links + Solutions trigger | Instrument Serif 17px | upright |
+| "Talk to Khalid" CTA | Instrument Serif 16px | upright |
 
-⚠️ The rule is scoped to `.topbar` **on purpose**. `.brand` and `.brand-mark` are
-shared with the **dashboard sidebar** and the **invoice letterhead**, and both of
-those still want the serif. Never unset the italic on the bare `.brand` rule —
-scope it, or those two change with it.
+⚠️ Scoped to `.topbar` **on purpose**. `.brand` and `.brand-mark` are shared with
+the mobile drawer, the dashboard sidebar, the footer and the invoice letterhead.
+Never unset the italic on the bare `.brand` rule — scope it, or all five change.
 
-**To revert:** delete the `.topbar … { font-family: var(--font-sans); font-style: normal; }`
-block and the four size lines under it.
+**To put the header italic back:** delete that `.topbar … { font-style: normal; }`
+block. The italic declarations it overrides are still in the file above it.
 
-### 2. Hero headline — "We handle your web scraping pipeline."
+### Hero headline — "We handle your web scraping pipeline."
 
-**File:** `app/styles/base.css`, rule `.hero h1.display` (+ `.hero h1.display em`)
-
-| | Was | Now |
-|---|---|---|
-| Face | Instrument Serif | **Geist** |
-| Weight | 400 | **600** — sans looks thin at display size |
-| Size (desktop) | `clamp(54px, 6.6vw, 96px)` → 79px | `clamp(44px, 5.2vw, 74px)` → 64px |
-| Green "web scraping" | serif *italic* | sans upright, same weight |
-
-Sans sets wider and reads heavier than the serif at the same px, which is why
-every size came down a step.
-
-**Also changed:** the four responsive steps in `app/styles/home-responsive.css`
-(`.hero h1.display`), at ≤1100 / ≤900 / ≤680 / ≤430. Old values, if you revert:
+Back to its original values, so there is nothing to revert:
 
 ```css
-@media (max-width: 1100px) { .hero h1.display { font-size: clamp(48px, 6.2vw, 84px); } }
-@media (max-width: 900px)  { .hero h1.display { font-size: clamp(46px, 8vw, 70px); } }
-@media (max-width: 680px)  { .hero h1.display { font-size: clamp(40px, 11.5vw, 58px); line-height: 0.98; } }
-@media (max-width: 430px)  { .hero h1.display { font-size: clamp(36px, 12vw, 48px); } }
+.display          { font-family: var(--font-display); font-weight: 400;
+                    line-height: 0.96; letter-spacing: -0.02em; }
+.hero h1.display  { font-size: clamp(54px, 6.6vw, 96px); }   /* 79px at 1280 */
 ```
 
-**To revert:** drop `font-family` / `font-weight` / `letter-spacing` from
-`.hero h1.display`, delete the `.hero h1.display em` rule, and restore the sizes
-above.
+The green "web scraping" is `<em>`, so it stays serif italic in emerald.
+Responsive steps in `home-responsive.css` are the originals too:
+`clamp(48px,6.2vw,84px)` / `clamp(46px,8vw,70px)` /
+`clamp(40px,11.5vw,58px)` lh .98 / `clamp(36px,12vw,48px)`.
 
----
+**If sans is ever wanted again:** the full recipe — weight 600, tighter sizes,
+`.hero h1.display em { font-style: normal }` — is in commit `32b90b1`.
 
 ## Other places the serif is still used — left alone deliberately
 

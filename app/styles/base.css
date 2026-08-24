@@ -224,28 +224,17 @@ h1, h2, h3, h4 { margin: 0; }
 .nav a:hover { background: rgba(19,22,19,0.06); }
 .nav a.active { color: var(--ink); font-weight: 500; }
 
-/* Header runs in the body sans, upright. The serif italic stays the logotype's
-   voice elsewhere — the dashboard sidebar and the invoice letterhead share
-   .brand/.brand-mark — so this is scoped to .topbar rather than unsetting the
-   face at its source. See docs/FONTS.md before changing any of this. */
+/* The "f" tile keeps its italic — that slant is the mark. The wordmark next to
+   it runs upright so the header reads the same as the footer, which has been
+   upright since 17ca192. Scoped to .topbar because .brand/.brand-mark are
+   shared with the mobile drawer, the dashboard sidebar, the footer and the
+   invoice letterhead, and those keep their own treatment. */
 .topbar .brand > span:not(.brand-mark),
-.topbar .brand-mark,
 .topbar .nav > a,
 .topbar .nav a.nav-trigger,
 .topbar .nav-trigger,
 .topbar-right .btn-primary,
-.topbar .mm-h {
-  font-family: var(--font-sans);
-  font-style: normal;
-}
-/* Sans sets wider than the serif at the same px, so each header item comes down
-   a step to keep the bar's proportions. */
-.topbar .brand > span:not(.brand-mark) { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
-.topbar .brand-mark { font-size: 15px; font-weight: 600; }
-.topbar .nav > a,
-.topbar .nav a.nav-trigger,
-.topbar .nav-trigger { font-size: 14.5px; }
-.topbar-right .btn-primary { font-size: 14px; }
+.topbar .mm-h { font-style: normal; }
 
 /* ---------- Solutions mega-menu dropdown ---------- */
 .nav-dropdown {
@@ -483,20 +472,8 @@ h1, h2, h3, h4 { margin: 0; }
   text-transform: uppercase;
 }
 
-/* Hero headline in the body sans, not the serif logotype face — including the
-   green emphasis, so the line reads as one voice rather than two. Sans needs a
-   tighter size and a real weight to carry the same presence the serif had. */
 .hero h1.display {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: clamp(44px, 5.2vw, 74px);
-  line-height: 1.04;
-  letter-spacing: -0.03em;
-}
-.hero h1.display em {
-  font-family: inherit;
-  font-style: normal;
-  font-weight: 600;
+  font-size: clamp(54px, 6.6vw, 96px);
 }
 .hero h1 .br { display: block; }
 

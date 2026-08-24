@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import LiveTicker from "./LiveTicker";
 
 const PLATFORMS = [
+  // Shopee and Temu lead the feed - they are the two we run a live backend for,
+  // so the dashboard opens on real work rather than logos.
+  { name: "Shopee", color: "#ee4d2d", abbr: "Sp", cat: "ecom" },
+  { name: "Temu", color: "#fb7701", abbr: "Tm", cat: "ecom" },
   { name: "StubHub", color: "#7e2e8a", abbr: "S", cat: "ticketing" },
   { name: "Indeed", color: "#2557a7", abbr: "I", cat: "jobs" },
   { name: "LinkedIn", color: "#0a66c2", abbr: "in", cat: "b2b" },
