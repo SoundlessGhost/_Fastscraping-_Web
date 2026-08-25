@@ -38,6 +38,44 @@ const MAX_MESSAGES = 150;
 /// Drop rows older than this so the table stays small.
 const KEEP_MS = 7 * 24 * 60 * 60 * 1000;
 
+// ---- mailbox housekeeping ------------------------------------------------
+// The central inbox is a relay, not an archive: 1280 forwarders push every
+// Temu/Indeed mail into it, marketing included, and it filled its 1 GB quota in
+// weeks. A full mailbox silently rejects new mail, which is exactly how codes
+// stopped arriving. So the ingest now cleans up after itself.
+//
+// Safety: we only delete mail older than PURGE_AFTER_MS, which is twice the
+// window ingestCodes() ever searches (LOOKBACK_MS). Anything past that can
+// never be harvested again, so removing it cannot cost a single code — and the
+// codes themselves live in Postgres, not here.
+const PURGE_AFTER_MS = 2 * LOOKBACK_MS;
+/// Cap per run so one ingest can't sit there deleting for minutes.
+const PURGE_MAX = 2000;
+/// Housekeeping is cheap but not free — at most once an hour.
+const PURGE_EVERY_MS = 60 * 60 * 1000;
+
+let lastPurge = 0;
+
+/// Deletes mail older than the harvest window. Runs inside the caller's mailbox
+/// lock. Never throws: a failed cleanup must not fail the ingest that found
+/// codes. Returns how many were removed.
+async function purgeOldMail(client: ImapFlow): Promise<number> {
+  if (Date.now() - lastPurge < PURGE_EVERY_MS) return 0;
+  lastPurge = Date.now();
+  try {
+    const before = new Date(Date.now() - PURGE_AFTER_MS);
+    const stale = (await client.search({ before }, { uid: true })) || [];
+    if (!stale.length) return 0;
+    const batch = stale.slice(0, PURGE_MAX);
+    await client.messageDelete(batch, { uid: true });
+    console.log(`[otp-idle] mailbox cleanup — removed ${batch.length} message(s) older than 48h`);
+    return batch.length;
+  } catch (e) {
+    console.error("[otp-idle] mailbox cleanup failed:", e instanceof Error ? e.message : e);
+    return 0;
+  }
+}
+
 /// 6 digits not glued to other digits — the shape both brands use.
 const CODE_RE = /(?<!\d)(\d{6})(?!\d)/;
 
@@ -122,6 +160,10 @@ export async function ingestCodes(): Promise<IngestResult> {
           if (Date.now() - res.createdAt.getTime() < 5000) added++;
         }
       }
+
+      // Housekeeping while we still hold the lock — keeps the quota from
+      // filling, which is what stopped codes arriving in Aug 2026.
+      await purgeOldMail(client);
     } finally {
       lock.release();
     }

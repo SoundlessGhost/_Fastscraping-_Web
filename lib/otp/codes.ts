@@ -7,6 +7,9 @@ import { ingestCodes, otpConfigured, brandOf, BRANDS, type IngestResult } from "
 // the list itself always comes from Postgres.
 
 const THROTTLE_MS = 5000;
+/// How many codes to show per brand. Kept modest — the list is a live feed of
+/// codes that expire in minutes, not an archive.
+const PER_BRAND = 50;
 const FRESH_MS = 5 * 60 * 1000;
 
 let lastIngest = 0;
@@ -26,7 +29,34 @@ function maybeIngest(): Promise<IngestResult> | null {
 /// DB-only snapshot, no IMAP. The IDLE worker keeps the table current in real
 /// time, so this is what the SSE stream pushes and what the poll falls back to.
 export async function listCodes() {
-  const rows = await prisma.otpCode.findMany({ orderBy: { receivedAt: "desc" }, take: 100 });
+  // Query per brand, not one global "newest 100". Temu outnumbers Indeed by
+  // roughly 30:1, so a single global limit pushed every Indeed code off the end
+  // and the Indeed tab looked broken. Each brand now gets its own slice and the
+  // union is re-sorted, so a low-volume sender is always represented.
+  const perBrand = await Promise.all(
+    BRANDS.map((b) =>
+      prisma.otpCode.findMany({
+        where: {
+          OR: [
+            { fromAddr: { contains: b.id, mode: "insensitive" } },
+            { subject: { contains: b.id, mode: "insensitive" } },
+          ],
+        },
+        orderBy: { receivedAt: "desc" },
+        take: PER_BRAND,
+      }),
+    ),
+  );
+
+  // Anything that matched the ingest but not these narrower queries still shows
+  // up here, so nothing silently disappears from the list.
+  const recent = await prisma.otpCode.findMany({ orderBy: { receivedAt: "desc" }, take: PER_BRAND });
+
+  const seen = new Set<string>();
+  const rows = [...perBrand.flat(), ...recent]
+    .filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)))
+    .sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime());
+
   const now = Date.now();
   return {
     configured: otpConfigured(),
