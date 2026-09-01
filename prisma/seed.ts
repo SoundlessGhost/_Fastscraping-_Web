@@ -70,6 +70,16 @@ const SERVICES: Seed[] = [
   // /health before ever "correcting" this back.
   { slug: "shopee-br-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
 
+  // The multi-region compose backend: one host serving all eight Shopee markets
+  // (br tw id my th ph vn sg) off shared devices, so it carries no single
+  // region — `region: null` makes the sidebar file it under "All regions" and
+  // the split comes from /me/usage's region-keyed buckets instead.
+  //
+  // Its /me/usage was built to our spec (getpc-me-usage-spec.md, Aug 2026), so
+  // the existing `shopee-usage` adapter reads it unchanged. Separate from
+  // shopee-br-pdp on purpose: that orchestrator stays exactly as it is.
+  { slug: "shopee-multi-pdp", name: "PDP (compose get_pc)", category: "ecommerce", platform: "shopee", endpoint: "pdp", baseUrl: "http://169.58.203.69:7007", kind: "shopee-usage", status: "ACTIVE", sortOrder: 15 },
+
   // Taiwan is a demo placeholder until its orchestrator has an address.
   { slug: "shopee-tw-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "tw", endpoint: "pdp", baseUrl: PLACEHOLDER, kind: "shopee-usage", status: "DISABLED", sortOrder: 20 },
 
