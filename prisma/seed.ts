@@ -60,7 +60,8 @@ const MARQUEE = [
 
 const SERVICES: Seed[] = [
   // --- E-commerce / Shopee -------------------------------------------------
-  // Brazil only for now — other Shopee markets get added back as they land.
+  // The multi-region compose backend leads (it covers every market); the older
+  // Brazil-only orchestrator follows.
   // PDP is the one that exists: shop_id + item_id in, full product data out.
   //
   // Port 8888 is deliberate and correct, despite its unit being named
@@ -68,7 +69,7 @@ const SERVICES: Seed[] = [
   // are wrong: 8888 holds 4.3 GB and drains its queue, while the plainly-named
   // 9999 holds 55 MB with ~1600 jobs stuck pending. Check pg_database_size and
   // /health before ever "correcting" this back.
-  { slug: "shopee-br-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
+  { slug: "shopee-br-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 20 },
 
   // The multi-region compose backend: one host serving all eight Shopee markets
   // (br tw id my th ph vn sg) off shared devices, so it carries no single
@@ -78,13 +79,14 @@ const SERVICES: Seed[] = [
   // Its /me/usage was built to our spec (getpc-me-usage-spec.md, Aug 2026), so
   // the existing `shopee-usage` adapter reads it unchanged. Separate from
   // shopee-br-pdp on purpose: that orchestrator stays exactly as it is.
-  { slug: "shopee-multi-pdp", name: "PDP (compose get_pc)", category: "ecommerce", platform: "shopee", endpoint: "pdp", baseUrl: "http://169.58.203.69:7007", kind: "shopee-usage", status: "ACTIVE", sortOrder: 15 },
+  { slug: "shopee-multi-pdp", name: "PDP (compose get_pc)", category: "ecommerce", platform: "shopee", endpoint: "pdp", baseUrl: "http://169.58.203.69:7007", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
 
-  // Taiwan is a demo placeholder until its orchestrator has an address.
-  { slug: "shopee-tw-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "tw", endpoint: "pdp", baseUrl: PLACEHOLDER, kind: "shopee-usage", status: "DISABLED", sortOrder: 20 },
 
   // --- E-commerce / Temu ---------------------------------------------------
-  { slug: "temu-us-search", name: "Search", category: "ecommerce", platform: "temu", region: "us", endpoint: "search", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
+  // One entry, no region and no endpoint: DashShell renders a brand like this as
+  // a single flat link instead of a "Temu > United States > Search" tree, which
+  // is what it should have been all along.
+  { slug: "temu-pdp", name: "PDP (good_id)", category: "ecommerce", platform: "temu", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
 
   // --- Real estate / Homegate (live) ---------------------------------------
   // Homegate v2 on 86.48.2.59:8900. Its /me/usage is flatter than Shopee's
