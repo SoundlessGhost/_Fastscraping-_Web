@@ -86,7 +86,7 @@ const SERVICES: Seed[] = [
   // One entry, no region and no endpoint: DashShell renders a brand like this as
   // a single flat link instead of a "Temu > United States > Search" tree, which
   // is what it should have been all along.
-  { slug: "temu-pdp", name: "PDP (good_id)", category: "ecommerce", platform: "temu", baseUrl: PLACEHOLDER, status: "DISABLED", sortOrder: 50 },
+  { slug: "temu-pdp", name: "PDP (good_id)", category: "ecommerce", platform: "temu", baseUrl: "http://86.48.2.59:5566", kind: "temu-usage", status: "ACTIVE", sortOrder: 50 },
 
   // --- Real estate / Homegate (live) ---------------------------------------
   // Homegate v2 on 86.48.2.59:8900. Its /me/usage is flatter than Shopee's
