@@ -117,11 +117,14 @@ function KeySwitcher({
   serviceTitle,
   connections,
   selectedKeyId,
+  // Big, highlighted, centred treatment for the top-of-page selector.
+  prominent = false,
 }: {
   slug: string;
   serviceTitle: string;
   connections: ServiceConnection[];
   selectedKeyId?: string;
+  prominent?: boolean;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -175,12 +178,23 @@ function KeySwitcher({
   };
 
   return (
-    <div className="su-keysw" ref={wrapRef}>
+    <div className={`su-keysw ${prominent ? "su-keysw--big" : ""}`} ref={wrapRef}>
       <span className="su-keysw-l">Key</span>
       <button type="button" className="su-keysw-btn" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        <span className={`su-keysw-dot ${current?.lastError ? "is-bad" : "is-ok"}`} />
-        <span className="su-keysw-name">{current ? keyLabel(current) : "—"}</span>
-        {ChevronGlyph}
+        {prominent ? (
+          // The face is just the label + chevron; the key names live inside the
+          // dropdown, so which key is active shows there (a check), not here.
+          <span className="su-keysw-val">
+            <span className="su-keysw-cardlabel">Set another API key</span>
+            {ChevronGlyph}
+          </span>
+        ) : (
+          <span className="su-keysw-val">
+            <span className={`su-keysw-dot ${current?.lastError ? "is-bad" : "is-ok"}`} />
+            <span className="su-keysw-name">{current ? keyLabel(current) : "—"}</span>
+            {ChevronGlyph}
+          </span>
+        )}
       </button>
 
       {open && (
@@ -514,8 +528,8 @@ export default function ServiceUsage({
 
   return (
     <>
-      <div className="ds-head">
-        <div>
+      <div className={`ds-head ${!isViewAs && connections.length > 0 ? "ds-head--key" : ""}`}>
+        <div className="ds-head-main">
           {eyebrow && <p className="su-eyebrow">{eyebrow}</p>}
           <h1 className="dash-title">
             {displayName} <em>Usage</em>
@@ -534,49 +548,47 @@ export default function ServiceUsage({
           </p>
         </div>
 
-        {/* Top-right controls, stacked: which key's usage this is (with add /
-            remove) above the region switcher — both are "what am I looking at".
-            The key switcher is hidden in the admin view-as, which is pinned to
-            one user's own key; the region switcher only appears for a backend
-            that splits by region. */}
-        {((!isViewAs && connections.length > 0) || regionKeys.length > 0) && (
-          <div className="su-controls">
-            {!isViewAs && connections.length > 0 && (
-              <KeySwitcher
-                slug={service.slug}
-                serviceTitle={title}
-                connections={connections}
-                selectedKeyId={selectedKeyId}
-              />
-            )}
+        {/* Key selector — styled like a stat card, centred in the header. Hidden
+            in the admin view-as, which is pinned to one user's own key. */}
+        {!isViewAs && connections.length > 0 && (
+          <KeySwitcher
+            slug={service.slug}
+            serviceTitle={title}
+            connections={connections}
+            selectedKeyId={selectedKeyId}
+            prominent
+          />
+        )}
 
-            {regionKeys.length > 0 && (
-              <div className="su-regions">
-                <span className="su-regions-l">Region</span>
-                <div className="dash-seg su-regseg">
+        {/* Region switcher stays top-right — only for a backend that splits by
+            region, and only when there is more than one to switch between. */}
+        {regionKeys.length > 0 && (
+          <div className="su-controls">
+            <div className="su-regions">
+              <span className="su-regions-l">Region</span>
+              <div className="dash-seg su-regseg">
+                <button
+                  className={region === null ? "on" : ""}
+                  onClick={() => setRegion(null)}
+                  title="Every marketplace, stacked"
+                >
+                  All
+                </button>
+                {regionKeys.map((code) => (
                   <button
-                    className={region === null ? "on" : ""}
-                    onClick={() => setRegion(null)}
-                    title="Every marketplace, stacked"
+                    key={code}
+                    className={region === code ? "on" : ""}
+                    onClick={() => setRegion(code)}
+                    title={dimLabel(code)}
                   >
-                    All
+                    {/* The chart's colour for this market, so the button and its
+                        band in the stack read as the same thing. */}
+                    <i className="su-regdot" style={{ background: dimColor(code) }} aria-hidden="true" />
+                    {shortRegion(code)}
                   </button>
-                  {regionKeys.map((code) => (
-                    <button
-                      key={code}
-                      className={region === code ? "on" : ""}
-                      onClick={() => setRegion(code)}
-                      title={dimLabel(code)}
-                    >
-                      {/* The chart's colour for this market, so the button and its
-                          band in the stack read as the same thing. */}
-                      <i className="su-regdot" style={{ background: dimColor(code) }} aria-hidden="true" />
-                      {shortRegion(code)}
-                    </button>
-                  ))}
-                </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>

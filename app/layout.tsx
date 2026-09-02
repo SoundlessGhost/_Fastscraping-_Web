@@ -20,7 +20,7 @@ const geist = Geist({
 
 const geistMono = Geist_Mono({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   variable: "--next-font-geist-mono",
   display: "swap",
   preload: false,

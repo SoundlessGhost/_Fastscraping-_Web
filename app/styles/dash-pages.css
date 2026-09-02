@@ -555,6 +555,123 @@
 .su-keysw-add:hover { background: var(--accent-soft); }
 .su-keysw-add span { font-size: 15px; line-height: 1; }
 
+/* The header becomes a 3-column grid so the key card sits centred on screen
+   while the title stays at the left. Equal 1fr side columns keep the middle
+   truly centred regardless of the title / region widths. */
+.ds-head--key {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+.ds-head--key .ds-head-main {
+  min-width: 0;
+}
+.ds-head--key .su-controls {
+  justify-self: end;
+}
+
+/* The key selector is styled like a stat card (Today/Yesterday) — a touch
+   different so it reads as interactive: a "Set your key" label on top, the key
+   name below, a chevron, and an accent hover. */
+.su-keysw--big .su-keysw-l {
+  display: none;
+}
+/* A different colour from the white stat cards: a dark card so the key you're
+   viewing stands out. Its dropdown matches — same width, same dark colour — and
+   all the text inverts to light. */
+.su-keysw--big .su-keysw-btn {
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 360px;
+  padding: 8px 30px 7px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 6px 18px -10px rgba(19, 22, 19, 0.45);
+  transition: border-color 0.2s ease;
+}
+.su-keysw--big .su-keysw-btn:hover {
+  border-color: var(--accent);
+}
+.su-keysw-cardlabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.su-keysw--big .su-keysw-cardlabel {
+  font-size: 12px;
+  color: var(--paper);
+}
+.su-keysw--big .su-keysw-val {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.su-keysw--big .su-keysw-dot {
+  width: 8px;
+  height: 8px;
+}
+.su-keysw--big .su-keysw-dot.is-ok {
+  background: #3fa583;
+}
+.su-keysw--big .su-keysw-name {
+  max-width: 220px;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--paper);
+}
+.su-keysw--big .su-keysw-cx {
+  width: 16px;
+  height: 16px;
+  color: rgba(250, 248, 243, 0.6);
+}
+/* Dropdown matches the card: same width, same dark colour. */
+.su-keysw--big .su-keysw-menu {
+  left: 0;
+  right: 0;
+  transform: none;
+  min-width: 0;
+  background: var(--ink);
+  border-color: rgba(250, 248, 243, 0.14);
+}
+/* Rows are left-aligned (name + key mask start at the left); only the colours
+   invert for the dark menu. */
+.su-keysw--big .su-keysw-item:hover {
+  background: rgba(250, 248, 243, 0.06);
+}
+.su-keysw--big .su-keysw-item.on {
+  background: rgba(250, 248, 243, 0.1);
+}
+.su-keysw--big .su-keysw-itxt b {
+  color: var(--paper);
+}
+.su-keysw--big .su-keysw-mask {
+  color: rgba(250, 248, 243, 0.5);
+}
+.su-keysw--big .su-keysw-check {
+  color: #5fb89a;
+}
+.su-keysw--big .su-keysw-rm {
+  color: rgba(250, 248, 243, 0.5);
+}
+.su-keysw--big .su-keysw-rm:hover {
+  color: #ef8a6d;
+  background: rgba(250, 248, 243, 0.08);
+}
+.su-keysw--big .su-keysw-add {
+  color: #5fb89a;
+  border-top-color: rgba(250, 248, 243, 0.12);
+}
+.su-keysw--big .su-keysw-add:hover {
+  background: rgba(250, 248, 243, 0.06);
+}
+
 /* ---------- Service usage extras ---------- */
 .su-error {
   display: flex;
