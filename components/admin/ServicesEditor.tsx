@@ -77,6 +77,7 @@ export default function ServicesEditor({ services }: { services: AdminService[] 
           kind: s.kind,
           status: s.status,
           connection: null,
+          connections: [],
         })),
       ),
     [services],

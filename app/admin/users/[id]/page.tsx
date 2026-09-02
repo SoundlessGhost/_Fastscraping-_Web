@@ -19,15 +19,30 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
   if (!user) notFound();
 
   // Only the services this client has connected a key for — that's all view-as
-  // can show usage for.
-  const services: ServiceNode[] = user.clientServices.map((cs) => {
+  // can show usage for. A client can hold several keys per service now, so group
+  // by service and hang every key off it (one row per service, not per key).
+  const bySlug = new Map<string, ServiceNode>();
+  for (const cs of user.clientServices) {
     let keyMask = "";
     try {
       keyMask = maskSecret(decryptSecret(cs.apiKeyEnc));
     } catch {
       keyMask = "••••";
     }
-    return {
+    const conn = {
+      id: cs.id,
+      label: cs.label,
+      status: cs.status,
+      verifiedAt: cs.verifiedAt?.toISOString() ?? null,
+      lastError: cs.lastError,
+      keyMask,
+    };
+    const existing = bySlug.get(cs.service.slug);
+    if (existing) {
+      existing.connections.push(conn);
+      continue;
+    }
+    bySlug.set(cs.service.slug, {
       slug: cs.service.slug,
       name: cs.service.name,
       category: cs.service.category,
@@ -36,13 +51,11 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
       endpoint: cs.service.endpoint,
       kind: cs.service.kind,
       status: cs.service.status,
-      connection: {
-        verifiedAt: cs.verifiedAt?.toISOString() ?? null,
-        lastError: cs.lastError,
-        keyMask,
-      },
-    };
-  });
+      connection: conn,
+      connections: [conn],
+    });
+  }
+  const services: ServiceNode[] = [...bySlug.values()];
 
   return (
     <>

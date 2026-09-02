@@ -18,11 +18,16 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const { slug } = await ctx.params;
   const service = await prisma.service.findUnique({
     where: { slug },
-    include: { clientServices: { where: { userId: user.id } } },
+    // Oldest first so a bare request (no ?k=) always lands on the same default
+    // key as the sidebar and the switcher.
+    include: { clientServices: { where: { userId: user.id }, orderBy: { createdAt: "asc" } } },
   });
   if (!service) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
-  const link = service.clientServices[0];
+  // A client can hold several keys per service; `?k=` picks which one's usage to
+  // show. An unknown or missing id falls back to their first key.
+  const keyId = req.nextUrl.searchParams.get("k");
+  const link = (keyId && service.clientServices.find((l) => l.id === keyId)) || service.clientServices[0];
   if (!link || link.status !== "ACTIVE") {
     return NextResponse.json({ error: "NOT_CONNECTED" }, { status: 403 });
   }

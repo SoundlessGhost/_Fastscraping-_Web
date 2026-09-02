@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
+import { platformLabel, type ServiceNode, type ServiceConnection } from "@/lib/services/taxonomy";
 import { regionName } from "@/lib/regions";
 import type { SessionUser } from "@/lib/auth/session";
 import AvatarPicker from "@/components/dashboard/AvatarPicker";
+import AddKeyDialog from "@/components/dashboard/AddKeyDialog";
 import { useConfirm } from "@/components/ui/Confirm";
 
 // Everything a client manages about themselves, laid out as label→control rows
@@ -52,8 +53,19 @@ function prettyAgent(ua: string | null): string {
 const fmtWhen = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-/// One connected service key row.
-function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
+/// One connected key row. A service can hold several keys now, so a row is a
+/// key (identified by its label), not a whole service.
+function KeyRow({
+  slug,
+  serviceName,
+  conn,
+  apiKey,
+}: {
+  slug: string;
+  serviceName: string;
+  conn: ServiceConnection;
+  apiKey: string;
+}) {
   const router = useRouter();
   const confirm = useConfirm();
   const [revealed, setRevealed] = useState(false);
@@ -68,39 +80,39 @@ function KeyRow({ s, apiKey }: { s: ServiceNode; apiKey: string }) {
 
   async function remove() {
     const ok = await confirm({
-      title: `Remove your key for ${fullName(s)}?`,
-      body: "Usage stops showing here until you paste a key again. Nothing on the service itself changes.",
+      title: `Remove "${conn.label || "this key"}" from ${serviceName}?`,
+      body: "Usage stops showing here for this key. Nothing on the service itself changes.",
       confirmLabel: "Remove",
       danger: true,
     });
     if (!ok) return;
     setRemoving(true);
-    await fetch(`/api/services/${s.slug}/connect`, { method: "DELETE" }).catch(() => {});
+    await fetch(`/api/services/${slug}/connect?k=${conn.id}`, { method: "DELETE" }).catch(() => {});
     setRemoving(false);
     router.refresh();
   }
 
-  const broken = Boolean(s.connection?.lastError);
+  const broken = Boolean(conn.lastError);
 
   return (
     <div className="st-key">
       <div className="st-key-top">
         <span className={`ds-dot ds-dot--${broken ? "err" : "on"}`} />
-        <span className="st-key-n">{fullName(s)}</span>
+        <span className="st-key-n">{conn.label || "Unnamed key"}</span>
         <span className="st-key-s">
           {broken
-            ? s.connection?.lastError
-            : s.connection?.verifiedAt
-              ? `verified ${new Date(s.connection.verifiedAt).toLocaleDateString()}`
+            ? conn.lastError
+            : conn.verifiedAt
+              ? `verified ${new Date(conn.verifiedAt).toLocaleDateString()}`
               : ""}
         </span>
       </div>
 
       <div className="st-key-row">
-        <code className="st-key-val">{revealed ? apiKey : s.connection?.keyMask}</code>
+        <code className="st-key-val">{revealed ? apiKey : conn.keyMask}</code>
         <button onClick={() => setRevealed((v) => !v)}>{revealed ? "Hide" : "Reveal"}</button>
         <button onClick={copy}>{copied ? "Copied" : "Copy"}</button>
-        <Link href={`/dashboard/s/${s.slug}`} className="st-key-link">
+        <Link href={`/dashboard/s/${slug}?k=${conn.id}`} className="st-key-link">
           Usage →
         </Link>
         <button className="st-key-rm" onClick={remove} disabled={removing}>
@@ -121,7 +133,7 @@ export default function Settings({
 }: {
   user: SessionUser;
   services: ServiceNode[];
-  /// slug -> the client's own key, decrypted for this page only.
+  /// ClientService id -> that key, decrypted for this page only.
   keys: Record<string, string>;
   memberSince: string | null;
   devices: DeviceSession[];
@@ -130,6 +142,8 @@ export default function Settings({
   const router = useRouter();
   const confirm = useConfirm();
 
+  // Which service's "add key" dialog is open (null = none).
+  const [addFor, setAddFor] = useState<{ slug: string; title: string } | null>(null);
   const [profileMsg, setProfileMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [profileBusy, setProfileBusy] = useState(false);
   const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -443,7 +457,7 @@ export default function Settings({
       {section === "keys" && (
         <div className="set-page">
           <section className="set-sec">
-            <h2 className="set-sec-h">API keys <small>one key per service</small></h2>
+            <h2 className="set-sec-h">API keys <small>name, switch and remove your keys</small></h2>
             {services.length === 0 ? (
               <p className="st-lock">
                 You haven&apos;t connected any service keys yet. <Link href="/dashboard">Add one →</Link>
@@ -451,11 +465,37 @@ export default function Settings({
             ) : (
               <div className="st-keys">
                 {services.map((s) => (
-                  <KeyRow key={s.slug} s={s} apiKey={keys[s.slug] ?? ""} />
+                  <div className="st-svc" key={s.slug}>
+                    <div className="st-svc-h">
+                      <span className="st-svc-n">{fullName(s)}</span>
+                      <button
+                        type="button"
+                        className="st-svc-add"
+                        onClick={() => setAddFor({ slug: s.slug, title: fullName(s) })}
+                      >
+                        + Add key
+                      </button>
+                    </div>
+                    {s.connections.map((c) => (
+                      <KeyRow key={c.id} slug={s.slug} serviceName={fullName(s)} conn={c} apiKey={keys[c.id] ?? ""} />
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
             <p className="cn-note">Keys are stored encrypted and only ever sent to their own service.</p>
+
+            {addFor && (
+              <AddKeyDialog
+                slug={addFor.slug}
+                serviceTitle={addFor.title}
+                onClose={() => setAddFor(null)}
+                onAdded={() => {
+                  setAddFor(null);
+                  router.refresh();
+                }}
+              />
+            )}
           </section>
         </div>
       )}

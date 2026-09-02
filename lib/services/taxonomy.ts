@@ -58,6 +58,17 @@ export const endpointLabel = (slug: string) => ENDPOINTS[slug]?.label ?? pretty(
 export const endpointBlurb = (slug: string) => ENDPOINTS[slug]?.blurb ?? "";
 
 /// One service as the browser sees it. Never carries baseUrl or the key.
+/// One API key a client has connected to a service. A client can now hold
+/// several of these per service and switch between them in the dashboard.
+export type ServiceConnection = {
+  id: string;
+  label: string | null;
+  status: "ACTIVE" | "DISABLED";
+  verifiedAt: string | null;
+  lastError: string | null;
+  keyMask: string;
+};
+
 export type ServiceNode = {
   slug: string;
   name: string;
@@ -68,8 +79,13 @@ export type ServiceNode = {
   kind: string;
   /// DISABLED = in the catalog but not wired to a backend yet ("coming soon").
   status: "ACTIVE" | "DISABLED";
-  /// null when this client has not connected a key for it yet.
-  connection: { verifiedAt: string | null; lastError: string | null; keyMask: string } | null;
+  /// The first connected key, or null when this client has connected none.
+  /// Kept as a convenience for the many "is it connected?" / status-dot checks
+  /// that predate multi-key; `connections` is the full list.
+  connection: ServiceConnection | null;
+  /// Every key this client has connected to the service (empty if none). The
+  /// dashboard switcher and Settings list read this.
+  connections: ServiceConnection[];
 };
 
 export type RegionGroup = { region: string | null; label: string; services: ServiceNode[] };

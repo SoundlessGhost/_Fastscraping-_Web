@@ -6,8 +6,15 @@ import { regionName } from "@/lib/regions";
 import ConnectPanel from "@/components/dashboard/ConnectPanel";
 import ServiceUsage from "@/components/dashboard/ServiceUsage";
 
-export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ServicePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ k?: string; add?: string }>;
+}) {
   const { slug } = await params;
+  const sp = await searchParams;
 
   const user = await getCurrentUser();
   if (!user) redirect("/dashboard/login");
@@ -22,8 +29,18 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
     .filter(Boolean)
     .join(" · ");
 
-  // No key yet -> ask for one. The key decides what you see, so this is the gate.
-  if (!service.connection) return <ConnectPanel service={service} title={title} />;
+  const keys = service.connections;
 
-  return <ServiceUsage service={service} title={title} />;
+  // Adding another key — only reachable once at least one is connected.
+  if (sp.add && keys.length > 0) {
+    return <ConnectPanel service={service} title={title} mode="add" />;
+  }
+
+  // No key yet -> ask for one. The key decides what you see, so this is the gate.
+  if (keys.length === 0) return <ConnectPanel service={service} title={title} />;
+
+  // Which key's usage to show. An unknown/stale ?k= falls back to the first.
+  const selected = keys.find((k) => k.id === sp.k) ?? keys[0];
+
+  return <ServiceUsage service={service} title={title} connections={keys} selectedKeyId={selected.id} />;
 }

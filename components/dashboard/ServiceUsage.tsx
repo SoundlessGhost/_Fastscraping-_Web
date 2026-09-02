@@ -1,10 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { regionColor, regionName } from "@/lib/regions";
-import { platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
+import { platformLabel, type ServiceNode, type ServiceConnection } from "@/lib/services/taxonomy";
 import { projectRegion, type NormalizedUsage } from "@/lib/services/usage";
 import RangeCalendar, { type DateRange } from "@/components/dashboard/RangeCalendar";
+import AddKeyDialog from "@/components/dashboard/AddKeyDialog";
+import { useConfirm } from "@/components/ui/Confirm";
 
 // Usage for one service, drawn from the normalised shape — so a new backend
 // only needs an adapter, never a new chart.
@@ -88,6 +91,147 @@ function Spinner({ label }: { label?: string }) {
   );
 }
 
+const ChevronGlyph = (
+  <svg className="su-keysw-cx" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+const CheckGlyph = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+);
+const TrashGlyph = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+  </svg>
+);
+
+/// The key switcher: one client can hold several keys per service, each with its
+/// own usage on the backend. This picks which key's numbers the page shows, and
+/// is where they add or remove keys. Selection lives in the URL (?k=), so it is
+/// shareable and survives a refresh; switching is a real navigation that refeeds
+/// the page with the chosen key.
+function KeySwitcher({
+  slug,
+  serviceTitle,
+  connections,
+  selectedKeyId,
+}: {
+  slug: string;
+  serviceTitle: string;
+  connections: ServiceConnection[];
+  selectedKeyId?: string;
+}) {
+  const router = useRouter();
+  const confirm = useConfirm();
+  const [open, setOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const current = connections.find((c) => c.id === selectedKeyId) ?? connections[0];
+  const keyLabel = (c: ServiceConnection) => c.label || c.keyMask || "Key";
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  const select = (id: string) => {
+    setOpen(false);
+    if (id === current?.id) return;
+    router.push(`/dashboard/s/${slug}?k=${id}`);
+  };
+
+  const add = () => {
+    setOpen(false);
+    setAddOpen(true);
+  };
+
+  const remove = async (id: string, label: string | null) => {
+    const ok = await confirm({
+      title: `Remove the key "${label || "this key"}"?`,
+      body: "Its usage stays on the backend — you just stop seeing it here.",
+      confirmLabel: "Remove",
+      danger: true,
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      await fetch(`/api/services/${slug}/connect?k=${id}`, { method: "DELETE" }).catch(() => {});
+      setOpen(false);
+      // Drop a possibly-stale ?k= and reload server data (remaining keys, or the
+      // connect screen if that was the last one).
+      router.replace(`/dashboard/s/${slug}`);
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="su-keysw" ref={wrapRef}>
+      <span className="su-keysw-l">Key</span>
+      <button type="button" className="su-keysw-btn" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+        <span className={`su-keysw-dot ${current?.lastError ? "is-bad" : "is-ok"}`} />
+        <span className="su-keysw-name">{current ? keyLabel(current) : "—"}</span>
+        {ChevronGlyph}
+      </button>
+
+      {open && (
+        <div className="su-keysw-menu" role="menu">
+          {connections.map((c) => (
+            <div key={c.id} className={`su-keysw-item ${c.id === current?.id ? "on" : ""}`}>
+              <button type="button" className="su-keysw-pick" onClick={() => select(c.id)} role="menuitem">
+                <span className={`su-keysw-dot ${c.lastError ? "is-bad" : "is-ok"}`} />
+                <span className="su-keysw-itxt">
+                  <b>{keyLabel(c)}</b>
+                  <span className="su-keysw-mask">
+                    {c.keyMask}
+                    {c.lastError ? " · key rejected" : ""}
+                  </span>
+                </span>
+                {c.id === current?.id && <span className="su-keysw-check">{CheckGlyph}</span>}
+              </button>
+              <button
+                type="button"
+                className="su-keysw-rm"
+                title="Remove this key"
+                aria-label={`Remove ${keyLabel(c)}`}
+                disabled={busy}
+                onClick={() => remove(c.id, c.label)}
+              >
+                {TrashGlyph}
+              </button>
+            </div>
+          ))}
+          <button type="button" className="su-keysw-add" onClick={add}>
+            <span aria-hidden="true">＋</span> Add key
+          </button>
+        </div>
+      )}
+
+      {addOpen && (
+        <AddKeyDialog
+          slug={slug}
+          serviceTitle={serviceTitle}
+          onClose={() => setAddOpen(false)}
+          onAdded={(id) => {
+            setAddOpen(false);
+            if (id) router.push(`/dashboard/s/${slug}?k=${id}`);
+            router.refresh();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function ServiceUsage({
   service,
   title,
@@ -95,15 +239,22 @@ export default function ServiceUsage({
   // dashboard; the admin view-as passes a per-user endpoint instead. Same
   // response shape either way, so everything below is unchanged.
   usageUrl,
+  // Every key this client has on the service, and which one is being shown. The
+  // switcher swaps `selectedKeyId` via the URL; changing it refeeds the page.
+  connections = [],
+  selectedKeyId,
 }: {
   service: ServiceNode;
   title: string;
   usageUrl?: string;
+  connections?: ServiceConnection[];
+  selectedKeyId?: string;
 }) {
   // The export route resolves the *signed-in* user's own key, so it would answer
   // for the admin rather than the client being viewed — hide it in view-as.
   const isViewAs = Boolean(usageUrl);
-  const feedUrl = usageUrl ?? `/api/services/${service.slug}/usage?interval=${WIDEST}`;
+  const keyQuery = !isViewAs && selectedKeyId ? `&k=${selectedKeyId}` : "";
+  const feedUrl = usageUrl ?? `/api/services/${service.slug}/usage?interval=${WIDEST}${keyQuery}`;
 
   const [range, setRange] = useState(7);
   // Which marketplace the page is showing. null = all of them, which is the
@@ -273,6 +424,8 @@ export default function ServiceUsage({
     const to = days[days.length - 1]!.date;
     const q = new URLSearchParams({ from, to });
     if (region) q.set("region", region);
+    // Download the same key that is on screen.
+    if (selectedKeyId) q.set("k", selectedKeyId);
     try {
       const r = await fetch(`/api/services/${service.slug}/usage/export?${q}`, {
         cache: "no-store",
@@ -295,7 +448,7 @@ export default function ServiceUsage({
     } finally {
       setDownloading(false);
     }
-  }, [downloading, days, service.slug, region]);
+  }, [downloading, days, service.slug, region, selectedKeyId]);
 
   const top = Math.max(1, ...days.map((d) => d.total));
   const yOf = (v: number) => PADT + plotH - (v / top) * plotH;
@@ -381,34 +534,49 @@ export default function ServiceUsage({
           </p>
         </div>
 
-        {/* Region switcher — only for a backend that splits by region, and only
-            when there is more than one to switch between. Everything below the
-            header (stat strip, chart, day breakdown) follows this. */}
-        {regionKeys.length > 0 && (
-          <div className="su-regions">
-            <span className="su-regions-l">Region</span>
-            <div className="dash-seg su-regseg">
-              <button
-                className={region === null ? "on" : ""}
-                onClick={() => setRegion(null)}
-                title="Every marketplace, stacked"
-              >
-                All
-              </button>
-              {regionKeys.map((code) => (
-                <button
-                  key={code}
-                  className={region === code ? "on" : ""}
-                  onClick={() => setRegion(code)}
-                  title={dimLabel(code)}
-                >
-                  {/* The chart's colour for this market, so the button and its
-                      band in the stack read as the same thing. */}
-                  <i className="su-regdot" style={{ background: dimColor(code) }} aria-hidden="true" />
-                  {shortRegion(code)}
-                </button>
-              ))}
-            </div>
+        {/* Top-right controls, stacked: which key's usage this is (with add /
+            remove) above the region switcher — both are "what am I looking at".
+            The key switcher is hidden in the admin view-as, which is pinned to
+            one user's own key; the region switcher only appears for a backend
+            that splits by region. */}
+        {((!isViewAs && connections.length > 0) || regionKeys.length > 0) && (
+          <div className="su-controls">
+            {!isViewAs && connections.length > 0 && (
+              <KeySwitcher
+                slug={service.slug}
+                serviceTitle={title}
+                connections={connections}
+                selectedKeyId={selectedKeyId}
+              />
+            )}
+
+            {regionKeys.length > 0 && (
+              <div className="su-regions">
+                <span className="su-regions-l">Region</span>
+                <div className="dash-seg su-regseg">
+                  <button
+                    className={region === null ? "on" : ""}
+                    onClick={() => setRegion(null)}
+                    title="Every marketplace, stacked"
+                  >
+                    All
+                  </button>
+                  {regionKeys.map((code) => (
+                    <button
+                      key={code}
+                      className={region === code ? "on" : ""}
+                      onClick={() => setRegion(code)}
+                      title={dimLabel(code)}
+                    >
+                      {/* The chart's colour for this market, so the button and its
+                          band in the stack read as the same thing. */}
+                      <i className="su-regdot" style={{ background: dimColor(code) }} aria-hidden="true" />
+                      {shortRegion(code)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

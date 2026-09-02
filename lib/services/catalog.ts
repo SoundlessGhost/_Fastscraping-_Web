@@ -12,19 +12,28 @@ import type { ServiceNode } from "@/lib/services/taxonomy";
 export async function getCatalogForUser(userId: string): Promise<ServiceNode[]> {
   const rows = await prisma.service.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    include: { clientServices: { where: { userId } } },
+    // Oldest key first, so the default the dashboard falls back to is stable as
+    // more keys are added.
+    include: { clientServices: { where: { userId }, orderBy: { createdAt: "asc" } } },
   });
 
   return rows.map((s) => {
-    const link = s.clientServices[0];
-    let keyMask = "";
-    if (link) {
+    const connections = s.clientServices.map((link) => {
+      let keyMask = "";
       try {
         keyMask = maskSecret(decryptSecret(link.apiKeyEnc));
       } catch {
         keyMask = "••••"; // unreadable (ENCRYPTION_KEY changed) — still connected
       }
-    }
+      return {
+        id: link.id,
+        label: link.label,
+        status: link.status,
+        verifiedAt: link.verifiedAt?.toISOString() ?? null,
+        lastError: link.lastError,
+        keyMask,
+      };
+    });
     return {
       slug: s.slug,
       name: s.name,
@@ -34,13 +43,8 @@ export async function getCatalogForUser(userId: string): Promise<ServiceNode[]> 
       endpoint: s.endpoint,
       kind: s.kind,
       status: s.status,
-      connection: link
-        ? {
-            verifiedAt: link.verifiedAt?.toISOString() ?? null,
-            lastError: link.lastError,
-            keyMask,
-          }
-        : null,
+      connection: connections[0] ?? null,
+      connections,
     };
   });
 }

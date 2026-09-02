@@ -138,6 +138,9 @@ model ClientService {
   userId    String
   serviceId String
   apiKeyEnc String
+  /// A client-given name for this key ("Production", "Client A"). One client can
+  /// now hold several keys for the same service and switch between them, so the
+  /// label is how they tell those keys apart — not decoration.
   label     String?
   status    ClientServiceStatus @default(ACTIVE)
   /// The backend is the source of truth for whether a key is valid; these two
@@ -150,8 +153,10 @@ model ClientService {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, serviceId])
-  @@index([userId])
+  // Deliberately NOT unique on (userId, serviceId): a client may connect more
+  // than one key to the same service. The composite index still serves the
+  // "this user's keys for this service" lookup the dashboard runs constantly.
+  @@index([userId, serviceId])
 }
 
 /// Server-side session records so an admin can revoke access / log a user out.

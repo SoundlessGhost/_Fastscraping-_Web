@@ -44,11 +44,13 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const { slug } = await ctx.params;
   const service = await prisma.service.findUnique({
     where: { slug },
-    include: { clientServices: { where: { userId: user.id } } },
+    include: { clientServices: { where: { userId: user.id }, orderBy: { createdAt: "asc" } } },
   });
   if (!service) return bad("NOT_FOUND", 404);
 
-  const link = service.clientServices[0];
+  // Match the viewed key: the export button carries the same ?k= the chart uses.
+  const keyId = req.nextUrl.searchParams.get("k");
+  const link = (keyId && service.clientServices.find((l) => l.id === keyId)) || service.clientServices[0];
   if (!link || link.status !== "ACTIVE") return bad("NOT_CONNECTED", 403);
 
   let apiKey: string;

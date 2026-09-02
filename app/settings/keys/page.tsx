@@ -14,14 +14,12 @@ export default async function KeysSettingsPage() {
   const connected = (await getCatalogForUser(me.id)).filter((s) => s.connection);
 
   // Decrypted here so Reveal is a local toggle; every other page gets the mask.
-  const links = await prisma.clientService.findMany({
-    where: { userId: me.id },
-    include: { service: { select: { slug: true } } },
-  });
+  // Keyed by ClientService id (a client can hold several keys per service now).
+  const links = await prisma.clientService.findMany({ where: { userId: me.id } });
   const keys: Record<string, string> = {};
   for (const l of links) {
     try {
-      keys[l.service.slug] = decryptSecret(l.apiKeyEnc);
+      keys[l.id] = decryptSecret(l.apiKeyEnc);
     } catch {
       // Key unreadable (ENCRYPTION_KEY changed) — fall back to the mask.
     }

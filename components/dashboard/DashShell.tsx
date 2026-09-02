@@ -16,9 +16,11 @@ function serviceHref(slug: string) {
   return `/dashboard/s/${slug}`;
 }
 
-/// A leaf's own label: the endpoint name if it has one, else the service name.
+/// A leaf's own label. The service name wins: it is the specific thing an admin
+/// typed ("PDP (compose get_pc)"), while the endpoint label is a shared category
+/// — two services on the same endpoint would otherwise render identically.
 function leafLabel(s: ServiceNode) {
-  return s.endpoint ? endpointLabel(s.endpoint) : s.name;
+  return s.name || (s.endpoint ? endpointLabel(s.endpoint) : s.slug);
 }
 
 export default function DashShell({
@@ -61,8 +63,6 @@ export default function DashShell({
     setOpened(next);
   }
 
-  const connectedCount = services.filter((s) => s.connection).length;
-
   return (
     <div className={`ds ${drawer ? "ds--drawer" : ""}`}>
       <aside className="ds-side">
@@ -79,15 +79,6 @@ export default function DashShell({
         </div>
 
         <nav className="ds-nav">
-          <Link
-            href="/dashboard"
-            className={`ds-item ${pathname === "/dashboard" ? "is-active" : ""}`}
-            onClick={() => setDrawer(false)}
-          >
-            <span className="ds-item-label">Overview</span>
-            <span className="ds-count">{connectedCount}</span>
-          </Link>
-
           {tree.map((cat) => (
             <div className="ds-cat" key={cat.category}>
               <div className="ds-cat-head">{cat.label}</div>

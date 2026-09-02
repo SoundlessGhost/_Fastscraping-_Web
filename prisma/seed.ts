@@ -60,8 +60,10 @@ const MARQUEE = [
 
 const SERVICES: Seed[] = [
   // --- E-commerce / Shopee -------------------------------------------------
-  // The multi-region compose backend leads (it covers every market); the older
-  // Brazil-only orchestrator follows.
+  // Neither entry carries a region: the twbr orchestrator serves TW+BR and the
+  // compose backend serves all eight markets, so both sit under "All regions"
+  // and the per-market split comes from /me/usage instead of the sidebar.
+  // Order is deliberate — web first, compose second.
   // PDP is the one that exists: shop_id + item_id in, full product data out.
   //
   // Port 8888 is deliberate and correct, despite its unit being named
@@ -69,7 +71,7 @@ const SERVICES: Seed[] = [
   // are wrong: 8888 holds 4.3 GB and drains its queue, while the plainly-named
   // 9999 holds 55 MB with ~1600 jobs stuck pending. Check pg_database_size and
   // /health before ever "correcting" this back.
-  { slug: "shopee-br-pdp", name: "PDP (get_pc)", category: "ecommerce", platform: "shopee", region: "br", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 20 },
+  { slug: "shopee-pdp-web-get-pc", name: "PDP ( web get_pc )", category: "ecommerce", platform: "shopee", endpoint: "pdp", baseUrl: "http://212.90.121.151:8888", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
 
   // The multi-region compose backend: one host serving all eight Shopee markets
   // (br tw id my th ph vn sg) off shared devices, so it carries no single
@@ -78,8 +80,8 @@ const SERVICES: Seed[] = [
   //
   // Its /me/usage was built to our spec (getpc-me-usage-spec.md, Aug 2026), so
   // the existing `shopee-usage` adapter reads it unchanged. Separate from
-  // shopee-br-pdp on purpose: that orchestrator stays exactly as it is.
-  { slug: "shopee-multi-pdp", name: "PDP (compose get_pc)", category: "ecommerce", platform: "shopee", endpoint: "pdp", baseUrl: "http://169.58.203.69:7007", kind: "shopee-usage", status: "ACTIVE", sortOrder: 10 },
+  // the web orchestrator on purpose: that one stays exactly as it is.
+  { slug: "shopee-pdp-compose-get-pc", name: "PDP ( compose get_pc )", category: "ecommerce", platform: "shopee", endpoint: "pdp", baseUrl: "http://169.58.203.69:7007", kind: "shopee-usage", status: "ACTIVE", sortOrder: 20 },
 
 
   // --- E-commerce / Temu ---------------------------------------------------
@@ -112,7 +114,29 @@ const SERVICES: Seed[] = [
   })),
 ];
 
+/// Slugs that changed after rows already existed. A slug is the URL a client
+/// bookmarks, so renaming has to happen **in place**: an upsert on the new slug
+/// would leave the old row behind (prune only touches placeholder URLs) and the
+/// client's key, which points at the row id, would stay attached to the orphan.
+const RENAMED: Record<string, string> = {
+  "shopee-br-pdp": "shopee-pdp-web-get-pc",
+  "shopee-multi-pdp": "shopee-pdp-compose-get-pc",
+};
+
 async function main() {
+  for (const [from, to] of Object.entries(RENAMED)) {
+    const old = await prisma.service.findUnique({ where: { slug: from } });
+    if (!old) continue;
+    // If both exist someone already created the new one by hand — leave it be
+    // rather than guessing which row the keys belong to.
+    if (await prisma.service.findUnique({ where: { slug: to } })) {
+      console.log(`skip rename ${from}: ${to} already exists`);
+      continue;
+    }
+    await prisma.service.update({ where: { id: old.id }, data: { slug: to } });
+    console.log(`renamed ${from} -> ${to}`);
+  }
+
   for (const s of SERVICES) {
     const data = {
       name: s.name,
