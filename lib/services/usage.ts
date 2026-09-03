@@ -558,7 +558,9 @@ function adaptTemu(raw: Record<string, unknown>): NormalizedUsage {
     credits: readCredits(raw),
     limits: readLimits(raw),
     keyInfo: readKeyInfo(raw),
-    jobs: null, // the broker's /me/usage reports no completed/failed/pending split
+    // The broker now reports a job-status split (completed / failed+timeout+captcha
+    // / pending) in /me/usage — read it so the Job health card lights up.
+    jobs: isRecord(raw["jobs"]) ? readJobs(raw["jobs"]) : null,
     totals: {
       today: num(totals["today"]),
       last7: sumLast(7),
