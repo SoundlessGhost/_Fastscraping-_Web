@@ -968,7 +968,14 @@ export default function ServiceUsage({
                       <div className="dash-health-l">completed</div>
                     </div>
                     <div className="dash-health-cell">
-                      <div className="dash-health-v">{nf.format(jobs.completed)}</div>
+                      {/* Pure success = completed − not found. The backend's
+                          `completed` already counts not-found jobs (completed =
+                          billable = success + not found), so showing it raw made
+                          "success" equal "completed" and the three cells stopped
+                          adding up. */}
+                      <div className="dash-health-v">
+                        {nf.format(Math.max(0, (jobs.billable ?? jobs.completed) - (jobs.notFound ?? 0)))}
+                      </div>
                       <div className="dash-health-l">success</div>
                     </div>
                     {jobs.notFound !== null && (
