@@ -365,7 +365,8 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
     daily.push({ date, total, by: {} });
   }
 
-  const jobs = isRecord(raw["jobs"]) ? raw["jobs"] : null;
+  const jobsRaw = isRecord(raw["jobs"]) ? raw["jobs"] : null;
+  const jobs = jobsRaw ? readJobs(jobsRaw) : null;
 
   const byDate: Record<string, { total: number; by: Record<string, number> }> = {};
   for (const d of daily) byDate[d.date] = { total: d.total, by: d.by };
@@ -374,10 +375,13 @@ function adaptGeneric(raw: Record<string, unknown>): NormalizedUsage {
     owner: typeof raw["owner"] === "string" ? raw["owner"] : null,
     pricing: readPricing(raw),
     byDate,
-    credits: readCredits(raw),
+    // Bill off jobs.billable (completed + not found), not the raw request meter
+    // — the same rule adaptShopee uses. Without this, USED and the cost card
+    // counted every request (incl. failed / retries), not the billable jobs.
+    credits: billFromBillable(readCredits(raw), jobs),
     limits: readLimits(raw),
     keyInfo: readKeyInfo(raw),
-    jobs: jobs ? readJobs(jobs) : null,
+    jobs,
     totals: {
       today: bucket("today"),
       last7: bucket("last_7_days"),
