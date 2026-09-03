@@ -96,6 +96,14 @@ const SERVICES: Seed[] = [
   // real estate stays at the bottom of the sidebar.
   { slug: "homegate", name: "Homegate", category: "realestate", platform: "homegate", baseUrl: "http://86.48.2.59:8900", kind: "homegate-usage", status: "ACTIVE", sortOrder: 109 },
 
+  // --- Ticketing / All Nippon Airways (live) -------------------------------
+  // ANA domestic-flight scraper on 109.199.122.181:8891. Its /me/usage is the
+  // full standard shape (owner/jobs/credits/limits/pricing/totals/daily), so the
+  // `generic` adapter reads it unchanged — no backend change was needed. Airline
+  // tickets/fares sit under Ticketing; single service, so name === platform label
+  // and the sidebar shows just "All Nippon Airways".
+  { slug: "ana", name: "All Nippon Airways", category: "ticketing", platform: "ana", baseUrl: "http://109.199.122.181:8891", kind: "generic", status: "ACTIVE", sortOrder: 45 },
+
   // --- The brands the homepage marquee advertises --------------------------
   // Name only: no region, no endpoint. These are here so the dashboard shows
   // the same catalogue the site sells, and each one says plainly that it isn't

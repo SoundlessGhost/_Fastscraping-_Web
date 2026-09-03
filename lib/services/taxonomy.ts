@@ -19,6 +19,7 @@ export const CATEGORIES: Record<string, { label: string; blurb: string }> = {
 export const PLATFORMS: Record<string, { label: string }> = {
   shopee: { label: "Shopee" },
   temu: { label: "Temu" },
+  ana: { label: "All Nippon Airways" },
   // The brands the homepage marquee advertises. Only the ones a prettified
   // slug would get wrong strictly need an entry — but listing them all keeps
   // the mapping in one place.
