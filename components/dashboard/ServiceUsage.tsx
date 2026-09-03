@@ -626,7 +626,18 @@ export default function ServiceUsage({
             whichever card is last — cost when priced, Lifetime otherwise. */}
         <div className={`dash-stat${cost ? "" : " dash-stat--dark"}`}>
           <div className="dash-stat-k">Lifetime</div>
-          <div className="dash-stat-v">{view ? nf.format(view.totals.lifetime) : "—"}</div>
+          {/* Across all regions, show the same billable/completed figure as Job
+              health (jobs.billable ?? completed) so Lifetime and Job-health
+              "completed" always agree. Some backends keep a separate request
+              meter (totals.lifetime) that drifts from the billable-jobs count by
+              a handful of in-flight jobs; the charged figure is the honest one.
+              A single-region view has no per-region job split, so it keeps the
+              region's request total. */}
+          <div className="dash-stat-v">
+            {view
+              ? nf.format(!region && jobs ? (jobs.billable ?? jobs.completed) : view.totals.lifetime)
+              : "—"}
+          </div>
           <div className="dash-stat-s">since first req</div>
         </div>
         {/* Only when a rate is configured — better no card than a confident $0. */}
