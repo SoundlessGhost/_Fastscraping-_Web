@@ -39,8 +39,7 @@ export const COMPANY = {
   whatsapp: "+880 1788 791 134",
   /// US line, shown in the footer — payment reviewers asked for one.
   phone: "+1 (424) 483-3262",
-  /// The company page. Every company-level link points here; the founder's own
-  /// profile stays only where it is labelled as his (About bio, founder JSON-LD).
+  /// The company LinkedIn page — the footer links here.
   linkedin: "https://www.linkedin.com/company/fastscraping/",
 } as const;
 

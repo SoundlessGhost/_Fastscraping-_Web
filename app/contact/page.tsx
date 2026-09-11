@@ -5,7 +5,6 @@ import LetterDate from "@/components/LetterDate";
 import "../styles/about.css";import "../styles/contact.css";
 import type { Metadata } from "next";
 import { withShareCard } from "@/lib/seo";
-import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = withShareCard({
   title: "Contact",
@@ -150,7 +149,7 @@ export default function ContactPage() {
               </a>
 
               <a
-                href={COMPANY.linkedin}
+                href="https://linkedin.com/in/md-khalid-mahmud-shawon"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="dl-row dl-row--li"
@@ -162,8 +161,8 @@ export default function ContactPage() {
                 </span>
                 <div className="dl-row-body">
                   <div className="dl-row-h">LinkedIn</div>
-                  <div className="dl-row-v">/company/fastscraping</div>
-                  <div className="dl-row-s">Company page</div>
+                  <div className="dl-row-v">/in/md-khalid-mahmud-shawon</div>
+                  <div className="dl-row-s">Connect &amp; DM</div>
                 </div>
                 <span className="dl-row-arr">→</span>
               </a>
