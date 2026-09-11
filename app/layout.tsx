@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollReset from "@/components/ScrollReset";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_PHONE_E164 } from "@/lib/company";
 import "./styles/base.css";
 import "./globals.css";
 import "./styles/nav-mobile.css";
@@ -130,6 +130,7 @@ const organizationLd = {
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
   email: COMPANY.email,
+  telephone: COMPANY_PHONE_E164,
   foundingDate: "2023",
   founder: {
     "@type": "Person",
@@ -160,8 +161,10 @@ const organizationLd = {
       addressCountry: "BD",
     },
   },
+  // The organisation's own profiles. The founder's personal LinkedIn belongs on
+  // `founder` above, not here.
   sameAs: [
-    "https://linkedin.com/in/md-khalid-mahmud-shawon",
+    COMPANY.linkedin,
     "https://upwork.com/freelancers/khalidalsaba",
   ],
   description:

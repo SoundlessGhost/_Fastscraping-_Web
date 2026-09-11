@@ -37,7 +37,15 @@ export const COMPANY = {
 
   email: "khalid@fastscraping.com",
   whatsapp: "+880 1788 791 134",
+  /// US line, shown in the footer — payment reviewers asked for one.
+  phone: "+1 (424) 483-3262",
+  /// The company page. Every company-level link points here; the founder's own
+  /// profile stays only where it is labelled as his (About bio, founder JSON-LD).
+  linkedin: "https://www.linkedin.com/company/fastscraping/",
 } as const;
+
+/// "+14244833262" — COMPANY.phone in dialable form, for tel: links and JSON-LD.
+export const COMPANY_PHONE_E164 = COMPANY.phone.replace(/[^\d+]/g, "");
 
 /// "30 N Gould St, Ste R, Sheridan, WY 82801, United States"
 export const COMPANY_ADDRESS_LINE = `${COMPANY.address.street}, ${COMPANY.address.city}, ${COMPANY.address.region} ${COMPANY.address.postalCode}, ${COMPANY.address.country}`;

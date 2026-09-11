@@ -1380,7 +1380,7 @@ section.block { padding: 100px 0; }
   max-width: 360px;
   margin: 0 0 18px;
 }
-.footer-brand a.email {
+.footer-brand a.phone {
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--ink);
@@ -1409,9 +1409,8 @@ section.block { padding: 100px 0; }
   color: var(--paper);
   transform: translateY(-2px);
 }
-.social-links a.whatsapp:hover { background: #25d366; border-color: #25d366; }
+.social-links a.gmail:hover    { background: #ea4335; border-color: #ea4335; }
 .social-links a.linkedin:hover { background: #0a66c2; border-color: #0a66c2; }
-.social-links a.upwork:hover   { background: #14a800; border-color: #14a800; }
 .social-links svg { width: 17px; height: 17px; }
 .footer-col h4 {
   font-family: var(--font-mono);

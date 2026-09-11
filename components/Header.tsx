@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isAppRoute, scrollShellTop } from "@/lib/chrome";
+import { COMPANY } from "@/lib/company";
 
 type PageMeta = { cta: string; ctaHref: string; status: string };
 
@@ -333,7 +334,7 @@ export default function Header() {
                 </svg>
               </a>
               <a
-                href="https://linkedin.com/in/md-khalid-mahmud-shawon"
+                href={COMPANY.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
