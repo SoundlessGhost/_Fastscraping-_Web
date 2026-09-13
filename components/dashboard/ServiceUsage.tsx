@@ -503,6 +503,20 @@ export default function ServiceUsage({
   const limits = usage?.limits ?? null;
   const jobs = usage?.jobs ?? null;
 
+  // Does one job equal one billable request? For Shopee/ANA it does: the request
+  // meter only logs delivered (= billable) requests, so lifetime ≈ jobs.billable
+  // and the two are the same unit. Temu is a batch scraper — a single job pulls
+  // thousands of good_ids, so its ~150 jobs stand behind ~950k requests and
+  // jobs.billable (≈150) is NOT the request count. We only let the billable-jobs
+  // figure stand in for Lifetime, or call it "what you're charged for", when the
+  // two are the same unit (ratio near 1); a batch service (ratio ≈ 0) keeps its
+  // real request meter and drops the per-job billing language.
+  const jobsAreRequests =
+    jobs?.billable != null &&
+    view != null &&
+    view.totals.lifetime > 0 &&
+    jobs.billable >= view.totals.lifetime * 0.5;
+
   // "Yesterday" reads straight from byDate (the daily window always holds it).
   const yesterday = useMemo(() => {
     const d = new Date(`${today}T00:00:00Z`);
@@ -626,16 +640,16 @@ export default function ServiceUsage({
             whichever card is last — cost when priced, Lifetime otherwise. */}
         <div className={`dash-stat${cost ? "" : " dash-stat--dark"}`}>
           <div className="dash-stat-k">Lifetime</div>
-          {/* Across all regions, show the same billable/completed figure as Job
-              health (jobs.billable ?? completed) so Lifetime and Job-health
-              "completed" always agree. Some backends keep a separate request
-              meter (totals.lifetime) that drifts from the billable-jobs count by
-              a handful of in-flight jobs; the charged figure is the honest one.
-              A single-region view has no per-region job split, so it keeps the
-              region's request total. */}
+          {/* When one job is one request (Shopee/ANA), show the billable figure
+              so Lifetime and Job-health "completed" agree — the request meter
+              only drifts from it by a handful of in-flight jobs, and the charged
+              figure is the honest one. A batch service (Temu) keeps its real
+              request meter: its ~150 jobs would otherwise report a "lifetime" of
+              150 next to 950k requests. A single-region view has no per-region
+              job split, so it keeps the region's request total. */}
           <div className="dash-stat-v">
             {view
-              ? nf.format(!region && jobs ? (jobs.billable ?? jobs.completed) : view.totals.lifetime)
+              ? nf.format(!region && jobsAreRequests && jobs ? (jobs.billable ?? jobs.completed) : view.totals.lifetime)
               : "—"}
           </div>
           <div className="dash-stat-s">since first req</div>
@@ -1013,9 +1027,9 @@ export default function ServiceUsage({
                       "no jobs yet"
                     )}{" "}
                     · {nf.format(jobs.total)} total
-                    {jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
+                    {jobsAreRequests && jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
                   </div>
-                  {jobs.billable !== null && (
+                  {jobsAreRequests && jobs.billable !== null && (
                     <div className="su-billnote">
                       Completed = success + not found — the jobs you&apos;re charged for. Failed and pending jobs aren&apos;t.
                     </div>
