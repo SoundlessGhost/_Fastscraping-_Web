@@ -100,9 +100,12 @@ export type ServiceTarget = {
   kind: string;
 };
 
-// The orchestrator now aggregates usage in SQL (~1s even for a busy key), so
-// this only needs to cover a slow network or a cold cache, not a 15s scan.
-const TIMEOUT_MS = 20_000;
+// Most backends aggregate usage in SQL (~1s even for a busy key). But a
+// single-worker backend under a heavy worker-poll load (e.g. Temu at peak) can
+// take 20-30s to answer /me/usage, so a 20s cap turned transient backend load
+// into a "Service did not respond" on the dashboard. 45s rides out those spikes
+// and still fails fast enough when a backend is genuinely down.
+const TIMEOUT_MS = 45_000;
 
 function num(v: unknown): number {
   return typeof v === "number" && Number.isFinite(v) ? v : 0;
