@@ -503,15 +503,17 @@ export default function ServiceUsage({
   const limits = usage?.limits ?? null;
   const jobs = usage?.jobs ?? null;
 
-  // Does one job equal one billable request? For Shopee/ANA it does: the request
-  // meter only logs delivered (= billable) requests, so lifetime ≈ jobs.billable
-  // and the two are the same unit. Temu is a batch scraper — a single job pulls
-  // thousands of good_ids, so its ~150 jobs stand behind ~950k requests and
-  // jobs.billable (≈150) is NOT the request count. We only let the billable-jobs
-  // figure stand in for Lifetime, or call it "what you're charged for", when the
-  // two are the same unit (ratio near 1); a batch service (ratio ≈ 0) keeps its
-  // real request meter and drops the per-job billing language.
-  const jobsAreRequests =
+  // Does the billable-jobs figure track lifetime? For Shopee/ANA it does: they
+  // keep every job, and the request meter only logs delivered (= billable)
+  // requests, so jobs.billable ≈ totals.lifetime. Temu prunes its jobs table to
+  // a short rolling window (checked live: it held only the last ~30 min, a few
+  // hundred rows, while api_usage kept the full ~950k since first request), so
+  // there jobs.billable is a recent snapshot, not the lifetime request count. We
+  // only let the billable figure stand in for Lifetime, or call it "what you're
+  // charged for", when it actually tracks the meter (ratio near 1); when it is a
+  // small recent window (ratio ≈ 0) we show the real meter and drop the per-job
+  // billing language.
+  const billableTracksLifetime =
     jobs?.billable != null &&
     view != null &&
     view.totals.lifetime > 0 &&
@@ -640,16 +642,17 @@ export default function ServiceUsage({
             whichever card is last — cost when priced, Lifetime otherwise. */}
         <div className={`dash-stat${cost ? "" : " dash-stat--dark"}`}>
           <div className="dash-stat-k">Lifetime</div>
-          {/* When one job is one request (Shopee/ANA), show the billable figure
+          {/* When the billable-jobs figure tracks lifetime (Shopee/ANA), show it
               so Lifetime and Job-health "completed" agree — the request meter
               only drifts from it by a handful of in-flight jobs, and the charged
-              figure is the honest one. A batch service (Temu) keeps its real
-              request meter: its ~150 jobs would otherwise report a "lifetime" of
-              150 next to 950k requests. A single-region view has no per-region
-              job split, so it keeps the region's request total. */}
+              figure is the honest one. When it doesn't (Temu prunes old jobs, so
+              its jobs count is a small recent window), keep the real request
+              meter — otherwise Lifetime would read a few hundred next to 950k
+              Used. A single-region view has no per-region job split, so it keeps
+              the region's request total. */}
           <div className="dash-stat-v">
             {view
-              ? nf.format(!region && jobsAreRequests && jobs ? (jobs.billable ?? jobs.completed) : view.totals.lifetime)
+              ? nf.format(!region && billableTracksLifetime && jobs ? (jobs.billable ?? jobs.completed) : view.totals.lifetime)
               : "—"}
           </div>
           <div className="dash-stat-s">since first req</div>
@@ -1027,9 +1030,9 @@ export default function ServiceUsage({
                       "no jobs yet"
                     )}{" "}
                     · {nf.format(jobs.total)} total
-                    {jobsAreRequests && jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
+                    {billableTracksLifetime && jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
                   </div>
-                  {jobsAreRequests && jobs.billable !== null && (
+                  {billableTracksLifetime && jobs.billable !== null && (
                     <div className="su-billnote">
                       Completed = success + not found — the jobs you&apos;re charged for. Failed and pending jobs aren&apos;t.
                     </div>
