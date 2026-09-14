@@ -1057,7 +1057,13 @@ export default function ServiceUsage({
                       "no jobs yet"
                     )}{" "}
                     · {nf.format(jobHealth.total)} total
+                    {jobs.billable !== null && <> · {nf.format(jobHealth.completed)} billable</>}
                   </div>
+                  {jobs.billable !== null && (
+                    <div className="su-billnote">
+                      Completed = success + not found — the jobs you&apos;re charged for. Failed and pending jobs aren&apos;t.
+                    </div>
+                  )}
                 </div>
               )}
 
