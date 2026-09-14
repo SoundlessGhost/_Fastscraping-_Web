@@ -519,6 +519,33 @@ export default function ServiceUsage({
     view.totals.lifetime > 0 &&
     jobs.billable >= view.totals.lifetime * 0.5;
 
+  // Job-health headline figures. Shopee/ANA keep every job, so jobs.billable is
+  // the all-time completed/delivered count and the card reads straight from the
+  // jobs table. Temu prunes its jobs table to a short recent window, so its
+  // all-time delivered count lives in the request meter instead: there Completed
+  // (and Success, since Temu has no "not found") tracks Lifetime — the figure the
+  // client is billed for and the Lifetime card shows — and the total is that plus
+  // the failures/pending still visible in the recent window, so the cells and the
+  // success rate still add up.
+  const jobHealth = (() => {
+    if (!jobs) return null;
+    const notFound = jobs.notFound ?? 0;
+    const failed = jobs.failed ?? 0;
+    const pending = jobs.pending ?? 0;
+    const completed = billableTracksLifetime
+      ? (jobs.billable ?? jobs.completed)
+      : (view?.totals.lifetime ?? jobs.completed);
+    const total = billableTracksLifetime ? jobs.total : completed + failed + pending;
+    return {
+      completed,
+      success: Math.max(0, completed - notFound),
+      notFound,
+      failed,
+      total,
+      pct: total ? (completed / total) * 100 : 0,
+    };
+  })();
+
   // "Yesterday" reads straight from byDate (the daily window always holds it).
   const yesterday = useMemo(() => {
     const d = new Date(`${today}T00:00:00Z`);
@@ -985,14 +1012,14 @@ export default function ServiceUsage({
             </div>
           ) : (
             <>
-              {jobs && (
+              {jobs && jobHealth && (
                 <div className="dash-card">
                   <div className="dash-card-h">
                     <div className="dash-card-t">Job health</div>
                   </div>
                   <div className="dash-health-row">
                     <div className="dash-health-cell">
-                      <div className="dash-health-v ok">{nf.format(jobs.billable ?? jobs.completed)}</div>
+                      <div className="dash-health-v ok">{nf.format(jobHealth.completed)}</div>
                       <div className="dash-health-l">completed</div>
                     </div>
                     <div className="dash-health-cell">
@@ -1000,36 +1027,36 @@ export default function ServiceUsage({
                           `completed` already counts not-found jobs (completed =
                           billable = success + not found), so showing it raw made
                           "success" equal "completed" and the three cells stopped
-                          adding up. */}
+                          adding up. Temu has no not-found, so success = completed. */}
                       <div className="dash-health-v">
-                        {nf.format(Math.max(0, (jobs.billable ?? jobs.completed) - (jobs.notFound ?? 0)))}
+                        {nf.format(jobHealth.success)}
                       </div>
                       <div className="dash-health-l">success</div>
                     </div>
                     {jobs.notFound !== null && (
                       <div className="dash-health-cell">
-                        <div className="dash-health-v">{nf.format(jobs.notFound)}</div>
+                        <div className="dash-health-v">{nf.format(jobHealth.notFound)}</div>
                         <div className="dash-health-l">not found</div>
                       </div>
                     )}
                     <div className="dash-health-cell">
-                      <div className="dash-health-v bad">{nf.format(jobs.failed)}</div>
+                      <div className="dash-health-v bad">{nf.format(jobHealth.failed)}</div>
                       <div className="dash-health-l">failed</div>
                     </div>
                   </div>
                   <div className="dash-meter">
-                    <span className="m-ok" style={{ width: jobs.total ? `${(jobs.completed / jobs.total) * 100}%` : "0%" }} />
-                    <span className="m-bad" style={{ width: jobs.total ? `${(jobs.failed / jobs.total) * 100}%` : "0%" }} />
+                    <span className="m-ok" style={{ width: jobHealth.total ? `${(jobHealth.completed / jobHealth.total) * 100}%` : "0%" }} />
+                    <span className="m-bad" style={{ width: jobHealth.total ? `${(jobHealth.failed / jobHealth.total) * 100}%` : "0%" }} />
                   </div>
                   <div className="dash-meter-s">
-                    {jobs.total ? (
+                    {jobHealth.total ? (
                       <>
-                        <span className="su-succ">{((jobs.completed / jobs.total) * 100).toFixed(1)}%</span> success
+                        <span className="su-succ">{jobHealth.pct.toFixed(1)}%</span> success
                       </>
                     ) : (
                       "no jobs yet"
                     )}{" "}
-                    · {nf.format(jobs.total)} total
+                    · {nf.format(jobHealth.total)} total
                     {billableTracksLifetime && jobs.billable !== null && <> · {nf.format(jobs.billable)} billable</>}
                   </div>
                   {billableTracksLifetime && jobs.billable !== null && (
