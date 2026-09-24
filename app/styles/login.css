@@ -57,35 +57,61 @@
 .lg-back:hover { color: var(--ink); border-color: var(--hairline-strong); }
 
 .lg-left-body {
-  margin: auto 0;
+  /* Center the whole content block horizontally + vertically inside the panel,
+     like the reference — so it sits in the middle, not hugging the left edge. */
+  margin: auto;
   padding: 48px 0;
   position: relative;
   z-index: 1;
   max-width: 560px;
 }
 
+/* Logo sits at the top of the centered content group (not pinned to the panel's
+   top corner). Upright, not italic. */
+.lg-logo {
+  display: flex;
+  width: fit-content;
+  margin-bottom: 30px;
+}
+.lg-left .lg-logo,
+.lg-left .lg-logo .brand-mark,
+.lg-left .lg-logo span:not(.brand-mark) {
+  font-style: normal;
+}
+
+/* On the login panel the feature tags stack vertically — one tag per line. */
+.lg-left .hero-bullets {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+/* Mirrors the homepage hero headline: Work Sans, three lines, "web scraping"
+   accent-green but upright (not italic). */
 .lg-h1 {
-  font-family: var(--font-display);
-  font-size: clamp(52px, 5.6vw, 92px);
-  line-height: 0.96;
-  letter-spacing: -0.025em;
+  font-family: var(--font-work);
+  /* Smaller than the hero so "We handle your" fits on one line inside the
+     ~560px login column — giving a clean 3-line headline. */
+  font-size: clamp(40px, 4.6vw, 72px);
+  line-height: 1.03;
+  letter-spacing: -0.03em;
   color: var(--ink);
   margin: 22px 0 0;
   font-weight: 400;
 }
 .lg-h1 em {
-  display: block;
-  font-style: italic;
+  font-style: normal;
   color: var(--accent);
 }
-.lg-h1-line { display: block; font-style: italic; }
+.lg-h1-line { display: block; }
 
 .lg-sub {
   margin: 26px 0 0;
   font-size: 17px;
   line-height: 1.55;
   color: var(--muted);
-  max-width: 46ch;
+  max-width: 520px;
 }
 .lg-sub strong { color: var(--ink); font-weight: 500; }
 
@@ -174,7 +200,8 @@
 .lg-right-inner {
   position: relative;
   z-index: 1;
-  width: min(430px, 100%);
+  /* Wider form (was 430px). */
+  width: min(468px, 100%);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -252,9 +279,84 @@
 .lg-lock { color: rgba(245, 243, 238, 0.45); }
 
 .lg-card-body {
-  padding: 24px 24px 22px;
+  padding: 28px 28px 24px;
   display: flex;
   flex-direction: column;
+}
+
+/* ---- clean auth form: heading / switch / google / OR ---- */
+.lg-title {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #eaf2ed;
+  margin: 0;
+}
+.lg-switch {
+  margin: 7px 0 22px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(245, 243, 238, 0.55);
+}
+.lg-switch b {
+  color: rgba(245, 243, 238, 0.82);
+  font-weight: 500;
+}
+.lg-switch button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  color: #6fd0a3;
+}
+.lg-switch button:hover {
+  color: #8be0b8;
+}
+
+.lg-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #eaf2ed;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.lg-google:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.lg-or {
+  display: flex;
+  align-items: center;
+  margin: 18px 0;
+}
+.lg-or::before,
+.lg-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.lg-or span {
+  padding: 0 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(245, 243, 238, 0.4);
 }
 
 .lg-prompt {
@@ -406,8 +508,8 @@
 .lg-links {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: 18px;
   margin-top: 14px;
 }
 .lg-links button {

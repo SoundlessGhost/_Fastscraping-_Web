@@ -3,9 +3,14 @@
 /* Self-hosted fonts (next/font) override base CSS font stacks.
    Visual identical — same font families, just preloaded + no external CDN block. */
 :root {
-  --font-display: var(--next-font-instrument-serif), "Newsreader", Georgia, serif;
-  --font-sans: var(--next-font-geist), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Site-wide font is now Work Sans (headings + body). Both vars point to it so
+     every existing var(--font-display)/var(--font-sans) flips in one place.
+     Header nav/buttons use --font-droid; terminals/code use --font-mono. */
+  --font-display: var(--next-font-work-sans), "Work Sans", sans-serif;
+  --font-sans: var(--next-font-work-sans), "Work Sans", sans-serif;
   --font-mono: var(--next-font-geist-mono), "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-work: var(--next-font-work-sans), "Work Sans", sans-serif;
+  --font-droid: var(--next-font-droid-sans), "Droid Sans", sans-serif;
 }
 
 /* Smooth scroll for hash anchors (#contact, #services, etc.) */

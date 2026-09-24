@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif, Work_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollReset from "@/components/ScrollReset";
@@ -31,6 +32,31 @@ const instrumentSerif = Instrument_Serif({
   weight: "400",
   style: ["normal", "italic"],
   variable: "--next-font-instrument-serif",
+  display: "swap",
+  preload: true,
+});
+
+const workSans = Work_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--next-font-work-sans",
+  display: "swap",
+  preload: true,
+});
+
+// The ScraperAPI header/nav is Droid Sans (its headings are Work Sans). Droid
+// Sans is no longer on Google Fonts, so we self-host the same open-source file
+// (Apache 2.0) for the top-bar nav + CTA — its uppercase letterforms, notably
+// the serifed capital "I", are what make the header match ScraperAPI.
+const droidSans = localFont({
+  src: [
+    {
+      path: "./fonts/droidsans-webfont.woff2",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--next-font-droid-sans",
   display: "swap",
   preload: true,
 });
@@ -180,7 +206,7 @@ const websiteLd = {
   },
 };
 
-const fontClass = `${geist.variable} ${geistMono.variable} ${instrumentSerif.variable}`;
+const fontClass = `${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} ${workSans.variable} ${droidSans.variable}`;
 
 export default function RootLayout({
   children,

@@ -5,33 +5,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { isAppRoute, scrollShellTop } from "@/lib/chrome";
 
-type PageMeta = { cta: string; ctaHref: string; status: string };
-
-const DEFAULT_STATUS = "All pipelines healthy";
-
-const PAGE_META: Record<string, PageMeta> = {
-  "/": { cta: "Talk to Khalid", ctaHref: "/contact", status: DEFAULT_STATUS },
-  "/about": { cta: "Book a demo", ctaHref: "/contact", status: DEFAULT_STATUS },
-  "/pricing": { cta: "Get a quote", ctaHref: "/contact", status: "Replies in < 24h" },
-  "/solutions": { cta: "Book a demo", ctaHref: "/contact", status: DEFAULT_STATUS },
-  "/services": { cta: "Get a quote", ctaHref: "/contact", status: "8 active capabilities" },
-  "/industries": { cta: "Talk to Khalid", ctaHref: "/contact", status: "6 verticals · 5 countries" },
-  "/case-studies": { cta: "Become a case", ctaHref: "/contact", status: "4 active stories" },
-  "/contact": { cta: "Write us a note", ctaHref: "/contact#letter", status: "Online · GMT+6" },
-  "/privacy": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Reviewed quarterly" },
-  "/terms": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Reviewed quarterly" },
-  "/compliance": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Public data only" },
-  "/refund": { cta: "Talk to Khalid", ctaHref: "/contact", status: "Replies in < 24h" },
-};
-
 const NAV = [
   { href: "/solutions", label: "Solutions" },
   { href: "/services", label: "Services" },
-  { href: "/industries", label: "Industries" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Support" },
   { href: "/case-studies", label: "Case studies" },
-  { href: "/dashboard", label: "Client dashboard" },
 ];
 
 const SOLUTIONS_SUB = [
@@ -45,8 +25,25 @@ const SOLUTIONS_SUB = [
 
 export default function Header() {
   const pathname = usePathname();
-  const meta = PAGE_META[pathname] ?? PAGE_META["/"];
   const [open, setOpen] = useState(false);
+  // Whether the visitor has a live session. Checked client-side so the marketing
+  // pages stay static; when logged in the header shows "Dashboard" instead of
+  // "Login". Starts false so SSR and first client render match (no flash for the
+  // logged-out majority).
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/auth/status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { authed: false }))
+      .then((d) => {
+        if (alive) setAuthed(Boolean(d?.authed));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const isActive = (href: string) => pathname === href;
 
@@ -206,13 +203,6 @@ export default function Header() {
               Services
             </Link>
             <Link
-              href="/industries"
-              className={isActive("/industries") ? "active" : ""}
-              onClick={sameRouteScroll("/industries")}
-            >
-              Industries
-            </Link>
-            <Link
               href="/pricing"
               className={isActive("/pricing") ? "active" : ""}
               onClick={sameRouteScroll("/pricing")}
@@ -227,17 +217,26 @@ export default function Header() {
               About
             </Link>
             <Link
-              href="/dashboard"
-              className={`nav-dash${isActive("/dashboard") ? " active" : ""}`}
+              href="/contact"
+              className={isActive("/contact") ? "active" : ""}
+              onClick={sameRouteScroll("/contact")}
             >
-              Dashboard
+              Support
             </Link>
           </nav>
 
           <div className="topbar-right">
-            <Link href={meta.ctaHref} className="btn btn-primary">
-              {meta.cta}
-              <span className="arrow">→</span>
+            {authed ? (
+              <Link href="/dashboard" className="btn btn-ghost">
+                Dashboard
+              </Link>
+            ) : (
+              <Link href="/dashboard/login" className="btn btn-ghost">
+                Login
+              </Link>
+            )}
+            <Link href="/contact" className="btn btn-primary">
+              Talk to Khalid
             </Link>
             <button
               type="button"
@@ -307,12 +306,29 @@ export default function Header() {
 
           <div className="md-foot">
             <Link
-              href={meta.ctaHref}
+              href="/contact"
               className="btn btn-primary md-cta"
               onClick={closeDrawer}
             >
-              {meta.cta} <span className="arrow">→</span>
+              Talk to Khalid
             </Link>
+            {authed ? (
+              <Link
+                href="/dashboard"
+                className="btn btn-ghost md-cta"
+                onClick={closeDrawer}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/dashboard/login"
+                className="btn btn-ghost md-cta"
+                onClick={closeDrawer}
+              >
+                Login
+              </Link>
+            )}
             <a
               href="https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com"
               target="_blank"

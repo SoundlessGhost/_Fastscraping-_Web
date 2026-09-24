@@ -33,10 +33,6 @@ export default function HomePage() {
       <section className="hero" data-screen-label="01 Hero">
         <div className="container hero-grid">
           <div className="hero-left">
-            <div className="hero-tag">
-              <span className="chip">v8 · 2026</span>
-              <span>Enterprise-grade data extraction</span>
-            </div>
             <h1 className="display">
               We handle your{" "}
               <span className="br">

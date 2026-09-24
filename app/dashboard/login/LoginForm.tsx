@@ -5,15 +5,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "../../styles/login.css";
 
-const MAIL = "https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com";
 const RESEND_COOLDOWN = 60;
 
 type Mode = "login" | "signup" | "forgot";
 
-const PROMPT: Record<Mode, { cmd: string; note: string }> = {
-  login: { cmd: "auth --login", note: "# email + password" },
-  signup: { cmd: "auth --signup", note: "# we'll email you a 6-digit code" },
-  forgot: { cmd: "auth --reset", note: "# we'll email you a reset code" },
+// Friendly messages for a failed Google redirect (?error=… on this page).
+const URL_ERRORS: Record<string, string> = {
+  google_unconfigured: "Google sign-in isn't set up yet.",
+  google_denied: "Google sign-in was cancelled.",
+  google_state: "Google sign-in failed — please try again.",
+  google_token: "Google sign-in failed — please try again.",
+  google_profile: "Google sign-in failed — please try again.",
+  google_email: "That Google account has no verified email.",
+  account_disabled: "This account has been disabled. Contact support.",
 };
 
 export default function LoginForm() {
@@ -26,21 +30,10 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
+  // Password captured up front on signup, sent with the code at verify time.
+  const [signupPassword, setSignupPassword] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const [clock, setClock] = useState("--:--:-- UTC");
   const firstField = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const p = (n: number) => String(n).padStart(2, "0");
-    const tick = () => {
-      const d = new Date();
-      setClock(`${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`);
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -52,12 +45,17 @@ export default function LoginForm() {
     firstField.current?.focus();
   }, [mode, step]);
 
+  // Surface a ?error= left by a failed Google sign-in redirect.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("error");
+    if (p && URL_ERRORS[p]) setError(URL_ERRORS[p]);
+  }, []);
+
   function goto(next: Mode) {
     setMode(next);
     setStep(1);
     setError("");
     setNotice("");
-    setCode("");
   }
 
   async function post(url: string, body: unknown) {
@@ -102,36 +100,30 @@ export default function LoginForm() {
         return finish();
       }
 
-      // ---------- SIGNUP ----------
+      // ---------- SIGN UP ----------
+      // Step 1: email + password -> we email a 6-digit code.
+      // Step 2: enter the code -> account is created with the step-1 password.
       if (mode === "signup") {
         if (step === 1) {
           const addr = val("email");
+          const pw = String(fd.get("password") ?? "");
+          if (pw.length < 8) return setError("Password must be at least 8 characters.");
           const { r, d } = await post("/api/auth/signup", { email: addr });
           if (!r.ok || !d.ok) return setError(d.error || "Could not send the code.");
           setEmail(addr);
+          setSignupPassword(pw);
           setCooldown(RESEND_COOLDOWN);
-          setNotice(`Code sent to ${addr}`);
           return setStep(2);
         }
-        if (step === 2) {
-          const c = val("code");
-          if (!/^\d{6}$/.test(c)) return setError("Enter the 6-digit code.");
-          setCode(c);
-          return setStep(3);
-        }
-        const pw = String(fd.get("password") ?? "");
-        if (pw !== String(fd.get("confirm") ?? "")) return setError("Passwords don't match.");
+        const c = val("code");
+        if (!/^\d{6}$/.test(c)) return setError("Enter the 6-digit code.");
         const { r, d } = await post("/api/auth/signup/verify", {
           email,
-          code,
-          password: pw,
-          firstName: val("firstName") || undefined,
-          lastName: val("lastName") || undefined,
-          company: val("company") || undefined,
+          code: c,
+          password: signupPassword,
         });
         if (!r.ok || !d.ok) {
           setError(d.error || "Could not create the account.");
-          if ((d.error || "").toLowerCase().includes("code")) setStep(2);
           return;
         }
         return finish();
@@ -180,16 +172,32 @@ export default function LoginForm() {
   const label = busy
     ? "Working"
     : mode === "login"
-      ? "Authenticate"
+      ? "Sign in"
       : mode === "signup"
         ? step === 1
-          ? "Send code"
-          : step === 2
-            ? "Continue"
-            : "Create account"
+          ? "Sign up"
+          : "Create account"
         : step === 1
           ? "Send reset code"
           : "Set new password";
+
+  const heading =
+    mode === "login"
+      ? "Sign in to your account"
+      : mode === "signup"
+        ? step === 1
+          ? "Create your account"
+          : "Check your email"
+        : step === 1
+          ? "Reset your password"
+          : "Check your email";
+
+  const showGoogle = mode === "login" || (mode === "signup" && step === 1);
+  const showEmail =
+    mode === "login" || (mode === "signup" && step === 1) || (mode === "forgot" && step === 1);
+  const showPassword = mode === "login" || (mode === "signup" && step === 1);
+  const showCode =
+    (mode === "signup" && step === 2) || (mode === "forgot" && step === 2);
 
   const eye = (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7">
@@ -200,154 +208,156 @@ export default function LoginForm() {
 
   return (
     <main className="lg-split">
-      {/* LEFT · editorial */}
+      {/* LEFT · editorial — mirrors the homepage hero */}
       <section className="lg-left">
-        <header className="lg-brandrow">
-          <Link href="/" className="brand">
+        <div className="lg-left-body">
+          <Link href="/" className="brand lg-logo">
             <span className="brand-mark">f</span>
             <span>Fastscraping</span>
           </Link>
-          <Link href="/" className="lg-back">
-            ← fastscraping.com
-          </Link>
-        </header>
-
-        <div className="lg-left-body">
-          <span className="eyebrow">Client access · live usage</span>
+          <span className="eyebrow">Enterprise-grade data extraction</span>
           <h1 className="lg-h1">
-            Your pipeline,
-            <em>live —</em>
-            <span className="lg-h1-line">as it flows.</span>
+            <span className="lg-h1-line">We handle your</span>
+            <span className="lg-h1-line">
+              <em>web scraping</em>
+            </span>
+            <span className="lg-h1-line">pipeline.</span>
           </h1>
           <p className="lg-sub">
-            Every service you run with us, in one place.{" "}
-            <strong>Requests, regions, job health — one login.</strong>
+            Structured data delivered{" "}
+            <strong>reliably, at any scale</strong> — bypassing Cloudflare,
+            DataDome and login walls. No proxy headaches. No infrastructure
+            overhead. No babysitting.
           </p>
-          <ul className="lg-points">
-            <li>
-              <span className="lg-arrow">→</span> All your services in one dashboard
-            </li>
-            <li>
-              <span className="lg-arrow">→</span> Daily traffic &amp; day-by-day breakdown
-            </li>
-            <li>
-              <span className="lg-arrow">→</span> Job health · success / fail / pending
-            </li>
-          </ul>
-          <div className="lg-nokey">
-            Questions about your account?{" "}
-            <a href={MAIL} target="_blank" rel="noopener noreferrer">
-              Email Khalid →
-            </a>
+          <div className="hero-bullets">
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Bypass Cloudflare &amp; Captchas
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Large-scale on demand
+            </span>
+            <span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              No proxy hassles
+            </span>
           </div>
         </div>
-
-        <footer className="lg-left-foot">
-          <span>© 2026 Fastscraping</span>
-          <span className="lg-foot-sep">·</span>
-          <Link href="/privacy">Privacy</Link>
-          <span className="lg-foot-sep">·</span>
-          <Link href="/terms">Terms</Link>
-        </footer>
       </section>
 
-      {/* RIGHT · terminal */}
+      {/* RIGHT · auth form */}
       <section className="lg-right">
         <div className="lg-right-inner">
-          <div className="lg-status-strip">
-            <span className="lg-live">
-              <span className="lg-live-dot" />
-              All pipelines healthy
-            </span>
-            <span className="lg-utc">{clock}</span>
-          </div>
-
           <div className={`lg-card${done ? " done" : ""}`}>
-            <div className="lg-card-bar">
-              <span className="lg-dots">
-                <i />
-                <i />
-                <i />
-              </span>
-              <span className="lg-card-title">
-                fastscraping ~ <b>secure-login</b>
-              </span>
-              <svg className="lg-lock" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="4" y="11" width="16" height="10" rx="2" />
-                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-              </svg>
-            </div>
-
             {!done ? (
               <form className="lg-card-body" onSubmit={onSubmit} noValidate>
-                <div className="lg-prompt">
-                  <span className="lg-ps">$</span> {PROMPT[mode].cmd}
-                </div>
-                <div className="lg-tline dim">{PROMPT[mode].note}</div>
+                <h2 className="lg-title">{heading}</h2>
+                <p className="lg-switch">
+                  {mode === "login" && (
+                    <>
+                      Don&apos;t have an account?{" "}
+                      <button type="button" onClick={() => goto("signup")}>
+                        Sign up
+                      </button>
+                    </>
+                  )}
+                  {mode === "signup" && step === 1 && (
+                    <>
+                      Already have an account?{" "}
+                      <button type="button" onClick={() => goto("login")}>
+                        Sign in
+                      </button>
+                    </>
+                  )}
+                  {mode === "signup" && step === 2 && (
+                    <>
+                      Enter the 6-digit code sent to <b>{email}</b>
+                    </>
+                  )}
+                  {mode === "forgot" && step === 1 && <>We&apos;ll email you a reset code.</>}
+                  {mode === "forgot" && step === 2 && (
+                    <>
+                      Enter the code sent to <b>{email}</b> and a new password.
+                    </>
+                  )}
+                </p>
 
-                {(mode === "login" || step === 1) && (
+                {showGoogle && (
                   <>
-                    <label className="lg-label" htmlFor="email">
-                      Email
-                    </label>
+                    <a className="lg-google" href="/api/auth/google">
+                      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" />
+                        <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38Z" />
+                      </svg>
+                      Continue with Google
+                    </a>
+                    <div className="lg-or">
+                      <span>OR</span>
+                    </div>
+                  </>
+                )}
+
+                {showEmail && (
+                  <div className="lg-field">
+                    <input
+                      ref={firstField}
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      aria-label="Email"
+                      autoComplete="email"
+                      spellCheck={false}
+                    />
+                  </div>
+                )}
+
+                {showPassword && (
+                  <div className="lg-field lg-mt">
+                    <input
+                      id="password"
+                      name="password"
+                      type={show ? "text" : "password"}
+                      placeholder="Password"
+                      aria-label="Password"
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
+                    />
+                    <button
+                      type="button"
+                      className={`lg-eye${show ? " on" : ""}`}
+                      aria-label={show ? "Hide password" : "Show password"}
+                      onClick={() => setShow((s) => !s)}
+                    >
+                      {eye}
+                    </button>
+                  </div>
+                )}
+
+                {showCode && (
+                  <>
                     <div className="lg-field">
                       <input
                         ref={firstField}
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="you@company.com"
-                        autoComplete="email"
-                        spellCheck={false}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {mode === "login" && (
-                  <>
-                    <label className="lg-label lg-mt" htmlFor="password">
-                      Password
-                    </label>
-                    <div className="lg-field">
-                      <input
-                        id="password"
-                        name="password"
-                        type={show ? "text" : "password"}
-                        placeholder="••••••••"
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="button"
-                        className={`lg-eye${show ? " on" : ""}`}
-                        aria-label={show ? "Hide password" : "Show password"}
-                        onClick={() => setShow((s) => !s)}
-                      >
-                        {eye}
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {mode !== "login" && step === 2 && (
-                  <>
-                    <label className="lg-label" htmlFor="code">
-                      6-digit code
-                    </label>
-                    <div className="lg-field">
-                      <input
-                        ref={mode === "forgot" ? undefined : firstField}
                         id="code"
                         name="code"
                         inputMode="numeric"
                         maxLength={6}
                         className="lg-code"
                         placeholder="000000"
+                        aria-label="6-digit code"
                         autoComplete="one-time-code"
                       />
                     </div>
                     <div className="lg-resend">
-                      <span>Sent to {email}</span>
                       <button type="button" onClick={resend} disabled={cooldown > 0 || busy}>
                         {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend code"}
                       </button>
@@ -355,18 +365,15 @@ export default function LoginForm() {
                   </>
                 )}
 
-                {((mode === "signup" && step === 3) || (mode === "forgot" && step === 2)) && (
+                {mode === "forgot" && step === 2 && (
                   <>
-                    <label className="lg-label lg-mt" htmlFor="password">
-                      {mode === "forgot" ? "New password" : "Password"}
-                    </label>
-                    <div className="lg-field">
+                    <div className="lg-field lg-mt">
                       <input
-                        ref={mode === "signup" ? firstField : undefined}
                         id="password"
                         name="password"
                         type={show ? "text" : "password"}
-                        placeholder="8+ chars, letters + numbers"
+                        placeholder="New password"
+                        aria-label="New password"
                         autoComplete="new-password"
                       />
                       <button
@@ -378,52 +385,21 @@ export default function LoginForm() {
                         {eye}
                       </button>
                     </div>
-                    <label className="lg-label lg-mt" htmlFor="confirm">
-                      Confirm password
-                    </label>
-                    <div className="lg-field">
+                    <div className="lg-field lg-mt">
                       <input
                         id="confirm"
                         name="confirm"
                         type={show ? "text" : "password"}
-                        placeholder="repeat it"
+                        placeholder="Repeat new password"
+                        aria-label="Repeat new password"
                         autoComplete="new-password"
                       />
                     </div>
                   </>
                 )}
 
-                {mode === "signup" && step === 3 && (
-                  <>
-                    <div className="lg-two">
-                      <div>
-                        <label className="lg-label lg-mt" htmlFor="firstName">
-                          First name <span className="lg-opt">optional</span>
-                        </label>
-                        <div className="lg-field">
-                          <input id="firstName" name="firstName" type="text" placeholder="First" autoComplete="given-name" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="lg-label lg-mt" htmlFor="lastName">
-                          Last name <span className="lg-opt">optional</span>
-                        </label>
-                        <div className="lg-field">
-                          <input id="lastName" name="lastName" type="text" placeholder="Last" autoComplete="family-name" />
-                        </div>
-                      </div>
-                    </div>
-                    <label className="lg-label lg-mt" htmlFor="company">
-                      Company <span className="lg-opt">optional</span>
-                    </label>
-                    <div className="lg-field">
-                      <input id="company" name="company" type="text" placeholder="Company" autoComplete="organization" />
-                    </div>
-                  </>
-                )}
-
                 <div className={`lg-hint${error ? " error" : ""}`}>
-                  {error || notice || (mode === "login" ? "Use the email you signed up with" : " ")}
+                  {error || notice || " "}
                 </div>
 
                 <button type="submit" className={`lg-auth${busy ? " busy" : ""}`} disabled={busy}>
@@ -433,14 +409,9 @@ export default function LoginForm() {
 
                 <div className="lg-links">
                   {mode === "login" ? (
-                    <>
-                      <button type="button" onClick={() => goto("forgot")}>
-                        Forgot password?
-                      </button>
-                      <button type="button" onClick={() => goto("signup")}>
-                        Create account
-                      </button>
-                    </>
+                    <button type="button" onClick={() => goto("forgot")}>
+                      Forgot your password?
+                    </button>
                   ) : (
                     <>
                       {step > 1 && (
@@ -449,19 +420,12 @@ export default function LoginForm() {
                         </button>
                       )}
                       <button type="button" onClick={() => goto("login")}>
-                        Back to login
+                        Back to sign in
                       </button>
                     </>
                   )}
                 </div>
 
-                <div className="lg-fine">
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <rect x="4" y="11" width="16" height="10" rx="2" />
-                    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-                  </svg>
-                  Encrypted · stays logged in · never stored in your browser
-                </div>
               </form>
             ) : (
               <div className="lg-success">
@@ -477,13 +441,6 @@ export default function LoginForm() {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className="lg-under">
-            <span>Trouble logging in? </span>
-            <a href={MAIL} target="_blank" rel="noopener noreferrer">
-              khalid@fastscraping.com
-            </a>
           </div>
         </div>
       </section>

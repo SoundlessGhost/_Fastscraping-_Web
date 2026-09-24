@@ -193,7 +193,7 @@ body.nav-open .md-panel { transform: translateX(0); }
 @media (max-width: 1280px) {
   section.block { padding: 84px 0; }
   .hero { padding: 48px 0 68px; }
-  .hero h1.display { font-size: clamp(48px, 6.2vw, 84px); }
+  .hero h1.display { font-size: clamp(44px, 5.3vw, 82px); }
   .numbers-block { padding: 52px 44px; }
   .hardsrc { padding: 52px; }
   .cta { padding: 60px 48px; }

@@ -162,6 +162,10 @@ h1, h2, h3, h4 { margin: 0; }
   align-items: center;
   justify-content: space-between;
   padding: 14px var(--gutter);
+  /* The header bar is wider than the body container (ScraperAPI-style) so the
+     nav + right-side buttons have room and never crowd. Body sections keep the
+     1280px --container width. */
+  max-width: 1500px;
 }
 .brand {
   display: flex;
@@ -235,6 +239,40 @@ h1, h2, h3, h4 { margin: 0; }
 .topbar .nav-trigger,
 .topbar-right .btn-primary,
 .topbar .mm-h { font-style: normal; }
+
+/* ---- ScraperAPI-style header (2026-09-23) ----
+   The top-bar nav links and the CTA use Droid Sans in ALL CAPS — the same font
+   ScraperAPI's header uses (its serifed capital "I" is the giveaway). The brand
+   mark ("f" tile) and the wordmark ("Fastscraping") are deliberately excluded. */
+.topbar .nav > a,
+.topbar .nav a.nav-trigger,
+.topbar .nav-trigger {
+  font-family: var(--font-droid);
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+/* Both header buttons (Login = primary, Dashboard = ghost) share the Droid Sans
+   uppercase treatment. */
+.topbar-right .btn {
+  font-family: var(--font-droid);
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+/* Logo mark ("f") + wordmark ("Fastscraping") also move to Droid Sans so the
+   whole top bar reads as one font. Scoped to .topbar only, so the footer, mobile
+   drawer, dashboard sidebar and invoice letterhead keep their serif brand.
+   Kept in normal case (a brand name, not shouted in caps). */
+.topbar .brand-mark,
+.topbar .brand > span:not(.brand-mark) {
+  font-family: var(--font-droid);
+  font-style: normal;
+}
 
 /* ---------- Solutions mega-menu dropdown ---------- */
 .nav-dropdown {
@@ -440,6 +478,9 @@ h1, h2, h3, h4 { margin: 0; }
   padding: 56px 0 80px;
   position: relative;
   overflow: hidden;
+  /* Whole hero uses Work Sans. Text elements inherit this; the terminal card's
+     code lines keep their explicit monospace, so column alignment is preserved. */
+  font-family: var(--font-work);
 }
 .hero-grid {
   display: grid;
@@ -473,35 +514,49 @@ h1, h2, h3, h4 { margin: 0; }
 }
 
 .hero h1.display {
-  font-size: clamp(54px, 6.6vw, 96px);
+  /* Sized so "We handle your" fits on one line in the two-column hero, giving a
+     clean 3-line headline (We handle your / web scraping / pipeline.). Work Sans
+     is wider than the old serif, so the cap is lower than before. */
+  font-size: clamp(48px, 5.3vw, 82px);
+  /* Hero headline uses Work Sans (ScraperAPI-style), not the serif display. */
+  font-family: var(--font-work);
+  letter-spacing: -0.03em;
 }
 .hero h1 .br { display: block; }
+/* "web scraping" stays accent-green but upright (not italic). */
+.hero h1.display em { font-style: normal; }
 
 .hero-sub {
   margin-top: 28px;
   font-size: 19px;
   line-height: 1.5;
   color: var(--muted);
-  max-width: 540px;
+  /* Fill the hero column instead of capping at 540px, so the copy packs into
+     fewer lines with no wasted space on the right. Font size unchanged. */
+  max-width: none;
 }
 .hero-sub strong { color: var(--ink); font-weight: 500; }
 
 .hero-bullets {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 8px;
+  /* Tighter gap so the three chips sit on one line at desktop width. */
+  gap: 6px;
   margin-top: 26px;
 }
 .hero-bullets span {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  /* Slightly tighter icon gap + padding so all three chips fit one line;
+     font size is unchanged. */
+  gap: 6px;
   font-size: 13px;
   color: var(--ink-2);
-  padding: 7px 12px;
+  padding: 7px 10px;
   background: var(--paper);
   border: 1px solid var(--hairline);
   border-radius: 999px;
+  white-space: nowrap;
 }
 .hero-bullets svg { width: 14px; height: 14px; color: var(--accent); }
 
