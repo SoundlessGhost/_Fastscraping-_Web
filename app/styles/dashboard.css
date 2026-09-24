@@ -93,7 +93,9 @@
 }
 .dash-title {
   font-family: var(--font-display);
-  font-size: clamp(30px, 3.2vw, 44px);
+  /* Work Sans is wider than the old serif, so the title needs a lower cap to
+     stay on one line in its ~585px header slot. */
+  font-size: clamp(22px, 2vw, 38px);
   line-height: 1;
   letter-spacing: -0.025em;
   color: var(--ink);
@@ -318,20 +320,22 @@
 }
 .dash-health-cell {
   border-right: 1px solid var(--hairline);
-  padding-right: 10px;
+  padding-right: 8px;
   min-width: 0;
 }
 .dash-health-cell:last-child { border-right: none; }
-.dash-health-cell:not(:first-child) { padding-left: 10px; }
+.dash-health-cell:not(:first-child) { padding-left: 8px; }
 .dash-health-v {
   font-family: var(--font-display);
-  /* Caps at 24px (down from 30) and eases smaller as the card narrows, so
-     7-digit counts read large but don't crowd their neighbours. */
-  font-size: clamp(20px, 7.2cqi, 24px);
+  /* Sized (in container units) so a 7-digit count fits its ~1/4 column without
+     overlapping its neighbour. Work Sans is wider than the old serif, so the
+     cap is lower than before. */
+  font-size: clamp(12px, 4.2cqi, 17px);
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .dash-health-v.ok { color: var(--accent); }
 .dash-health-v.bad { color: var(--hot); }
