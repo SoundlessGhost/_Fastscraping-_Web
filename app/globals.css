@@ -3,14 +3,15 @@
 /* Self-hosted fonts (next/font) override base CSS font stacks.
    Visual identical — same font families, just preloaded + no external CDN block. */
 :root {
-  /* Site-wide font is now Work Sans (headings + body). Both vars point to it so
-     every existing var(--font-display)/var(--font-sans) flips in one place.
-     Header nav/buttons use --font-droid; terminals/code use --font-mono. */
-  --font-display: var(--next-font-work-sans), "Work Sans", sans-serif;
-  --font-sans: var(--next-font-work-sans), "Work Sans", sans-serif;
-  --font-mono: var(--next-font-geist-mono), "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-  --font-work: var(--next-font-work-sans), "Work Sans", sans-serif;
-  --font-droid: var(--next-font-droid-sans), "Droid Sans", sans-serif;
+  /* Whole site uses a system-font stack (magpieiq / contact-page style): Avenir
+     Next on Apple, Segoe UI on Windows, system default elsewhere — no web font
+     downloaded. One sans stack for everything (body + headings + brand), one
+     mono stack for small labels. */
+  --font-sans: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-work: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-droid: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, Menlo, monospace;
 }
 
 /* Smooth scroll for hash anchors (#contact, #services, etc.) */

@@ -102,7 +102,7 @@
   margin: 0 0 10px;
   font-weight: 400;
 }
-.dash-title em { font-style: italic; color: var(--accent); }
+.dash-title em { font-style: normal; color: var(--accent); }
 .dash-meta {
   font-family: var(--font-mono);
   font-size: 11.5px;
@@ -485,7 +485,7 @@
   font-family: var(--font-display);
   font-size: 22px;
   color: var(--ink-2);
-  font-style: italic;
+  font-style: normal;
 }
 .dash-empty-s {
   font-family: var(--font-mono);

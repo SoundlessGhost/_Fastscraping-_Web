@@ -339,7 +339,7 @@ const SOLUTIONS: Solution[] = [
     side: { h: "Typical clients", items: ["Retail brands", "DTC operators", "Brand-protection teams", "Reseller monitoring"] },
     accent: "emerald",
     Visual: PricingVisual,
-    cta: { primary: "Discuss pricing intel", secondary: "See pricing", link: "/pricing" },
+    cta: { primary: "Discuss pricing intel", secondary: "Get a quote", link: "/contact" },
   },
   {
     id: "marketplace-intelligence",
@@ -360,7 +360,7 @@ const SOLUTIONS: Solution[] = [
     side: { h: "Source coverage", items: ["Amazon · global", "Walmart · US/CA", "eBay · global", "Shopify · 25K+ stores", "Regional (FR, DE, IN, JP)"] },
     accent: "rust",
     Visual: MarketplaceVisual,
-    cta: { primary: "Discuss marketplace data", secondary: "See pricing", link: "/pricing" },
+    cta: { primary: "Discuss marketplace data", secondary: "Get a quote", link: "/contact" },
   },
   {
     id: "job-market",
@@ -381,7 +381,7 @@ const SOLUTIONS: Solution[] = [
     side: { h: "Common use cases", items: ["Talent intelligence", "Wage analytics", "Skill demand forecasting", "Compensation benchmarks"] },
     accent: "indigo",
     Visual: JobsVisual,
-    cta: { primary: "Discuss job data", secondary: "See pricing", link: "/pricing" },
+    cta: { primary: "Discuss job data", secondary: "Get a quote", link: "/contact" },
   },
   {
     id: "linkedin-data",
@@ -423,7 +423,7 @@ const SOLUTIONS: Solution[] = [
     side: { h: "Integration extras", items: ["OpenAPI 3.1 spec", "Postman collection", "TypeScript SDK", "Status dashboard", "Sandbox keys"] },
     accent: "emerald",
     Visual: ApiVisual,
-    cta: { primary: "Discuss API design", secondary: "See pricing", link: "/pricing" },
+    cta: { primary: "Discuss API design", secondary: "Get a quote", link: "/contact" },
   },
   {
     id: "data-pipelines",
@@ -444,7 +444,7 @@ const SOLUTIONS: Solution[] = [
     side: { h: "Destinations", items: ["Snowflake · BigQuery", "Postgres · MySQL", "S3 · GCS · Azure", "SFTP · Webhook", "Custom destinations"] },
     accent: "indigo",
     Visual: PipelineVisual,
-    cta: { primary: "Discuss your pipeline", secondary: "See pricing", link: "/pricing" },
+    cta: { primary: "Discuss your pipeline", secondary: "Get a quote", link: "/contact" },
   },
 ];
 

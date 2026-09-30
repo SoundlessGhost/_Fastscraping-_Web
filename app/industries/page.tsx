@@ -1059,9 +1059,6 @@ export default function IndustriesPage() {
                 <Link href="/contact#letter" className="btn btn-accent">
                   Send brief
                 </Link>
-                <Link href="/case-studies" className="btn btn-ghost">
-                  See cases
-                </Link>
               </div>
             </div>
           </div>

@@ -8,19 +8,14 @@ import { isAppRoute, scrollShellTop } from "@/lib/chrome";
 const NAV = [
   { href: "/solutions", label: "Solutions" },
   { href: "/services", label: "Services" },
-  { href: "/pricing", label: "Pricing" },
+  { href: "/solutions#web-data-apis", label: "Web data APIs" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Support" },
-  { href: "/case-studies", label: "Case studies" },
 ];
 
 const SOLUTIONS_SUB = [
   { href: "/solutions#pricing-intelligence", label: "Pricing intelligence" },
-  { href: "/solutions#marketplace-intelligence", label: "Marketplace intelligence" },
-  { href: "/solutions#job-market", label: "Job market insights" },
-  { href: "/solutions#linkedin-data", label: "LinkedIn data platform" },
   { href: "/solutions#web-data-apis", label: "Web data APIs" },
-  { href: "/solutions#data-pipelines", label: "Data pipelines & ETL" },
+  { href: "/solutions#data-pipelines", label: "Custom data pipelines" },
 ];
 
 export default function Header() {
@@ -103,10 +98,6 @@ export default function Header() {
                 Solutions
               </Link>
               <div className="megamenu">
-                <div className="mm-head">
-                  <span className="mm-head-l">Solutions · 6 areas</span>
-                  <span className="mm-head-r">Click any card to dive in</span>
-                </div>
                 <div className="mm-grid">
                   <Link className="mm-card" href="/solutions#pricing-intelligence">
                     <span className="mm-ic">
@@ -120,45 +111,6 @@ export default function Header() {
                       <span className="mm-d">Track competitor prices in real time</span>
                     </span>
                     <span className="mm-m">60M+/day</span>
-                  </Link>
-                  <Link className="mm-card" href="/solutions#marketplace-intelligence">
-                    <span className="mm-ic">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M3 9h18l-1 11H4L3 9Z" />
-                        <path d="M8 9V6a4 4 0 0 1 8 0v3" />
-                      </svg>
-                    </span>
-                    <span className="mm-body">
-                      <span className="mm-h">Marketplace intelligence</span>
-                      <span className="mm-d">Product data from any <br /> marketplace</span>
-                    </span>
-                    <span className="mm-m">10M+</span>
-                  </Link>
-                  <Link className="mm-card" href="/solutions#job-market">
-                    <span className="mm-ic">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="7" width="18" height="14" rx="2" />
-                        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        <path d="M3 13h18" />
-                      </svg>
-                    </span>
-                    <span className="mm-body">
-                      <span className="mm-h">Job market insights</span>
-                      <span className="mm-d">50+ boards, hiring &amp; salary <br /> trends</span>
-                    </span>
-                    <span className="mm-m">1.4M/wk</span>
-                  </Link>
-                  <Link className="mm-card" href="/solutions#linkedin-data">
-                    <span className="mm-ic">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z" />
-                      </svg>
-                    </span>
-                    <span className="mm-body">
-                      <span className="mm-h">LinkedIn data platform</span>
-                      <span className="mm-d">Profiles &amp; companies — zero ban risk</span>
-                    </span>
-                    <span className="mm-m">100M/mo</span>
                   </Link>
                   <Link className="mm-card" href="/solutions#web-data-apis">
                     <span className="mm-ic">
@@ -183,15 +135,11 @@ export default function Header() {
                       </svg>
                     </span>
                     <span className="mm-body">
-                      <span className="mm-h">Data pipelines &amp; ETL</span>
+                      <span className="mm-h">Custom data pipelines</span>
                       <span className="mm-d">Automated delivery, your schedule</span>
                     </span>
                     <span className="mm-m">99%+ SLA</span>
                   </Link>
-                </div>
-                <div className="mm-foot">
-                  <Link href="/solutions">All solutions overview →</Link>
-                  <span className="mm-tip">Or email khalid@fastscraping.com</span>
                 </div>
               </div>
             </div>
@@ -203,11 +151,10 @@ export default function Header() {
               Services
             </Link>
             <Link
-              href="/pricing"
-              className={isActive("/pricing") ? "active" : ""}
-              onClick={sameRouteScroll("/pricing")}
+              href="/solutions#web-data-apis"
+              onClick={sameRouteScroll("/solutions#web-data-apis")}
             >
-              Pricing
+              Web data APIs
             </Link>
             <Link
               href="/about"
@@ -215,13 +162,6 @@ export default function Header() {
               onClick={sameRouteScroll("/about")}
             >
               About
-            </Link>
-            <Link
-              href="/contact"
-              className={isActive("/contact") ? "active" : ""}
-              onClick={sameRouteScroll("/contact")}
-            >
-              Support
             </Link>
           </nav>
 
@@ -231,13 +171,10 @@ export default function Header() {
                 Dashboard
               </Link>
             ) : (
-              <Link href="/dashboard/login" className="btn btn-ghost">
-                Login
+              <Link href="/dashboard/login" className="btn btn-primary">
+                Sign up
               </Link>
             )}
-            <Link href="/contact" className="btn btn-primary">
-              Talk to Khalid
-            </Link>
             <button
               type="button"
               className="nav-toggle"
@@ -305,13 +242,6 @@ export default function Header() {
           </div>
 
           <div className="md-foot">
-            <Link
-              href="/contact"
-              className="btn btn-primary md-cta"
-              onClick={closeDrawer}
-            >
-              Talk to Khalid
-            </Link>
             {authed ? (
               <Link
                 href="/dashboard"
@@ -323,10 +253,10 @@ export default function Header() {
             ) : (
               <Link
                 href="/dashboard/login"
-                className="btn btn-ghost md-cta"
+                className="btn btn-primary md-cta"
                 onClick={closeDrawer}
               >
-                Login
+                Sign up
               </Link>
             )}
             <a

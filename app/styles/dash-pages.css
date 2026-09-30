@@ -772,7 +772,7 @@
   align-items: baseline;
   gap: 10px;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 22px;
   font-weight: 400;
   color: var(--ink);
@@ -1275,7 +1275,7 @@
   justify-content: space-between;
   margin-bottom: 10px;
 }
-.cal-title { font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--ink); }
+.cal-title { font-family: var(--font-display); font-style: normal; font-size: 18px; color: var(--ink); }
 .cal-nav {
   width: 28px;
   height: 28px;

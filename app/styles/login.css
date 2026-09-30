@@ -28,7 +28,7 @@
   bottom: -180px;
   right: -60px;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 640px;
   line-height: 1;
   color: var(--accent);
@@ -98,7 +98,7 @@
   letter-spacing: -0.03em;
   color: var(--ink);
   margin: 22px 0 0;
-  font-weight: 400;
+  font-weight: 700;
 }
 .lg-h1 em {
   font-style: normal;
@@ -168,33 +168,16 @@
 
 /* ============ RIGHT ============ */
 .lg-right {
-  background: #0e1311;
+  /* Clean emerald panel: the green that used to be just a glow in the top-right
+     corner now fills the whole side — brightest at the top-right, deepening
+     toward the bottom-left. No grid, no orange, nothing else. */
+  background: radial-gradient(135% 130% at 88% 6%, #12684b 0%, #0e4231 42%, #072019 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
   padding: 48px 40px;
-}
-.lg-right::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 75% 25%, rgba(14, 93, 68, 0.35), transparent 52%),
-    radial-gradient(circle at 15% 85%, rgba(214, 87, 48, 0.12), transparent 45%);
-  pointer-events: none;
-}
-/* faint grid */
-.lg-right::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
-  background-size: 44px 44px;
-  pointer-events: none;
 }
 
 .lg-right-inner {
@@ -238,15 +221,19 @@
 
 /* ----- terminal card ----- */
 .lg-card {
-  background: #11181475;
-  background-color: #111814;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 16px;
+  /* A clearly elevated panel — a touch lighter than the #0e1311 backdrop, with a
+     soft top-light and a real drop shadow, so the box reads as floating rather
+     than melting into the dark grid behind it. */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  background-color: #171f1b;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
   overflow: hidden;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.05) inset,
-    0 40px 80px -40px rgba(0, 0, 0, 0.6);
-  transition: border-color .3s ease;
+    0 1px 0 rgba(255, 255, 255, 0.09) inset,
+    0 24px 70px -26px rgba(0, 0, 0, 0.78);
+  transition: border-color .3s ease, transform .3s ease, box-shadow .3s ease;
 }
 .lg-card.done { border-color: rgba(111, 208, 163, 0.35); }
 
@@ -655,6 +642,41 @@
   padding-bottom: 1px;
 }
 .lg-under a:hover { color: #6fd0a3; border-bottom-color: #6fd0a3; }
+
+/* ============ Entrance animations ============ */
+@keyframes lg-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+/* Left editorial column: staggered fade-up on load. */
+.lg-left-body > * {
+  animation: lg-fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.lg-left-body > *:nth-child(1) { animation-delay: 0.02s; }
+.lg-left-body > *:nth-child(2) { animation-delay: 0.09s; }
+.lg-left-body > *:nth-child(3) { animation-delay: 0.16s; }
+.lg-left-body > *:nth-child(4) { animation-delay: 0.24s; }
+.lg-left-body > *:nth-child(5) { animation-delay: 0.32s; }
+.lg-left .hero-bullets span {
+  animation: lg-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.lg-left .hero-bullets span:nth-child(1) { animation-delay: 0.38s; }
+.lg-left .hero-bullets span:nth-child(2) { animation-delay: 0.46s; }
+.lg-left .hero-bullets span:nth-child(3) { animation-delay: 0.54s; }
+/* Right auth card rises in just after the left, and lifts on hover. */
+.lg-right-inner {
+  animation: lg-fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.2s;
+}
+.lg-card:hover {
+  transform: translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-left-body > *,
+  .lg-left .hero-bullets span,
+  .lg-right-inner { animation: none !important; }
+  .lg-card:hover { transform: none; }
+}
 
 /* ============ Responsive ============ */
 @media (max-width: 1000px) {

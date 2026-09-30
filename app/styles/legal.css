@@ -68,7 +68,7 @@
   color: var(--ink);
   margin: 0;
 }
-.lh-h1 em { color: var(--accent); font-style: italic; }
+.lh-h1 em { color: var(--accent); font-style: normal; }
 
 .lh-deck {
   padding-bottom: 22px;
@@ -111,7 +111,7 @@
 }
 .tldr-card .tldr-h {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 26px;
   line-height: 1;
   color: var(--accent);
@@ -250,7 +250,7 @@
 .prose-intro::first-letter {
   font-size: 1.4em;
   color: var(--accent);
-  font-style: italic;
+  font-style: normal;
 }
 
 .prose section {
@@ -286,7 +286,7 @@
   color: var(--ink);
   margin: 0 0 24px;
 }
-.prose h2 em { color: var(--accent); font-style: italic; }
+.prose h2 em { color: var(--accent); font-style: normal; }
 .prose h3 {
   font-family: var(--font-display);
   font-size: 22px;
@@ -414,7 +414,7 @@
   letter-spacing: -0.02em;
   margin: 14px 0 16px;
 }
-.legal-foot-card h3 em { color: #6fd0a3; font-style: italic; }
+.legal-foot-card h3 em { color: #6fd0a3; font-style: normal; }
 .legal-foot-card p {
   color: rgba(245,243,238,0.72);
   font-size: 15px;

@@ -62,6 +62,8 @@ body {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
+  /* Slightly heavier baseline so body copy reads easier in the system font. */
+  font-weight: 500;
 }
 .site-scroll {
   flex: 1;
@@ -72,6 +74,8 @@ body {
 img { max-width: 100%; display: block; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; cursor: pointer; }
+/* No italics anywhere on the site — em/i keep their emphasis colour but stay upright. */
+em, i { font-style: normal; }
 
 /* ---------- Reusable ---------- */
 .container {
@@ -102,13 +106,13 @@ button { font: inherit; cursor: pointer; }
 
 .display {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 0.96;
   letter-spacing: -0.02em;
   color: var(--ink);
 }
 .display em {
-  font-style: italic;
+  font-style: normal;
   color: var(--accent);
 }
 
@@ -179,8 +183,8 @@ h1, h2, h3, h4 { margin: 0; }
    reads as a real logotype that matches the mark rather than default sans. */
 .brand > span:not(.brand-mark) {
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 600;
+  font-style: normal;
+  font-weight: 700;
   font-size: 20px;
   letter-spacing: -0.005em;
 }
@@ -192,7 +196,7 @@ h1, h2, h3, h4 { margin: 0; }
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 17px;
   line-height: 1;
 }
@@ -200,7 +204,7 @@ h1, h2, h3, h4 { margin: 0; }
    button site-wide) gets the serif treatment. */
 .topbar-right .btn-primary {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 16px;
 }
 .nav {
@@ -222,7 +226,7 @@ h1, h2, h3, h4 { margin: 0; }
 .nav > a,
 .nav a.nav-trigger {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 17px;
 }
 .nav a:hover { background: rgba(19,22,19,0.06); }
@@ -240,37 +244,34 @@ h1, h2, h3, h4 { margin: 0; }
 .topbar-right .btn-primary,
 .topbar .mm-h { font-style: normal; }
 
-/* ---- ScraperAPI-style header (2026-09-23) ----
-   The top-bar nav links and the CTA use Droid Sans in ALL CAPS — the same font
-   ScraperAPI's header uses (its serifed capital "I" is the giveaway). The brand
-   mark ("f" tile) and the wordmark ("Fastscraping") are deliberately excluded. */
+/* ---- Header typography (2026-09-30) ----
+   The top bar uses the same system-font stack as the contact page
+   (var(--font-sans): Avenir Next / Segoe UI / system default), in normal
+   Title Case — not the old Droid Sans all-caps. */
 .topbar .nav > a,
 .topbar .nav a.nav-trigger,
 .topbar .nav-trigger {
-  font-family: var(--font-droid);
+  font-family: var(--font-sans);
   font-style: normal;
   font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
 }
-/* Both header buttons (Login = primary, Dashboard = ghost) share the Droid Sans
-   uppercase treatment. */
+/* Both header buttons (Login = primary, Dashboard = ghost) share the treatment. */
 .topbar-right .btn {
-  font-family: var(--font-droid);
+  font-family: var(--font-sans);
   font-style: normal;
   font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
 }
-/* Logo mark ("f") + wordmark ("Fastscraping") also move to Droid Sans so the
-   whole top bar reads as one font. Scoped to .topbar only, so the footer, mobile
-   drawer, dashboard sidebar and invoice letterhead keep their serif brand.
-   Kept in normal case (a brand name, not shouted in caps). */
+/* Logo mark ("f") + wordmark ("Fastscraping") share the same system font so the
+   whole top bar reads as one typeface. */
 .topbar .brand-mark,
 .topbar .brand > span:not(.brand-mark) {
-  font-family: var(--font-droid);
+  font-family: var(--font-sans);
   font-style: normal;
 }
 
@@ -285,7 +286,7 @@ h1, h2, h3, h4 { margin: 0; }
   padding: 8px 14px;
   border-radius: 999px;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 17px;
   color: var(--ink-2);
   transition: background .2s ease, color .2s ease;
@@ -312,7 +313,7 @@ h1, h2, h3, h4 { margin: 0; }
   top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
-  width: 720px;
+  width: 460px;
   background: var(--card);
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
@@ -355,7 +356,7 @@ h1, h2, h3, h4 { margin: 0; }
 }
 .mm-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 4px;
 }
 .mm-card {
@@ -387,7 +388,7 @@ h1, h2, h3, h4 { margin: 0; }
 .mm-body { min-width: 0; }
 .mm-h {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 16px;
   font-weight: 400;
   letter-spacing: -0.005em;
@@ -478,9 +479,10 @@ h1, h2, h3, h4 { margin: 0; }
   padding: 56px 0 80px;
   position: relative;
   overflow: hidden;
-  /* Whole hero uses Work Sans. Text elements inherit this; the terminal card's
-     code lines keep their explicit monospace, so column alignment is preserved. */
-  font-family: var(--font-work);
+  /* Body text in the hero uses the site body stack (system fonts); the heading
+     (.hero h1.display) keeps its own display font, and the terminal card's code
+     lines keep their explicit monospace, so column alignment is preserved. */
+  font-family: var(--font-sans);
 }
 .hero-grid {
   display: grid;
@@ -1038,7 +1040,7 @@ section.block { padding: 100px 0; }
   letter-spacing: -0.025em;
   color: var(--ink);
 }
-.num .v em { color: var(--accent); font-style: italic; font-size: 0.7em; }
+.num .v em { color: var(--accent); font-style: normal; font-size: 0.7em; }
 .num .l {
   margin-top: 10px;
   font-size: 13.5px;
@@ -1104,6 +1106,196 @@ section.block { padding: 100px 0; }
   color: var(--ink-2);
 }
 .diff-card.hot .icon { background: var(--hot-soft); color: var(--hot); }
+
+/* ---------- Targets grid ---------- */
+/* Compact source cards. auto-fill keeps it responsive on its own (4-up wide,
+   down to 1-up on a phone) without leaning on the .services breakpoints. */
+.targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.target-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  transition: border-color .2s ease, transform .25s ease;
+}
+.target-card:hover {
+  border-color: var(--hairline-strong);
+  transform: translateY(-2px);
+}
+.target-mark {
+  flex: none;
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid; place-items: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1;
+}
+.target-name {
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+.target-cat {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.target-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ---------- Geotargeting ---------- */
+.geo-panel {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  overflow: hidden;
+}
+.geo-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--hairline);
+}
+.geo-stat {
+  padding: 30px 34px;
+  border-right: 1px solid var(--hairline);
+}
+.geo-stat:last-child { border-right: none; }
+.geo-stat .v {
+  font-family: var(--font-display);
+  font-size: 46px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+.geo-stat .l {
+  margin-top: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.geo-regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 26px 34px;
+}
+.geo-chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.geo-chip::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+@media (max-width: 560px) {
+  .geo-stats { grid-template-columns: 1fr; }
+  .geo-stat { border-right: none; border-bottom: 1px solid var(--hairline); }
+  .geo-stat:last-child { border-bottom: none; }
+  .geo-stat .v { font-size: 40px; }
+}
+
+/* ---------- Enterprise (dark band) ---------- */
+.enterprise {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--r-xl);
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+.enterprise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 15%, rgba(14, 93, 68, 0.35), transparent 50%),
+    radial-gradient(circle at 5% 95%, rgba(214, 87, 48, 0.16), transparent 45%);
+  pointer-events: none;
+}
+.enterprise-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 56px;
+  align-items: center;
+}
+.enterprise .eyebrow { color: rgba(255, 255, 255, 0.55); }
+.enterprise .eyebrow::before { box-shadow: none; }
+.ent-head {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(34px, 3.6vw, 50px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 18px 0;
+}
+.ent-head em { color: #6fd0a3; font-style: normal; }
+.ent-lead {
+  color: rgba(245, 243, 238, 0.7);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 28px;
+  max-width: 440px;
+}
+.ent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 15px;
+}
+.ent-list li {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(245, 243, 238, 0.9);
+}
+.ent-list li svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: #6fd0a3;
+  margin-top: 2px;
+}
+@media (max-width: 860px) {
+  .enterprise { padding: 40px 28px; }
+  .enterprise-inner { grid-template-columns: 1fr; gap: 32px; }
+}
 
 /* ---------- Comparison ---------- */
 .compare {
@@ -1202,7 +1394,7 @@ section.block { padding: 100px 0; }
   letter-spacing: -0.02em;
   margin-bottom: 20px;
 }
-.hardsrc h2 em { color: #6fd0a3; font-style: italic; }
+.hardsrc h2 em { color: #6fd0a3; font-style: normal; }
 .hardsrc p {
   color: rgba(245, 243, 238, 0.72);
   font-size: 16px;
@@ -1422,13 +1614,27 @@ section.block { padding: 100px 0; }
 }
 .footer-grid {
   display: grid;
-  /* brand + Solutions / Industries / Company / Legal */
-  grid-template-columns: 1.4fr 1fr 1fr 0.8fr 0.8fr;
-  gap: 40px;
+  /* brand + Solutions + Company + Legal, grouped at the start (left) */
+  grid-template-columns: 360px auto auto auto;
+  justify-content: start;
+  gap: 56px;
 }
 .footer-brand .brand { margin-bottom: 16px; }
 /* Footer wordmark sits upright — the italic logotype stays in the header. */
 .footer-brand .brand > span:not(.brand-mark) { font-style: normal; }
+.footer-brand .brand-mark { font-style: normal; }
+.footer-brand-legal {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.footer-brand-legal a {
+  font-size: 13.5px;
+  color: var(--ink-2);
+  transition: color 0.2s ease;
+}
+.footer-brand-legal a:hover { color: var(--ink); }
 .footer-brand p {
   color: var(--muted);
   font-size: 14px;
@@ -1466,15 +1672,16 @@ section.block { padding: 100px 0; }
 }
 .social-links a.gmail:hover    { background: #ea4335; border-color: #ea4335; }
 .social-links a.linkedin:hover { background: #0a66c2; border-color: #0a66c2; }
+.social-links a.discord:hover  { background: #5865f2; border-color: #5865f2; }
 .social-links svg { width: 17px; height: 17px; }
 .footer-col h4 {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 11px;
-  color: var(--muted);
+  font-family: var(--font-sans);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 15px;
+  color: var(--ink);
   margin-bottom: 16px;
-  font-weight: 500;
+  font-weight: 700;
 }
 .footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
 .footer-col a { font-size: 14px; color: var(--ink-2); }

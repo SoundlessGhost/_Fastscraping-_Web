@@ -92,7 +92,7 @@
   font-size: 56px;
   line-height: 1;
   letter-spacing: -0.025em;
-  font-style: italic;
+  font-style: normal;
   color: var(--c-accent);
   align-self: center;
 }
@@ -106,7 +106,7 @@
   color: var(--ink);
   margin: 0 0 6px;
 }
-.sc-rtitle .em { color: var(--c-accent); font-style: italic; }
+.sc-rtitle .em { color: var(--c-accent); font-style: normal; }
 .sc-rtag {
   margin: 0;
   font-size: 14px;
@@ -196,7 +196,7 @@
   color: var(--c-accent);
   opacity: 0.06;
   pointer-events: none;
-  font-style: italic;
+  font-style: normal;
   user-select: none;
 }
 

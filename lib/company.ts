@@ -41,6 +41,8 @@ export const COMPANY = {
   phone: "+1 (424) 483-3262",
   /// The company LinkedIn page — the footer links here.
   linkedin: "https://www.linkedin.com/company/fastscraping/",
+  /// The community Discord invite — the footer links here.
+  discord: "https://discord.gg/jCTCDVZxfB",
 } as const;
 
 /// "+14244833262" — COMPANY.phone in dialable form, for tel: links and JSON-LD.

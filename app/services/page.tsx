@@ -1098,9 +1098,6 @@ export default function ServicesPage() {
                 <Link href="/contact#letter" className="btn btn-accent">
                   Send brief
                 </Link>
-                <Link href="/pricing" className="btn btn-ghost">
-                  See pricing
-                </Link>
               </div>
             </div>
           </div>

@@ -40,9 +40,10 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="hero-sub">
-              Structured data delivered <strong>reliably, at any scale</strong>{" "}
-              — bypassing Cloudflare, DataDome and login walls. No proxy
-              headaches. No infrastructure overhead. No babysitting.
+              Turn any public website into accessible,{" "}
+              <strong>structured data</strong> with our powerful web scraping
+              API, built to handle proxies, browser automation, and CAPTCHA
+              challenges automatically.
             </p>
             <div className="hero-bullets">
               <span>
@@ -145,253 +146,472 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===================== SERVICES ===================== */}
-      <section className="block" id="services" data-screen-label="02 Services">
+      {/* ===================== SOLUTIONS ===================== */}
+      <section className="block" id="solutions" data-screen-label="02 Solutions">
         <div className="container">
           <div className="section-head">
             <div>
-              <span className="eyebrow">Our services</span>
+              <span className="eyebrow">What we do</span>
               <h2 className="display" style={{ marginTop: 18 }}>
-                Data extraction, <em>built for scale.</em>
+                Data collection, <em>built for scale.</em>
               </h2>
             </div>
             <p>
-              From a single tricky scraper to a full enterprise data pipeline.
-              We own the infrastructure, the reliability engineering, and the maintenance
-              — you receive clean, structured data on the schedule you need it.
+              Our managed scrapers and delivery pipelines unlock any public
+              website — whatever the scale or the defenses in front of it — and
+              hand you clean, structured data you can actually build on.
             </p>
           </div>
 
           <div className="services">
-            <article className="svc">
-              <div className="svc-num">01 · Managed scraping</div>
-              <h3 className="svc-title">
-                End-to-end scrapers, fully owned by us.
-              </h3>
-              <p className="svc-desc">
-                We build, deploy, monitor and maintain the scrapers. You get
-                clean data and never write a line of code.
-              </p>
+            <article className="svc wide">
+              <div className="svc-num">01 · Managed</div>
+              <div className="svc-title">Managed scrapers</div>
+              <div className="svc-desc">
+                We build, deploy, monitor and maintain the scrapers end to end.
+                You get clean data on a schedule and never write a line of code.
+              </div>
               <div className="svc-foot">
-                <div className="svc-tags">
-                  <span>build</span>
-                  <span>deploy</span>
-                  <span>monitor</span>
-                </div>
-                <Link href="/services#s-managed">
+                <Link href="/services">
                   Learn more <span className="arr">→</span>
                 </Link>
-              </div>
-            </article>
-
-            <article className="svc">
-              <div className="svc-num">02 · Enterprise crawling</div>
-              <h3 className="svc-title">
-                Crawl entire domains at massive scale.
-              </h3>
-              <p className="svc-desc">
-                Proxy rotation, rate limiting, dedup and storage handled.
-                Perfect for market research and competitive intel.
-              </p>
-              <div className="svc-foot">
                 <div className="svc-tags">
-                  <span>full-domain</span>
-                  <span>dedup</span>
-                  <span>archive</span>
-                </div>
-                <Link href="/services#s-crawling">
-                  Learn more <span className="arr">→</span>
-                </Link>
-              </div>
-            </article>
-
-            <article className="svc">
-              <div className="svc-num">03 · Mobile app data</div>
-              <h3 className="svc-title">Mobile-only public data.</h3>
-              <p className="svc-desc">
-                Some public listings appear only in a company&apos;s iOS or
-                Android app. We collect those through the app&apos;s own public
-                endpoints, not the website.
-              </p>
-              <div className="svc-foot">
-                <div className="svc-tags">
-                  <span>iOS</span>
-                  <span>Android</span>
-                  <span>protocol</span>
-                </div>
-                <Link href="/services#s-mobile">
-                  Learn more <span className="arr">→</span>
-                </Link>
-              </div>
-            </article>
-
-            <article className="svc feature">
-              <div className="feature-content">
-                <div>
-                  <div className="svc-num">04 · Real-time data APIs</div>
-                  <h3
-                    className="svc-title"
-                    style={{ fontSize: 44, maxWidth: "11ch" }}
-                  >
-                    Query any website, on demand.
-                  </h3>
-                  <p className="svc-desc">
-                    Custom REST endpoints built for your specific data needs.
-                    Real-time JSON, comprehensive docs, 99.9% uptime SLA. We
-                    become the API the source site never gave you.
-                  </p>
-                  <div className="svc-foot">
-                    <div className="svc-tags">
-                      <span>REST</span>
-                      <span>JSON</span>
-                      <span>SLA 99.9%</span>
-                      <span>OpenAPI</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="visual">
-                  <div
-                    style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 11.5,
-                      color: "#7b827e",
-                      marginBottom: 10,
-                    }}
-                  >
-                    → GET api.fastscraping.com/v1/listings
-                  </div>
-                  <pre
-                    style={{
-                      margin: 0,
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 12,
-                      color: "#d5dad7",
-                      lineHeight: 1.6,
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >{`{
-  "source": "stubhub.com",
-  "fetched_at": "2026-05-23T14:08:42Z",
-  "results": [
-    { "event": "Knicks vs. Celtics",
-      "venue": "MSG · NYC",
-      "price_min_usd": 142,
-      "price_med_usd": 286 },
-    { "event": "Hamilton",
-      "venue": "Richard Rodgers",
-      "price_min_usd": 219,
-      "price_med_usd": 372 }
-  ],
-  "records": 2,
-  "latency_ms": 412
-}`}</pre>
+                  <span>fully owned</span>
+                  <span>zero code</span>
                 </div>
               </div>
             </article>
 
             <article className="svc wide">
-              <div className="svc-num">
-                05 · Automated pipelines (ETL · DaaS)
+              <div className="svc-num">02 · Structured</div>
+              <div className="svc-title">Structured data</div>
+              <div className="svc-desc">
+                We turn messy pages into predictable JSON or CSV — only the
+                fields you care about, not hundreds of raw HTML tags and scripts.
               </div>
-              <h3 className="svc-title">
-                Daily, weekly, monthly. On your schedule.
-              </h3>
-              <p className="svc-desc">
-                Fully automated extract → transform → load pipelines. Delivered
-                to your warehouse, your S3 bucket, your SFTP, your webhook. We
-                handle quality checks and selector drift.
-              </p>
               <div className="svc-foot">
-                <div className="svc-tags">
-                  <span>Snowflake</span>
-                  <span>BigQuery</span>
-                  <span>S3</span>
-                  <span>SFTP</span>
-                  <span>Webhook</span>
-                </div>
-                <Link href="/services#s-etl">
+                <Link href="/services">
                   Learn more <span className="arr">→</span>
                 </Link>
+                <div className="svc-tags">
+                  <span>JSON / CSV</span>
+                  <span>clean fields</span>
+                </div>
               </div>
             </article>
 
             <article className="svc wide">
-              <div className="svc-num">06 · LinkedIn data platform</div>
-              <h3 className="svc-title">B2B at the source.</h3>
-              <p className="svc-desc">
-                Public profiles, companies, jobs and posts — refreshed
-                continuously, with the session handling and pacing that keeps a
-                feed this large stable. Not just IP rotation.
-              </p>
+              <div className="svc-num">03 · Bulk</div>
+              <div className="svc-title">Bulk &amp; async</div>
+              <div className="svc-desc">
+                Send millions of requests without babysitting them. We own the
+                queue, retries, pacing and back-off, so throughput stays high.
+              </div>
               <div className="svc-foot">
-                <div className="svc-tags">
-                  <span>profiles</span>
-                  <span>companies</span>
-                  <span>jobs</span>
-                  <span>refresh: daily</span>
-                </div>
-                <Link href="/services#s-linkedin">
+                <Link href="/services">
                   Learn more <span className="arr">→</span>
                 </Link>
+                <div className="svc-tags">
+                  <span>millions / day</span>
+                  <span>auto-retry</span>
+                </div>
+              </div>
+            </article>
+
+            <article className="svc wide">
+              <div className="svc-num">04 · Delivery</div>
+              <div className="svc-title">Delivery &amp; monitoring</div>
+              <div className="svc-desc">
+                Scheduled pipelines with quality checks and health alerts,
+                delivered straight to your API, an SFTP drop or an S3 bucket.
+              </div>
+              <div className="svc-foot">
+                <Link href="/services">
+                  Learn more <span className="arr">→</span>
+                </Link>
+                <div className="svc-tags">
+                  <span>API · SFTP · S3</span>
+                  <span>monitored</span>
+                </div>
               </div>
             </article>
           </div>
         </div>
       </section>
 
-      {/* ===================== NUMBERS ===================== */}
+      {/* ===================== TARGETS ===================== */}
       <section
         className="block"
         style={{ paddingTop: 0 }}
-        data-screen-label="03 Numbers"
+        data-screen-label="03 Targets"
       >
         <div className="container">
-          <div className="numbers-block">
-            <div className="numbers-head">
-              <h2>
-                Numbers that{" "}
-                <em style={{ fontStyle: "italic", color: "var(--accent)" }}>
-                  speak
-                </em>
-                .
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">Supported targets</span>
+              <h2 className="display" style={{ marginTop: 18 }}>
+                Structured data, <em>source by source.</em>
               </h2>
-              <div className="meta">
-                Live snapshot from active client engagements
-                <br />
-                updated continuously · last sync: 14:08 UTC
+            </div>
+            <p>
+              We already run these in production — each source turned into
+              clean, predictable records with only the fields you need. New
+              targets go live every week.
+            </p>
+          </div>
+
+          <div className="targets">
+            <article className="target-card">
+              <div className="target-mark">S</div>
+              <div>
+                <div className="target-name">
+                  Shopee <span className="target-cat">e-commerce</span>
+                </div>
+                <p className="target-desc">
+                  Product, pricing and seller data across all eight
+                  Southeast-Asian markets.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">T</div>
+              <div>
+                <div className="target-name">
+                  Temu <span className="target-cat">e-commerce</span>
+                </div>
+                <p className="target-desc">
+                  Full product detail and pricing by good_id, across every Temu
+                  region.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">A</div>
+              <div>
+                <div className="target-name">
+                  Amazon <span className="target-cat">e-commerce</span>
+                </div>
+                <p className="target-desc">
+                  Search rankings, product detail, offers and Buy Box by ASIN.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">W</div>
+              <div>
+                <div className="target-name">
+                  Walmart <span className="target-cat">e-commerce</span>
+                </div>
+                <p className="target-desc">
+                  Product and search results at scale, by item ID or keyword.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">H</div>
+              <div>
+                <div className="target-name">
+                  Homegate <span className="target-cat">real estate</span>
+                </div>
+                <p className="target-desc">
+                  Swiss property listings and complete real-estate feeds.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">NH</div>
+              <div>
+                <div className="target-name">
+                  All Nippon Airways <span className="target-cat">travel</span>
+                </div>
+                <p className="target-desc">
+                  Domestic flight fares, schedules and seat availability.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">in</div>
+              <div>
+                <div className="target-name">
+                  LinkedIn <span className="target-cat">b2b</span>
+                </div>
+                <p className="target-desc">
+                  Company and professional profiles for B2B enrichment.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">I</div>
+              <div>
+                <div className="target-name">
+                  Indeed <span className="target-cat">jobs</span>
+                </div>
+                <p className="target-desc">
+                  Job listings, salaries and employer data for hiring signals.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">SH</div>
+              <div>
+                <div className="target-name">
+                  StubHub <span className="target-cat">ticketing</span>
+                </div>
+                <p className="target-desc">
+                  Live event inventory and real-time ticket pricing.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">DD</div>
+              <div>
+                <div className="target-name">
+                  DoorDash <span className="target-cat">delivery</span>
+                </div>
+                <p className="target-desc">
+                  Store menus, item pricing and delivery availability.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">St</div>
+              <div>
+                <div className="target-name">
+                  Starbucks <span className="target-cat">restaurant</span>
+                </div>
+                <p className="target-desc">
+                  Store locations, live menu items and regional pricing.
+                </p>
+              </div>
+            </article>
+
+            <article className="target-card">
+              <div className="target-mark">IS</div>
+              <div>
+                <div className="target-name">
+                  ImmoScout24 <span className="target-cat">real estate</span>
+                </div>
+                <p className="target-desc">
+                  Property listings across the German-speaking DACH region.
+                </p>
+              </div>
+            </article>
+          </div>
+
+          <div style={{ marginTop: 32 }}>
+            <Link href="/services" className="btn btn-ghost">
+              Browse the full catalogue
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================== USE CASES ===================== */}
+      <section
+        className="block"
+        style={{ paddingTop: 0 }}
+        id="use-cases"
+        data-screen-label="04 Use cases"
+      >
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">Use cases</span>
+              <h2 className="display" style={{ marginTop: 18 }}>
+                Put the data <em>to work.</em>
+              </h2>
+            </div>
+            <p>
+              The feed is only the beginning. Here&apos;s what teams build on top
+              of the data we deliver — across pricing, research, hiring and more.
+            </p>
+          </div>
+
+          <div className="diff-grid">
+            <article className="diff-card">
+              <div className="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8Z" />
+                  <circle cx="7" cy="7" r="1.4" />
+                </svg>
+              </div>
+              <h3>E-commerce &amp; pricing.</h3>
+              <p>
+                Track prices, stock and rankings across marketplaces and react
+                before your competitors do — by ASIN, item ID or keyword.
+              </p>
+              <div className="tags">
+                <span>price tracking</span>
+                <span>buy box</span>
+                <span>stock</span>
+              </div>
+            </article>
+
+            <article className="diff-card">
+              <div className="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M3 3v18h18" />
+                  <path d="M7 16v-3M12 16V8M17 16v-6" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h3>Market research.</h3>
+              <p>
+                Feed dashboards and models with fresh catalog, review and demand
+                data — the raw material for pricing and product decisions.
+              </p>
+              <div className="tags">
+                <span>catalog</span>
+                <span>reviews</span>
+                <span>demand</span>
+              </div>
+            </article>
+
+            <article className="diff-card">
+              <div className="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="4" y="3" width="16" height="18" rx="1.5" />
+                  <path d="M9 21v-4h6v4" />
+                  <path d="M8 7h.01M12 7h.01M16 7h.01M8 11h.01M12 11h.01M16 11h.01" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h3>Real-estate intelligence.</h3>
+              <p>
+                Automate listing, price and availability collection across
+                property portals, and watch a whole market move in one feed.
+              </p>
+              <div className="tags">
+                <span>listings</span>
+                <span>price</span>
+                <span>availability</span>
+              </div>
+            </article>
+
+            <article className="diff-card">
+              <div className="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <rect x="2" y="7" width="20" height="14" rx="2" />
+                  <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                </svg>
+              </div>
+              <h3>Recruitment signals.</h3>
+              <p>
+                Monitor job postings, salaries and employer data to read hiring
+                trends and surface talent and sales intelligence early.
+              </p>
+              <div className="tags">
+                <span>postings</span>
+                <span>salaries</span>
+                <span>employers</span>
+              </div>
+            </article>
+
+            <article className="diff-card">
+              <div className="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                  <path d="M13 5v14" strokeDasharray="2 2" />
+                </svg>
+              </div>
+              <h3>Ticketing &amp; events.</h3>
+              <p>
+                Watch event inventory and ticket prices in real time to power
+                resale, price-setting and demand forecasting.
+              </p>
+              <div className="tags">
+                <span>inventory</span>
+                <span>resale</span>
+                <span>live pricing</span>
+              </div>
+            </article>
+
+            <article className="diff-card">
+              <div className="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <h3>B2B &amp; lead data.</h3>
+              <p>
+                Enrich your CRM with company and professional profiles at scale,
+                so sales and ops always work from current data.
+              </p>
+              <div className="tags">
+                <span>profiles</span>
+                <span>enrichment</span>
+                <span>CRM</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================== GEOTARGETING ===================== */}
+      <section
+        className="block"
+        style={{ paddingTop: 0 }}
+        id="coverage"
+        data-screen-label="05 Geotargeting"
+      >
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <span className="eyebrow">Geotargeting</span>
+              <h2 className="display" style={{ marginTop: 18 }}>
+                Data as a local <em>would see it.</em>
+              </h2>
+            </div>
+            <p>
+              We collect from inside the market you care about — real in-region
+              devices and residential IPs — so prices, rankings and availability
+              come back exactly as a local user sees them. No VPN artifacts, no
+              wrong-currency noise.
+            </p>
+          </div>
+
+          <div className="geo-panel">
+            <div className="geo-stats">
+              <div className="geo-stat">
+                <div className="v">15+</div>
+                <div className="l">markets in production today</div>
+              </div>
+              <div className="geo-stat">
+                <div className="v">3</div>
+                <div className="l">continents — Asia, Europe &amp; the Americas</div>
+              </div>
+              <div className="geo-stat">
+                <div className="v">100%</div>
+                <div className="l">in-region collection, real devices</div>
               </div>
             </div>
-            <div className="numbers-grid">
-              <div className="num">
-                <div className="v">
-                  <AnimatedNumber to={24} />
-                  <em>.3M</em>
-                </div>
-                <div className="l">Records delivered daily</div>
-                <div className="s">Ticketing &amp; pricing combined</div>
-              </div>
-              <div className="num">
-                <div className="v">
-                  <AnimatedNumber to={99} />
-                  <em>.7%</em>
-                </div>
-                <div className="l">Delivery success rate</div>
-                <div className="s">Including sources behind Cloudflare, DataDome, PerimeterX</div>
-              </div>
-              <div className="num">
-                <div className="v">
-                  <AnimatedNumber to={50} suffix="+" />
-                </div>
-                <div className="l">Platforms in production</div>
-                <div className="s">Adding new sources weekly</div>
-              </div>
-              <div className="num">
-                <div className="v">
-                  <AnimatedNumber to={24} suffix="+" />
-                </div>
-                <div className="l">Months avg. client tenure</div>
-                <div className="s">We don&apos;t run one-off scripts</div>
-              </div>
+            <div className="geo-regions">
+              <span className="geo-chip">Brazil</span>
+              <span className="geo-chip">Mexico</span>
+              <span className="geo-chip">Argentina</span>
+              <span className="geo-chip">United States</span>
+              <span className="geo-chip">Japan</span>
+              <span className="geo-chip">Singapore</span>
+              <span className="geo-chip">Thailand</span>
+              <span className="geo-chip">Vietnam</span>
+              <span className="geo-chip">Indonesia</span>
+              <span className="geo-chip">Malaysia</span>
+              <span className="geo-chip">Philippines</span>
+              <span className="geo-chip">Taiwan</span>
+              <span className="geo-chip">Switzerland</span>
+              <span className="geo-chip">Germany</span>
+              <span className="geo-chip">Austria</span>
+              <span className="geo-chip">United Kingdom</span>
             </div>
           </div>
         </div>
@@ -401,8 +621,8 @@ export default function HomePage() {
       <section
         className="block"
         style={{ paddingTop: 0 }}
-        id="solutions"
-        data-screen-label="04 Why us"
+        id="why-us"
+        data-screen-label="06 Why us"
       >
         <div className="container">
           <div className="section-head">
@@ -644,68 +864,126 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===================== RELIABILITY ===================== */}
+      {/* ===================== ENTERPRISE ===================== */}
       <section
         className="block"
         style={{ paddingTop: 0 }}
-        id="reliability"
-        data-screen-label="05 Reliability"
+        data-screen-label="07 Enterprise"
       >
         <div className="container">
-          <div className="hardsrc">
-            <div className="hardsrc-inner">
+          <div className="enterprise">
+            <div className="enterprise-inner">
               <div>
-                <span
-                  className="eyebrow hot"
-                  style={{ color: "rgba(255,255,255,0.6)" }}
-                >
-                  Reliability engineering
-                </span>
-                <h2 style={{ marginTop: 18 }}>
-                  Stable — <em>every week.</em>
+                <span className="eyebrow">Enterprise</span>
+                <h2 className="ent-head">
+                  Enterprise-grade delivery, <em>without the overhead.</em>
                 </h2>
-                <p>
-                  We don&apos;t ship around hard sources. Collecting a public
-                  page reliably means behaving like a real browser end-to-end —
-                  correct TLS, real rendering, sane pacing — and re-earning that
-                  every time a site changes. The result: stable extraction, week
-                  after week, from sources that break other pipelines.
+                <p className="ent-lead">
+                  When data feeds the business, &ldquo;mostly working&rdquo;
+                  isn&apos;t enough. You get a dedicated team, real SLAs and
+                  secure delivery — the reliability of an in-house data org
+                  without the headcount or the enterprise invoice.
                 </p>
-                {/* Success rate = share of scheduled public-page fetches that
-                    return complete, schema-valid data. No login-gated sources
-                    here — see /compliance. */}
-                <div className="hardsrc-list">
-                  <div className="item">
-                    <span className="badge">stable</span>
-                    <span className="name">Sources behind Cloudflare</span>
-                    <span className="pct">99.8%</span>
-                  </div>
-                  <div className="item">
-                    <span className="badge">stable</span>
-                    <span className="name">Sources behind DataDome</span>
-                    <span className="pct">99.4%</span>
-                  </div>
-                  <div className="item">
-                    <span className="badge">stable</span>
-                    <span className="name">Sources behind PerimeterX</span>
-                    <span className="pct">99.6%</span>
-                  </div>
-                  <div className="item">
-                    <span className="badge">stable</span>
-                    <span className="name">Sources behind Akamai</span>
-                    <span className="pct">99.1%</span>
-                  </div>
-                  <div className="item">
-                    <span className="badge">stable</span>
-                    <span className="name">Public data only · no logins</span>
-                    <span className="pct">policy</span>
-                  </div>
-                </div>
+                <Link href="#contact" className="btn btn-primary">
+                  Talk to Khalid <span className="arrow">→</span>
+                </Link>
               </div>
-              <div className="hardsrc-visual">
-                <div style={{ width: "100%", height: "100%" }}>
-                  <ReliabilityVisual />
+
+              <ul className="ent-list">
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Dedicated team and a private Slack channel
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  SLAs on delivery, uptime and turnaround
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  White-label — we run silently behind your brand
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Secure delivery via API, SFTP or S3, encrypted end to end
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  GDPR-compliant, audit-ready pipelines
+                </li>
+                <li>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Millions of requests a day, handled asynchronously
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================== NUMBERS ===================== */}
+      <section
+        className="block"
+        style={{ paddingTop: 0 }}
+        data-screen-label="08 Numbers"
+      >
+        <div className="container">
+          <div className="numbers-block">
+            <div className="numbers-head">
+              <h2>
+                Numbers that{" "}
+                <em style={{ color: "var(--accent)" }}>
+                  speak
+                </em>
+                .
+              </h2>
+              <div className="meta">
+                Live snapshot from active client engagements
+                <br />
+                updated continuously · last sync: 14:08 UTC
+              </div>
+            </div>
+            <div className="numbers-grid">
+              <div className="num">
+                <div className="v">
+                  <AnimatedNumber to={24} />
+                  <em>.3M</em>
                 </div>
+                <div className="l">Records delivered daily</div>
+                <div className="s">Ticketing &amp; pricing combined</div>
+              </div>
+              <div className="num">
+                <div className="v">
+                  <AnimatedNumber to={99} />
+                  <em>.7%</em>
+                </div>
+                <div className="l">Delivery success rate</div>
+                <div className="s">Including sources behind Cloudflare, DataDome, PerimeterX</div>
+              </div>
+              <div className="num">
+                <div className="v">
+                  <AnimatedNumber to={50} suffix="+" />
+                </div>
+                <div className="l">Platforms in production</div>
+                <div className="s">Adding new sources weekly</div>
+              </div>
+              <div className="num">
+                <div className="v">
+                  <AnimatedNumber to={24} suffix="+" />
+                </div>
+                <div className="l">Months avg. client tenure</div>
+                <div className="s">We don&apos;t run one-off scripts</div>
               </div>
             </div>
           </div>
@@ -717,7 +995,7 @@ export default function HomePage() {
         className="block"
         style={{ paddingTop: 0 }}
         id="clients"
-        data-screen-label="06 Clients"
+        data-screen-label="09 Clients"
       >
         <div className="container">
           <div className="section-head">
@@ -794,7 +1072,7 @@ export default function HomePage() {
         className="block"
         style={{ paddingTop: 0 }}
         id="contact"
-        data-screen-label="07 CTA"
+        data-screen-label="10 CTA"
       >
         <div className="container">
           <div className="cta">

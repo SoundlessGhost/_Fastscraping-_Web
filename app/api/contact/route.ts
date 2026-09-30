@@ -20,13 +20,11 @@ export async function POST(req: Request) {
       name: trimStr(body.name, 120),
       company: trimStr(body.company, 120),
       email: trimStr(body.email, 160),
-      cadence: trimStr(body.cadence, 40),
-      delivery: trimStr(body.delivery, 40),
-      volume: trimStr(body.volume, 20),
+      topic: trimStr(body.topic, 120),
       message: trimStr(body.message, 4000),
     };
 
-    if (!payload.name) {
+    if (payload.name.length < 2) {
       return NextResponse.json(
         { ok: false, error: "Name is required." },
         { status: 400 },
@@ -38,9 +36,9 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    if (payload.message.length < 20) {
+    if (!payload.topic) {
       return NextResponse.json(
-        { ok: false, error: "Message too short (min 20 chars)." },
+        { ok: false, error: "Please pick a topic." },
         { status: 400 },
       );
     }
@@ -58,7 +56,7 @@ export async function POST(req: Request) {
     const from = process.env.CONTACT_FROM ?? "Fastscraping <notes@fastscraping.com>";
     const to = process.env.CONTACT_TO ?? "khalid@fastscraping.com";
 
-    const subject = `New brief · ${payload.name}${payload.company ? ` (${payload.company})` : ""}`;
+    const subject = `New enquiry · ${payload.topic} · ${payload.name}${payload.company ? ` (${payload.company})` : ""}`;
 
     const { error } = await resend.emails.send({
       from,

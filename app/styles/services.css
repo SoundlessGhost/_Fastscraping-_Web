@@ -47,7 +47,7 @@
   line-height: 0.94;
   letter-spacing: -0.025em;
 }
-.sv-h1 em { color: var(--accent); font-style: italic; }
+.sv-h1 em { color: var(--accent); font-style: normal; }
 .sv-h1-line { display: block; }
 .sv-deck { padding-bottom: 18px; }
 .sv-deck p {
@@ -134,7 +134,7 @@
   letter-spacing: -0.015em;
   color: var(--ink);
 }
-.sv-ix-star { color: var(--accent); font-style: italic; }
+.sv-ix-star { color: var(--accent); font-style: normal; }
 .sv-ix-best { font-size: 14px; color: var(--ink-2); }
 .sv-ix-eng {
   font-family: var(--font-mono);
@@ -183,7 +183,7 @@
 }
 .sv-spec-num {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 88px;
   line-height: 0.95;
   letter-spacing: -0.04em;
@@ -238,7 +238,7 @@
   margin: 0 0 22px;
   max-width: 16ch;
 }
-.sv-spec-title em { color: var(--accent); font-style: italic; }
+.sv-spec-title em { color: var(--accent); font-style: normal; }
 .sv-spec-pitch {
   font-size: 17px;
   line-height: 1.55;
@@ -246,7 +246,7 @@
   margin: 0;
   max-width: 60ch;
 }
-.sv-spec-pitch em { color: var(--ink); font-style: italic; }
+.sv-spec-pitch em { color: var(--ink); font-style: normal; }
 
 .sv-spec-grid {
   display: grid;
@@ -412,7 +412,7 @@
   letter-spacing: 0.04em;
 }
 .sv-code-path { flex: 1; color: rgba(245,243,238,0.85); }
-.sv-code-path em { color: #6fd0a3; font-style: italic; }
+.sv-code-path em { color: #6fd0a3; font-style: normal; }
 .sv-code-ping { color: #6fd0a3; }
 .sv-code pre {
   margin: 0;
@@ -603,7 +603,7 @@
 
 .sv-bundle-name {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 32px;
   line-height: 1;
   letter-spacing: -0.02em;

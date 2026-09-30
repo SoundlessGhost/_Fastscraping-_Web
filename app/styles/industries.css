@@ -50,10 +50,10 @@
   font-size: 0.32em;
   letter-spacing: -0.01em;
   color: var(--muted-2);
-  font-style: italic;
+  font-style: normal;
   margin-bottom: 0.04em;
 }
-.ind-h1 em { color: var(--accent); font-style: italic; }
+.ind-h1 em { color: var(--accent); font-style: normal; }
 .ind-h1-line { display: block; }
 .ind-deck { padding-bottom: 18px; }
 .ind-deck p {
@@ -106,7 +106,7 @@
 
 .ind-strip-num {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 32px;
   line-height: 1;
   color: var(--strip-color, var(--accent));
@@ -155,7 +155,7 @@
 }
 .ind-ch-num {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 120px;
   line-height: 0.9;
   letter-spacing: -0.03em;
@@ -178,7 +178,7 @@
   color: var(--ink);
   margin: 0 0 18px;
 }
-.ind-ch-title em { color: var(--ch-color, var(--accent)); font-style: italic; }
+.ind-ch-title em { color: var(--ch-color, var(--accent)); font-style: normal; }
 .ind-ch-pitch {
   font-size: 17px;
   line-height: 1.55;
@@ -432,7 +432,7 @@
   position: absolute;
   top: 18px; left: 24px;
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 56px;
   line-height: 0.6;
   color: rgba(193,74,37,0.5);
@@ -646,7 +646,7 @@
   line-height: 1;
   color: var(--ink);
   font-weight: 400;
-  font-style: italic;
+  font-style: normal;
 }
 .ind-tk-stub-med strong { color: var(--ink); }
 .ind-tk-stub-trend {
@@ -676,7 +676,7 @@
 }
 .ind-tk-stub-id {
   font-family: var(--font-display);
-  font-style: italic;
+  font-style: normal;
   font-size: 56px;
   line-height: 1;
   letter-spacing: -0.04em;
@@ -787,7 +787,7 @@
   font-family: var(--font-display);
   font-size: 16px;
   color: #ef6a2a;
-  font-style: italic;
+  font-style: normal;
 }
 .ind-food-items {
   display: flex;

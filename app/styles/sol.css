@@ -17,7 +17,7 @@
   letter-spacing: -0.025em;
 }
 .sh-h1 em {
-  font-style: italic;
+  font-style: normal;
   color: var(--accent);
   display: block;
 }
@@ -131,7 +131,7 @@
   color: var(--ink);
   margin-bottom: 24px;
 }
-.sol-title em { color: var(--accent); font-style: italic; }
+.sol-title em { color: var(--accent); font-style: normal; }
 .sol-dark .sol-title { color: var(--paper); }
 .sol-dark .sol-title em { color: #6fd0a3; }
 
@@ -638,7 +638,7 @@
   letter-spacing: -0.02em;
   margin: 18px 0 18px;
 }
-.mix-left h2 em { color: var(--accent); font-style: italic; }
+.mix-left h2 em { color: var(--accent); font-style: normal; }
 .mix-left p {
   font-size: 16px;
   line-height: 1.55;
@@ -686,13 +686,13 @@
   font-family: var(--font-display);
   font-size: 18px;
   color: var(--accent);
-  font-style: italic;
+  font-style: normal;
 }
 .mc-note {
   font-size: 13px;
   color: var(--muted);
   margin-left: 4px;
-  font-style: italic;
+  font-style: normal;
 }
 
 /* ---------- Responsive ---------- */

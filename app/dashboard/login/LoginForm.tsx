@@ -30,8 +30,10 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [email, setEmail] = useState("");
-  // Password captured up front on signup, sent with the code at verify time.
+  // Password + names captured up front on signup, sent with the code at verify time.
   const [signupPassword, setSignupPassword] = useState("");
+  const [signupFirstName, setSignupFirstName] = useState("");
+  const [signupLastName, setSignupLastName] = useState("");
   const [cooldown, setCooldown] = useState(0);
   const firstField = useRef<HTMLInputElement>(null);
 
@@ -112,6 +114,8 @@ export default function LoginForm() {
           if (!r.ok || !d.ok) return setError(d.error || "Could not send the code.");
           setEmail(addr);
           setSignupPassword(pw);
+          setSignupFirstName(val("firstName"));
+          setSignupLastName(val("lastName"));
           setCooldown(RESEND_COOLDOWN);
           return setStep(2);
         }
@@ -121,6 +125,8 @@ export default function LoginForm() {
           email,
           code: c,
           password: signupPassword,
+          firstName: signupFirstName,
+          lastName: signupLastName,
         });
         if (!r.ok || !d.ok) {
           setError(d.error || "Could not create the account.");
@@ -193,6 +199,7 @@ export default function LoginForm() {
           : "Check your email";
 
   const showGoogle = mode === "login" || (mode === "signup" && step === 1);
+  const showNames = mode === "signup" && step === 1;
   const showEmail =
     mode === "login" || (mode === "signup" && step === 1) || (mode === "forgot" && step === 1);
   const showPassword = mode === "login" || (mode === "signup" && step === 1);
@@ -224,10 +231,10 @@ export default function LoginForm() {
             <span className="lg-h1-line">pipeline.</span>
           </h1>
           <p className="lg-sub">
-            Structured data delivered{" "}
-            <strong>reliably, at any scale</strong> — bypassing Cloudflare,
-            DataDome and login walls. No proxy headaches. No infrastructure
-            overhead. No babysitting.
+            Turn any public website into accessible,{" "}
+            <strong>structured data</strong> with our powerful web scraping API,
+            built to handle proxies, browser automation, and CAPTCHA challenges
+            automatically.
           </p>
           <div className="hero-bullets">
             <span>
@@ -306,56 +313,92 @@ export default function LoginForm() {
                   </>
                 )}
 
+                {showNames && (
+                  <div className="lg-two">
+                    <div className="lg-group">
+                      <label className="lg-label" htmlFor="firstName">First name</label>
+                      <div className="lg-field">
+                        <input
+                          ref={firstField}
+                          id="firstName"
+                          name="firstName"
+                          type="text"
+                          placeholder="Jane"
+                          autoComplete="given-name"
+                        />
+                      </div>
+                    </div>
+                    <div className="lg-group">
+                      <label className="lg-label" htmlFor="lastName">Last name</label>
+                      <div className="lg-field">
+                        <input
+                          id="lastName"
+                          name="lastName"
+                          type="text"
+                          placeholder="Doe"
+                          autoComplete="family-name"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {showEmail && (
-                  <div className="lg-field">
-                    <input
-                      ref={firstField}
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Email"
-                      aria-label="Email"
-                      autoComplete="email"
-                      spellCheck={false}
-                    />
+                  <div className={`lg-group${showNames ? " lg-mt" : ""}`}>
+                    <label className="lg-label" htmlFor="email">Email</label>
+                    <div className="lg-field">
+                      <input
+                        ref={showNames ? undefined : firstField}
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="you@company.com"
+                        autoComplete="email"
+                        spellCheck={false}
+                      />
+                    </div>
                   </div>
                 )}
 
                 {showPassword && (
-                  <div className="lg-field lg-mt">
-                    <input
-                      id="password"
-                      name="password"
-                      type={show ? "text" : "password"}
-                      placeholder="Password"
-                      aria-label="Password"
-                      autoComplete={mode === "login" ? "current-password" : "new-password"}
-                    />
-                    <button
-                      type="button"
-                      className={`lg-eye${show ? " on" : ""}`}
-                      aria-label={show ? "Hide password" : "Show password"}
-                      onClick={() => setShow((s) => !s)}
-                    >
-                      {eye}
-                    </button>
+                  <div className="lg-group lg-mt">
+                    <label className="lg-label" htmlFor="password">Password</label>
+                    <div className="lg-field">
+                      <input
+                        id="password"
+                        name="password"
+                        type={show ? "text" : "password"}
+                        placeholder={mode === "signup" ? "At least 8 characters" : "••••••••"}
+                        autoComplete={mode === "login" ? "current-password" : "new-password"}
+                      />
+                      <button
+                        type="button"
+                        className={`lg-eye${show ? " on" : ""}`}
+                        aria-label={show ? "Hide password" : "Show password"}
+                        onClick={() => setShow((s) => !s)}
+                      >
+                        {eye}
+                      </button>
+                    </div>
                   </div>
                 )}
 
                 {showCode && (
                   <>
-                    <div className="lg-field">
-                      <input
-                        ref={firstField}
-                        id="code"
-                        name="code"
-                        inputMode="numeric"
-                        maxLength={6}
-                        className="lg-code"
-                        placeholder="000000"
-                        aria-label="6-digit code"
-                        autoComplete="one-time-code"
-                      />
+                    <div className="lg-group">
+                      <label className="lg-label" htmlFor="code">Verification code</label>
+                      <div className="lg-field">
+                        <input
+                          ref={firstField}
+                          id="code"
+                          name="code"
+                          inputMode="numeric"
+                          maxLength={6}
+                          className="lg-code"
+                          placeholder="000000"
+                          autoComplete="one-time-code"
+                        />
+                      </div>
                     </div>
                     <div className="lg-resend">
                       <button type="button" onClick={resend} disabled={cooldown > 0 || busy}>
@@ -367,33 +410,37 @@ export default function LoginForm() {
 
                 {mode === "forgot" && step === 2 && (
                   <>
-                    <div className="lg-field lg-mt">
-                      <input
-                        id="password"
-                        name="password"
-                        type={show ? "text" : "password"}
-                        placeholder="New password"
-                        aria-label="New password"
-                        autoComplete="new-password"
-                      />
-                      <button
-                        type="button"
-                        className={`lg-eye${show ? " on" : ""}`}
-                        aria-label={show ? "Hide password" : "Show password"}
-                        onClick={() => setShow((s) => !s)}
-                      >
-                        {eye}
-                      </button>
+                    <div className="lg-group lg-mt">
+                      <label className="lg-label" htmlFor="password">New password</label>
+                      <div className="lg-field">
+                        <input
+                          id="password"
+                          name="password"
+                          type={show ? "text" : "password"}
+                          placeholder="At least 8 characters"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          className={`lg-eye${show ? " on" : ""}`}
+                          aria-label={show ? "Hide password" : "Show password"}
+                          onClick={() => setShow((s) => !s)}
+                        >
+                          {eye}
+                        </button>
+                      </div>
                     </div>
-                    <div className="lg-field lg-mt">
-                      <input
-                        id="confirm"
-                        name="confirm"
-                        type={show ? "text" : "password"}
-                        placeholder="Repeat new password"
-                        aria-label="Repeat new password"
-                        autoComplete="new-password"
-                      />
+                    <div className="lg-group lg-mt">
+                      <label className="lg-label" htmlFor="confirm">Repeat new password</label>
+                      <div className="lg-field">
+                        <input
+                          id="confirm"
+                          name="confirm"
+                          type={show ? "text" : "password"}
+                          placeholder="••••••••"
+                          autoComplete="new-password"
+                        />
+                      </div>
                     </div>
                   </>
                 )}
