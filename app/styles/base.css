@@ -1614,10 +1614,11 @@ section.block { padding: 100px 0; }
 }
 .footer-grid {
   display: grid;
-  /* brand + Solutions + Company + Legal, grouped at the start (left) */
+  /* brand + Solutions + Company + Legal. Spread across the full width so the
+     link columns fill the right side instead of clustering on the left. */
   grid-template-columns: 360px auto auto auto;
-  justify-content: start;
-  gap: 56px;
+  justify-content: space-between;
+  gap: 56px 72px;
 }
 .footer-brand .brand { margin-bottom: 16px; }
 /* Footer wordmark sits upright — the italic logotype stays in the header. */
