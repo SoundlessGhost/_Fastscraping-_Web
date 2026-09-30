@@ -1,8 +1,9 @@
 # Fastscraping — production stack for /opt/Fastscraping on 89.117.59.90.
 #
-# This box already runs bayna, which owns ports 80/443 through its own Caddy.
-# So nothing here publishes a port: Caddy reaches this app over the shared
-# `bayna_default` network and proxies `fs-app:3000`.
+# This box runs a shared reverse proxy (proxy-caddy) that owns ports 80/443 on
+# the external `web` network. So nothing here publishes a port: Caddy reaches
+# this app over `web` and proxies `fs-app:3000`. fs-app must stay on `web` or
+# every request 502s after a recreate.
 #
 # Names matter. bayna's Caddyfile proxies the alias `app`, so a service called
 # `app` on that network would collide with bayna's own container and could
@@ -69,12 +70,20 @@ services:
         condition: service_completed_successfully
     networks:
       - fs
-      # Joined so bayna's Caddy can reach us. We only ever receive from it.
+      # The shared reverse proxy (proxy-caddy) lives on the external `web`
+      # network and proxies `fs-app:3000`. We MUST join it, or Caddy can't
+      # resolve us after a recreate and every request 502s. We only ever
+      # receive from it. `bayna` is kept for backward-compat / any bayna-side
+      # reachability; `web` is the one Caddy actually uses.
+      - web
       - bayna
 
 networks:
   fs:
     driver: bridge
+  web:
+    external: true
+    name: web
   bayna:
     external: true
     name: bayna_default
