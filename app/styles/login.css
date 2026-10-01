@@ -317,7 +317,7 @@
   color: #eaf2ed;
   font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
@@ -537,7 +537,7 @@
   color: #0a3d2d;
   font-family: var(--font-sans);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.005em;
   cursor: pointer;
   transition: background .2s ease, transform .15s ease;

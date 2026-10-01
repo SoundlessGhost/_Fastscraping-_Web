@@ -8,14 +8,14 @@ import { isAppRoute, scrollShellTop } from "@/lib/chrome";
 const NAV = [
   { href: "/solutions", label: "Solutions" },
   { href: "/services", label: "Services" },
-  { href: "/solutions#web-data-apis", label: "Web data APIs" },
+  { href: "/solution/web-data-apis", label: "Web data APIs" },
   { href: "/about", label: "About" },
 ];
 
 const SOLUTIONS_SUB = [
-  { href: "/solutions#pricing-intelligence", label: "Pricing intelligence" },
-  { href: "/solutions#web-data-apis", label: "Web data APIs" },
-  { href: "/solutions#data-pipelines", label: "Custom data pipelines" },
+  { href: "/solution/pricing-intelligence", label: "Pricing intelligence" },
+  { href: "/solution/web-data-apis", label: "Web data APIs" },
+  { href: "/solution/custom-data-pipelines", label: "Custom data pipelines" },
 ];
 
 export default function Header() {
@@ -99,7 +99,7 @@ export default function Header() {
               </Link>
               <div className="megamenu">
                 <div className="mm-grid">
-                  <Link className="mm-card" href="/solutions#pricing-intelligence">
+                  <Link className="mm-card" href="/solution/pricing-intelligence">
                     <span className="mm-ic">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 3v18h18" />
@@ -112,7 +112,7 @@ export default function Header() {
                     </span>
                     <span className="mm-m">60M+/day</span>
                   </Link>
-                  <Link className="mm-card" href="/solutions#web-data-apis">
+                  <Link className="mm-card" href="/solution/web-data-apis">
                     <span className="mm-ic">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="8 5 3 12 8 19" />
@@ -125,7 +125,7 @@ export default function Header() {
                     </span>
                     <span className="mm-m">200ms</span>
                   </Link>
-                  <Link className="mm-card" href="/solutions#data-pipelines">
+                  <Link className="mm-card" href="/solution/custom-data-pipelines">
                     <span className="mm-ic">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="5" cy="6" r="2" />
@@ -151,8 +151,9 @@ export default function Header() {
               Services
             </Link>
             <Link
-              href="/solutions#web-data-apis"
-              onClick={sameRouteScroll("/solutions#web-data-apis")}
+              href="/solution/web-data-apis"
+              className={isActive("/solution/web-data-apis") ? "active" : ""}
+              onClick={sameRouteScroll("/solution/web-data-apis")}
             >
               Web data APIs
             </Link>

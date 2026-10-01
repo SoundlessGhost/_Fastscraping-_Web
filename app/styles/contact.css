@@ -354,6 +354,7 @@
   gap: 10px;
   font-family: inherit;
   font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.2s ease;
 }
