@@ -8,7 +8,6 @@ import type { SessionUser } from "@/lib/auth/session";
 
 // The account row at the bottom of both sidebars: avatar + name + a chevron
 // that opens a small menu (email, Settings, Get help, Log out).
-const HELP_EMAIL = "khalid@fastscraping.com";
 
 const IconGear = (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -54,9 +53,9 @@ export default function AccountFoot({ user }: { user: SessionUser }) {
           <Link href="/settings/general" className="ds-acct-mi" role="menuitem" onClick={() => setOpen(false)}>
             <span className="ds-acct-mi-ic">{IconGear}</span> Settings
           </Link>
-          <a href={`mailto:${HELP_EMAIL}`} className="ds-acct-mi" role="menuitem">
+          <Link href="/dashboard/support" className="ds-acct-mi" role="menuitem" onClick={() => setOpen(false)}>
             <span className="ds-acct-mi-ic">{IconHelp}</span> Get help
-          </a>
+          </Link>
           <div className="ds-acct-sep" />
           <button className="ds-acct-mi" role="menuitem" onClick={logout} disabled={busy}>
             <span className="ds-acct-mi-ic">{IconOut}</span> {busy ? "Logging out…" : "Log out"}

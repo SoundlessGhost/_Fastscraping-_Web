@@ -3,10 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { buildTree, endpointLabel, type ServiceNode } from "@/lib/services/taxonomy";
+import { buildTree, endpointLabel, platformLabel, type ServiceNode } from "@/lib/services/taxonomy";
 import type { SessionUser } from "@/lib/auth/session";
 import AccountFoot from "@/components/dashboard/AccountFoot";
 import { ConfirmProvider } from "@/components/ui/Confirm";
+import BrandMark from "@/components/brand/BrandMark";
+import HelpMenu from "@/components/dashboard/HelpMenu";
+import { IcCard, IcHelp, IcPlus } from "@/components/dashboard/icons";
 
 // The frame every dashboard page sits in: service tree on the left, account
 // bar on top. The tree is rendered from the catalog the layout loaded, so it is
@@ -63,15 +66,23 @@ export default function DashShell({
     setOpened(next);
   }
 
+  const activeService = activeSlug ? services.find((s) => s.slug === activeSlug) : null;
+  const pageTitle = activeService
+    ? `${platformLabel(activeService.platform)} · ${leafLabel(activeService)}`
+    : pathname === "/dashboard/billing"
+      ? "Billing & credits"
+      : pathname === "/dashboard/support"
+        ? "Support"
+        : "Dashboard";
+
   return (
     <div className={`ds ${drawer ? "ds--drawer" : ""}`}>
       <aside className="ds-side">
         <div className="ds-side-head">
-          {/* Same markup as the site header, so the logo is literally the
-              same logo — not a lookalike. Styles come from base.css. */}
-          <Link href="/" className="brand">
-            <span className="brand-mark">f</span>
-            <span>Fastscraping</span>
+          <Link href="/" className="ds-logo" aria-label="Fastscraping home">
+            <BrandMark size={24} />
+            <span>fastscraping</span>
+            <span className="ds-logo-sub">Console</span>
           </Link>
           <button className="ds-drawer-close" onClick={() => setDrawer(false)} aria-label="Close menu">
             ×
@@ -178,6 +189,22 @@ export default function DashShell({
         </nav>
 
         <div className="ds-side-foot">
+          <Link
+            href="/dashboard/billing"
+            className={`ds-item ${pathname === "/dashboard/billing" ? "is-active" : ""}`}
+            onClick={() => setDrawer(false)}
+          >
+            <span className="ds-item-ic">{IcCard}</span>
+            <span className="ds-item-label">Billing &amp; credits</span>
+          </Link>
+          <Link
+            href="/dashboard/support"
+            className={`ds-item ${pathname === "/dashboard/support" ? "is-active" : ""}`}
+            onClick={() => setDrawer(false)}
+          >
+            <span className="ds-item-ic">{IcHelp}</span>
+            <span className="ds-item-label">Support</span>
+          </Link>
           {user.role === "ADMIN" && (
             <Link href="/admin" className="ds-item" onClick={() => setDrawer(false)}>
               <span className="ds-item-label">Admin</span>
@@ -189,12 +216,20 @@ export default function DashShell({
       </aside>
 
       <button className="ds-scrim" onClick={() => setDrawer(false)} aria-hidden="true" tabIndex={-1} />
-      <button className="ds-burger ds-burger--float" onClick={() => setDrawer(true)} aria-label="Open menu">
-        <span />
-        <span />
-      </button>
-
       <div className="ds-main">
+        <header className="ds-top">
+          <button className="ds-burger" onClick={() => setDrawer(true)} aria-label="Open menu">
+            <span />
+            <span />
+          </button>
+          <span className="ds-top-title">{pageTitle}</span>
+          <span className="ds-top-spacer" />
+          <HelpMenu />
+          <Link href="/dashboard/billing" className="ds-tb ds-tb--pri">
+            {IcPlus}
+            <span className="ds-tb-label">Buy credits</span>
+          </Link>
+        </header>
         <main className="ds-content">
           <ConfirmProvider>{children}</ConfirmProvider>
         </main>

@@ -19,3 +19,4 @@ export const LEGAL_NAV = [
   { href: "/privacy", label: "Privacy & Cookies" },
   { href: "/compliance", label: "Acceptable Use" },
 ] as const;
+

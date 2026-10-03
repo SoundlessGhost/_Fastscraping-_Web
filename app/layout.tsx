@@ -187,7 +187,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-accent="emerald" className={fontClass}>
+    <html lang="en" data-accent="violet" className={fontClass}>
       <head>
         <script
           type="application/ld+json"

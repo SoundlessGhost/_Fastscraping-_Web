@@ -11,12 +11,12 @@ export type ContactPayload = {
   message: string;
 };
 
-const ink = "#131613";
-const paper = "#faf8f3";
-const bg = "#f4f1ea";
-const accent = "#0e5d44";
-const muted = "#6b6e69";
-const hairline = "rgba(19, 22, 19, 0.10)";
+const ink = "#16131f";
+const paper = "#ffffff";
+const bg = "#f7f6fc";
+const accent = "#4b3fa3";
+const muted = "#5b5676";
+const hairline = "rgba(22, 19, 31, 0.10)";
 
 const esc = (s: string) =>
   s

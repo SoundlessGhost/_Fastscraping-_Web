@@ -36,6 +36,8 @@ export const COMPANY = {
   },
 
   email: "khalid@fastscraping.com",
+  /// Customer support inbox — the dashboard Support menu, page and requests use it.
+  supportEmail: "support@fastscraping.com",
   /// US line, shown in the footer — payment reviewers asked for one.
   phone: "+1 (424) 483-3262",
   /// The company LinkedIn page — the footer links here.

@@ -835,7 +835,7 @@ export default function ServiceUsage({
                       fontSize="9.5"
                       fontWeight="500"
                       fontFamily="var(--font-mono)"
-                      fill="#6b6e69"
+                      fill="#5b5676"
                     >
                       {fmtAxis(g.v)}
                     </text>
@@ -870,7 +870,7 @@ export default function ServiceUsage({
                           x2={cx + barW / 2}
                           y1={PADT + plotH}
                           y2={PADT + plotH}
-                          stroke="#c9c7c0"
+                          stroke="#d9d5ec"
                           strokeWidth={2}
                           strokeLinecap="round"
                         />
@@ -888,7 +888,7 @@ export default function ServiceUsage({
                               y={y}
                               width={barW}
                               height={Math.max(1.5, h)}
-                              fill={c === "_" ? "#0e5d44" : dimColor(c)}
+                              fill={c === "_" ? "#4b3fa3" : dimColor(c)}
                               rx={2}
                               opacity={isTip ? 1 : 0.92}
                             />
@@ -914,7 +914,7 @@ export default function ServiceUsage({
                           fontSize="9.5"
                           fontWeight={isToday ? 700 : 500}
                           fontFamily="var(--font-mono)"
-                          fill={isToday ? "#131613" : "#6b6e69"}
+                          fill={isToday ? "#16131f" : "#5b5676"}
                         >
                           {isToday ? "today" : shortDate(d.date)}
                         </text>
@@ -932,7 +932,7 @@ export default function ServiceUsage({
                     fontSize="10"
                     fontWeight="600"
                     fontFamily="var(--font-mono)"
-                    fill="#131613"
+                    fill="#16131f"
                   >
                     {nf.format(busiest.total)}
                   </text>
@@ -948,7 +948,7 @@ export default function ServiceUsage({
                       x2={VBW - PADR}
                       y1={yOf(avg)}
                       y2={yOf(avg)}
-                      stroke="#131613"
+                      stroke="#16131f"
                       strokeWidth={1}
                       strokeDasharray="3 4"
                       opacity={0.55}
@@ -958,7 +958,7 @@ export default function ServiceUsage({
                       y={yOf(avg) - 16}
                       width={avgTxt.length * 5.4 + 8}
                       height={13}
-                      fill="#faf8f3"
+                      fill="#ffffff"
                       opacity={0.85}
                       rx={3}
                     />
@@ -969,7 +969,7 @@ export default function ServiceUsage({
                       fontSize="9"
                       fontWeight="600"
                       fontFamily="var(--font-mono)"
-                      fill="#131613"
+                      fill="#16131f"
                     >
                       {avgTxt}
                     </text>
