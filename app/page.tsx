@@ -1,309 +1,300 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import LiveConsole from "@/components/LiveConsole";
-import ApiExample from "@/components/ApiExample";
-import KMAvatar from "@/components/KMAvatar";
-import "./styles/home-responsive.css";
+import { withShareCard } from "@/lib/seo";
+import { BOOK_CALL_URL, TRIAL_URL } from "@/lib/site-links";
+import { COMPANY } from "@/lib/company";
 
-// Ready-to-use APIs (call with your key) and targets we build on request.
-const READY = [
+export const metadata: Metadata = withShareCard({
+  title: { absolute: "Fastscraping — Web data at scale for e-commerce market intelligence" },
+  description:
+    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. One request returns a full product page: price per variant, live stock, vouchers, sold count and seller data.",
+  alternates: { canonical: "/" },
+});
+
+const PROOF = [
+  { k: "99.7%", v: "anti-bot bypass across Cloudflare, DataDome, PerimeterX, Akamai" },
+  { k: "8 markets", v: "Shopee TH, ID, MY, PH, VN, SG, Taiwan and Brazil" },
+  { k: "100k+", v: "product pages delivered every day" },
+  { k: "15+ months", v: "average client relationship on managed pipelines" },
+];
+
+const WAYS = [
   {
-    mark: "S",
-    name: "Shopee",
-    cat: "e-commerce",
-    desc: "Product, price and seller data across all 8 Southeast-Asian markets.",
+    title: "Web Data APIs",
+    body: "Ready-made async APIs for Shopee, GrabFood and more. Submit a job, get clean JSON back. Billed per successful request.",
+    href: "/apis",
+    cta: "Browse the APIs →",
+    icon: <path d="M4 7h16M4 12h16M4 17h10" />,
   },
   {
-    mark: "T",
-    name: "Temu",
-    cat: "e-commerce",
-    desc: "Full product detail and pricing by goods_id, across every Temu region.",
+    title: "Managed pipelines",
+    body: "Scheduled delivery to SFTP, S3 or webhook in JSON, Parquet, CSV or TSV. Coverage checks and schema discipline on every run.",
+    href: "/solutions",
+    cta: "See how pipelines work →",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </>
+    ),
+  },
+  {
+    title: "Custom data projects",
+    body: "A new platform or a protected site your team can't crack. Clean sample within 48–72 hours, then a production pipeline you never touch.",
+    href: "/contact",
+    cta: "Describe your target →",
+    icon: (
+      <>
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+        <path d="M12 12l8-4.5M12 12v9M12 12L4 7.5" />
+      </>
+    ),
   },
 ];
 
-const ONREQUEST = [
-  { mark: "L", name: "Lazada", cat: "e-commerce" },
-  { mark: "TT", name: "TikTok Shop", cat: "e-commerce" },
-  { mark: "A", name: "Amazon", cat: "e-commerce" },
-  { mark: "W", name: "Walmart", cat: "e-commerce" },
-  { mark: "H", name: "Homegate", cat: "real estate" },
-  { mark: "in", name: "LinkedIn", cat: "b2b" },
-  { mark: "I", name: "Indeed", cat: "jobs" },
-  { mark: "+", name: "Your target", cat: "we build it" },
+const PLATFORMS = [
+  { name: "GrabFood Indonesia", note: "Restaurants by area, full menus, item prices, promos, delivery fees.", live: true },
+  { name: "Temu", note: "Product and goods-list data for Brazil and Mexico.", live: true },
+  { name: "Lazada", note: "On request · SEA markets" },
+  { name: "TikTok Shop", note: "On request · SEA markets" },
+  { name: "Ticketing marketplaces", note: "215k+ events, 24M+ listings a day with checkout prices." },
+  { name: "Restaurant & delivery menus", note: "QSR chains and delivery apps, 16,000+ stores a week." },
+  { name: "Job boards", note: "Indeed across 5 countries, 1.39M postings a week." },
+  { name: "Real estate", note: "Swiss portals: ImmoScout24, Homegate, Newhome, Urbanhome." },
+  { name: "Amazon · Walmart", note: "On request · product and search pages" },
+  { name: "Professional profiles", note: "Company and profile data at enterprise scale, on request." },
 ];
 
-export default function HomePage() {
+const STEPS = [
+  { tag: "01 · POST /jobs", t: "Submit the product", d: "Send a shop id, item id and region. Batch as many as you like; each job gets an id back immediately." },
+  { tag: "02 · we collect", t: "Real devices, in-country", d: "Our device fleet and country-specific mobile proxies fetch the page the way a shopper would. Median 10–50 s per region." },
+  { tag: "03 · GET /jobs/{id}", t: "Clean JSON, billed on success", d: "Full product page in one schema for all markets. A failed job is never on your invoice." },
+];
+
+const BUILT_FOR = [
+  { t: "E-commerce market intelligence", d: "SKU-level share, pricing and assortment across SEA, Taiwan and Brazil." },
+  { t: "Price monitoring and repricing", d: "Per-variant prices, vouchers and stock, fresh enough to reprice on." },
+  { t: "Brand protection", d: "Listing, seller and price data to spot counterfeits and grey sellers." },
+  { t: "Data companies and resellers", d: "A white-label backend for the platforms your own crawlers can't keep up with." },
+];
+
+function Icon({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      {/* ===================== HERO ===================== */}
-      <section className="hero" data-screen-label="01 Hero">
-        <div className="container hero-grid">
-          <div className="hero-left">
-            <h1 className="display">
-              We handle your{" "}
-              <span className="br">
-                <em>web scraping</em> pipeline.
-              </span>
-            </h1>
-            <p className="hero-sub">
-              Turn any public website into accessible,{" "}
-              <strong>structured data</strong> with our powerful web scraping
-              API, built to handle proxies, browser automation, and CAPTCHA
-              challenges automatically.
+    <span className="fsx-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4B3FA3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {children}
+      </svg>
+    </span>
+  );
+}
+
+export default function Home() {
+  return (
+    <main className="fsx-page">
+      {/* HERO */}
+      <section className="fsx-violet">
+        <div className="fsx-wrap fsx-row" style={{ padding: "96px 24px 88px", gap: 48, alignItems: "center" }}>
+          <div className="fsx-stack" style={{ flex: "1 1 520px", minWidth: 0, gap: 28 }}>
+            <div style={{ display: "flex", gap: 14, alignItems: "stretch" }}>
+              <div style={{ width: 8, background: "#D6CEFF", borderRadius: 2, flex: "none" }} />
+              <h1 className="fsx-h1">Web data at scale.</h1>
+            </div>
+            <p style={{ margin: 0, fontSize: 22, lineHeight: 1.45, color: "#E4DFFF", maxWidth: 640 }}>
+              Scraping APIs and anti-bot infrastructure powering{" "}
+              <strong style={{ color: "#fff", fontWeight: 700 }}>e-commerce market intelligence</strong>. One request
+              returns a full product page: price per variant, live stock, vouchers, sold count and seller data.
             </p>
-            <div className="hero-bullets">
-              <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Bypass Cloudflare &amp; Captchas
-              </span>
-              <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Large-scale on demand
-              </span>
-              <span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                No proxy hassles
-              </span>
-            </div>
-            <div className="hero-cta">
-              <Link href="/dashboard/login" className="btn btn-primary">
-                Start free
-                <span className="arrow">→</span>
+            <div className="fsx-row" style={{ gap: 14 }}>
+              <Link className="fsx-btn fsx-btn-lg fsx-btn-white" href="/contact">
+                Get a free trial key
               </Link>
-              <Link href="#apis" className="btn btn-ghost">
-                Browse APIs
+              <Link className="fsx-btn fsx-btn-lg fsx-btn-ghost" href="/apis">
+                See the Shopee API
               </Link>
             </div>
-            <div className="hero-meta">
-              <KMAvatar variant="small" />
-              <div>
-                <div style={{ color: "var(--ink)", fontWeight: 500 }}>
-                  Khalid Mahmud Shawon
-                </div>
-                <div>Founder · Replies in &lt; 24h</div>
+            <div className="fsx-row" style={{ gap: 24, fontSize: 14, color: "#D6CEFF", fontWeight: 600 }}>
+              <span>Pay only for successful requests</span>
+              <span>No card for the trial</span>
+              <span>Sample data in 48–72 h</span>
+            </div>
+          </div>
+          <div style={{ flex: "1 1 420px", minWidth: 0 }}>
+            <div className="fsx-code">
+              <div className="fsx-dots">
+                <i style={{ background: "#B0A6FF" }} />
+                <i style={{ background: "#8A7CF5" }} />
+                <i style={{ background: "#5F52C7" }} />
               </div>
-            </div>
-          </div>
-
-          <div className="hero-right">
-            <LiveConsole />
-            <div className="pipeline">
-              <span className="node">
-                <span className="badge">SRC</span> Target site
-              </span>
-              <span className="arrow"></span>
-              <span className="node">
-                <span className="badge">FS</span> Fastscraping
-              </span>
-              <span className="arrow"></span>
-              <span className="node">
-                <span className="badge">OUT</span> Your warehouse
-              </span>
+              <pre>
+                <span className="k">GET</span> /jobs/8f2c91  <span className="c">→ 200 OK</span>
+                {`
+{
+  "status": "done",
+  "region": "tw",
+  "item": {
+    "name": "Wireless Earbuds Pro 2",
+    "models": [
+      { "name": "Black", "price": 1290, "stock": 48 },
+      { "name": "White", "price": 1290, "stock": 0 }
+    ],
+    "sold_count": 3421,
+    "rating": 4.8,
+    "vouchers": ["NT$100 off NT$999"],
+    "shop": { "name": "SoundLab TW", "rating": 4.9 }
+  },
+  "billed": true
+}`}
+              </pre>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===================== SOLUTIONS (3) ===================== */}
-      <section className="block" id="solutions" data-screen-label="02 Solutions">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">What we do</span>
-              <h2 className="display" style={{ marginTop: 18 }}>
-                Three ways to get <em>the data.</em>
-              </h2>
+      {/* PROOF */}
+      <section aria-label="Proof points" style={{ background: "#fff", borderBottom: "1px solid #E3E0F2" }}>
+        <div className="fsx-wrap fsx-grid-4" style={{ padding: "36px 24px", gap: 24 }}>
+          {PROOF.map((p) => (
+            <div key={p.k} className="fsx-stat">
+              <b>{p.k}</b>
+              <span>{p.v}</span>
             </div>
-            <p>
-              Call a ready-made API with your key, ask us to build a scraper for
-              a site we don&apos;t list yet, or let us run the whole pipeline and
-              deliver clean data on a schedule.
-            </p>
-          </div>
-
-          <div className="home-sol">
-            <article className="sol">
-              <div className="n">01 · Self-serve</div>
-              <h3>Web data APIs</h3>
-              <p>
-                Ready endpoints you call with your own key — Shopee, Temu and
-                more. Clean JSON, every region, built to scale.
-              </p>
-            </article>
-            <article className="sol">
-              <div className="n">02 · Custom</div>
-              <h3>Custom scraping</h3>
-              <p>
-                Need a site we don&apos;t list yet? Tell us the target and the
-                fields — we build and run the scraper for your project.
-              </p>
-            </article>
-            <article className="sol">
-              <div className="n">03 · Managed</div>
-              <h3>Managed pipelines</h3>
-              <p>
-                We own the queue, retries and monitoring and deliver on a
-                schedule — straight to your API, an SFTP drop or S3.
-              </p>
-            </article>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ===================== READY APIs ===================== */}
-      <section className="block" style={{ paddingTop: 0 }} id="apis" data-screen-label="03 APIs">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Web data APIs</span>
-              <h2 className="display" style={{ marginTop: 18 }}>
-                Ready-made APIs, <em>site by site.</em>
-              </h2>
-            </div>
-            <p>
-              Connect your key and start pulling structured data in minutes. Not
-              on the list? We build new targets on request.
-            </p>
-          </div>
-
-          <div className="api-group-h">Ready now — call with your key</div>
-          <div className="targets">
-            {READY.map((t) => (
-              <article className="target-card" key={t.name}>
-                <div className="target-mark">{t.mark}</div>
-                <div>
-                  <div className="target-name">
-                    {t.name} <span className="target-cat">{t.cat}</span>
-                  </div>
-                  <p className="target-desc">{t.desc}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="api-group-h" style={{ marginTop: 40 }}>
-            On request — we build it for you
-          </div>
-          <div className="targets">
-            {ONREQUEST.map((t) => (
-              <article className="target-card target-card--soon" key={t.name}>
-                <div className="target-mark">{t.mark}</div>
-                <div>
-                  <div className="target-name">
-                    {t.name} <span className="target-cat">{t.cat}</span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+      {/* THREE WAYS */}
+      <section className="fsx-wrap fsx-stack" style={{ paddingTop: 96, paddingBottom: 32, gap: 40 }}>
+        <div className="fsx-stack" style={{ gap: 12, maxWidth: 720 }}>
+          <span className="fsx-eyebrow">Three ways to work with us</span>
+          <h2 className="fsx-h2">Pick the shape that fits your product.</h2>
+          <p className="fsx-lede">
+            Same infrastructure underneath: real devices, in-country mobile proxies and human-paced scheduling. You
+            choose how the data reaches you.
+          </p>
+        </div>
+        <div className="fsx-grid-3">
+          {WAYS.map((w) => (
+            <article key={w.title} className="fsx-card" style={{ padding: 32, gap: 16 }}>
+              <Icon>{w.icon}</Icon>
+              <h3 className="fsx-h3">{w.title}</h3>
+              <p className="fsx-p">{w.body}</p>
+              <Link className="fsx-arrow" href={w.href}>
+                {w.cta}
+              </Link>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* ===================== USE IT (code) ===================== */}
-      <section className="block" style={{ paddingTop: 0 }} data-screen-label="04 Use it">
-        <div className="container">
-          <div className="section-head">
-            <div>
-              <span className="eyebrow">Developer-friendly</span>
-              <h2 className="display" style={{ marginTop: 18 }}>
-                Call it with <em>your key.</em>
-              </h2>
-            </div>
-            <p>
-              One endpoint, one header, structured JSON back. No proxies, no
-              browsers, no CAPTCHA handling on your side — we do all of it.
-            </p>
+      {/* API GRID */}
+      <section className="fsx-wrap fsx-stack" style={{ paddingTop: 64, paddingBottom: 64, gap: 32 }}>
+        <div className="fsx-row" style={{ justifyContent: "space-between", alignItems: "flex-end", gap: 24 }}>
+          <div className="fsx-stack" style={{ gap: 10, maxWidth: 640 }}>
+            <span className="fsx-eyebrow">Ready-made APIs and pipelines</span>
+            <h2 className="fsx-h2">Platforms we already run in production.</h2>
           </div>
-
-          <ApiExample />
-
-          <div className="api-get">
-            <Link href="/dashboard/login" className="btn btn-primary">
-              Get your API key <span className="arrow">→</span>
-            </Link>
-            <span className="api-get-note">
-              5,000 free credits · no card required
+          <Link className="fsx-arrow" href="/apis" style={{ marginTop: 0 }}>
+            All APIs and field lists →
+          </Link>
+        </div>
+        <div className="fsx-grid-4">
+          <div className="fsx-card-uv" style={{ gridColumn: "span 2", padding: 24, gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 22, fontWeight: 800 }}>Shopee Product Data API</span>
+              <span className="fsx-pill fsx-pill-strong">LIVE</span>
+            </div>
+            <span style={{ fontSize: 15, color: "#E4DFFF", lineHeight: 1.5 }}>
+              Full product page per request across TH · ID · MY · PH · VN · SG · TW · BR. Price and stock per variant,
+              vouchers, sold count, ratings, shop data.
             </span>
           </div>
+          {PLATFORMS.map((p) => (
+            <div key={p.name} className="fsx-card-sm" style={{ padding: 24 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 18, fontWeight: 800 }}>{p.name}</span>
+                {p.live ? <span className="fsx-pill">LIVE</span> : null}
+              </div>
+              <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{p.note}</span>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ===================== CTA ===================== */}
-      <section className="block" style={{ paddingTop: 0 }} id="contact" data-screen-label="05 CTA">
-        <div className="container">
-          <div className="cta">
-            <div>
-              <span className="eyebrow">Get started</span>
-              <h2 style={{ marginTop: 18 }}>
-                Tell us your <em>target.</em>
-              </h2>
-              <p>
-                Ready API or a site we don&apos;t list yet — tell us what you
-                need and the fields that matter. You&apos;ll get a reply from an
-                engineer, and a free sample where we can run one.
-              </p>
-              <div className="hero-bullets" style={{ marginTop: 28 }}>
-                <span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Reply within one business day
-                </span>
-                <span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Free sample where we can run one
-                </span>
-                <span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  No commitment
-                </span>
+      {/* HOW IT WORKS */}
+      <section className="fsx-white">
+        <div className="fsx-wrap fsx-stack fsx-section" style={{ gap: 40 }}>
+          <div className="fsx-stack" style={{ gap: 10, maxWidth: 640 }}>
+            <span className="fsx-eyebrow">How it works</span>
+            <h2 className="fsx-h2">Three calls. No scraper to maintain.</h2>
+          </div>
+          <div className="fsx-grid-3">
+            {STEPS.map((s) => (
+              <div key={s.tag} className="fsx-stack" style={{ gap: 12 }}>
+                <span className="fsx-mono">{s.tag}</span>
+                <h3 className="fsx-h3" style={{ fontSize: 20 }}>
+                  {s.t}
+                </h3>
+                <p className="fsx-p" style={{ fontSize: 15 }}>
+                  {s.d}
+                </p>
               </div>
-            </div>
-
-            <div className="cta-card">
-              <div className="label">Direct line</div>
-              <div className="person">
-                <KMAvatar variant="large" />
-                <div>
-                  <div className="n">Md Khalid Mahmud Shawon</div>
-                  <div className="r">Founder · Web data engineering</div>
-                </div>
-              </div>
-              <div className="meta-row">
-                <span className="k">Email</span>
-                <span className="v" style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
-                  khalid@fastscraping.com
-                </span>
-              </div>
-              <div className="meta-row">
-                <span className="k">Response time</span>
-                <span className="v">&lt; 24 hours</span>
-              </div>
-              <div className="meta-row">
-                <span className="k">Sample data</span>
-                <span className="v">Within 48–72 hours</span>
-              </div>
-              <div className="actions">
-                <Link href="/contact" className="btn btn-accent">
-                  Contact us
-                </Link>
-                <Link href="/dashboard/login" className="btn btn-ghost">
-                  Start free
-                </Link>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
-    </>
+
+      {/* BUILT FOR */}
+      <section className="fsx-wrap fsx-row fsx-section" style={{ gap: 48, alignItems: "flex-start" }}>
+        <div className="fsx-stack" style={{ flex: "1 1 420px", minWidth: 0, gap: 14 }}>
+          <span className="fsx-eyebrow">Built for</span>
+          <h2 className="fsx-h2">Teams whose product is the data.</h2>
+          <p className="fsx-p" style={{ fontSize: 17 }}>
+            We act as a silent backend partner. Your brand, your customers, our infrastructure.
+          </p>
+        </div>
+        <ul className="fsx-grid-2" style={{ flex: "1 1 520px", minWidth: 0, listStyle: "none", margin: 0, padding: 0, gap: 16 }}>
+          {BUILT_FOR.map((b) => (
+            <li key={b.t} className="fsx-card-sm">
+              <strong style={{ fontSize: 17 }}>{b.t}</strong>
+              <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{b.d}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* FOUNDER CTA */}
+      <section className="fsx-violet">
+        <div className="fsx-wrap fsx-row" style={{ padding: "80px 24px", gap: 40, alignItems: "center" }}>
+          <Image
+            src="/team/shawon.jpg"
+            alt="Md Khalid Mahmud Shawon, founder of Fastscraping"
+            width={128}
+            height={128}
+            style={{ borderRadius: 16, objectFit: "cover", border: "3px solid #D6CEFF" }}
+          />
+          <div className="fsx-stack" style={{ flex: "1 1 480px", minWidth: 0, gap: 12 }}>
+            <h2 className="fsx-h2" style={{ fontSize: 36 }}>
+              Talk to the person who runs the pipelines.
+            </h2>
+            <p style={{ margin: 0, fontSize: 17, lineHeight: 1.55, color: "#E4DFFF" }}>
+              Md Khalid Mahmud Shawon, founder. Replies within 24 hours at {COMPANY.email}. Free trial key, or a clean
+              sample on a new platform within 48–72 hours.
+            </p>
+          </div>
+          <div className="fsx-stack" style={{ gap: 12 }}>
+            <Link className="fsx-btn fsx-btn-lg fsx-btn-white" href="/contact">
+              Get a trial key
+            </Link>
+            <a className="fsx-btn fsx-btn-lg fsx-btn-ghost" href={BOOK_CALL_URL} target="_blank" rel="noopener">
+              Book a 30-min call with Khalid
+            </a>
+            <Link href={TRIAL_URL} style={{ color: "#D6CEFF", fontSize: 14, fontWeight: 600, textAlign: "center" }}>
+              Already a client? Log in
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

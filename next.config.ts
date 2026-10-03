@@ -33,6 +33,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // Oct 2026 redesign folded the old multi-page marketing site into
+  // Home / APIs / Solutions / Pricing / Contact. Old URLs keep working.
+  async redirects() {
+    return [
+      { source: "/solution/web-data-apis", destination: "/apis", permanent: true },
+      { source: "/solution/:slug*", destination: "/solutions", permanent: true },
+      { source: "/services", destination: "/solutions", permanent: true },
+      { source: "/industries", destination: "/solutions", permanent: true },
+      { source: "/about", destination: "/contact", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

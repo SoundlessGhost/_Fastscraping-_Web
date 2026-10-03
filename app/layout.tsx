@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif, Work_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif, JetBrains_Mono, Manrope, Work_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +8,7 @@ import { COMPANY } from "@/lib/company";
 import "./styles/base.css";
 import "./globals.css";
 import "./styles/nav-mobile.css";
+import "./styles/brand.css";
 
 const SITE_URL = "https://www.fastscraping.com";
 
@@ -34,6 +35,25 @@ const instrumentSerif = Instrument_Serif({
   variable: "--next-font-instrument-serif",
   display: "swap",
   preload: true,
+});
+
+// Marketing site (Oct 2026 Ultraviolet redesign): Manrope for text, JetBrains
+// Mono for code. Scoped through --next-font-manrope / --next-font-jetbrains in
+// styles/brand.css so the app shells keep their own type.
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--next-font-manrope",
+  display: "swap",
+  preload: true,
+});
+
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--next-font-jetbrains",
+  display: "swap",
+  preload: false,
 });
 
 const workSans = Work_Sans({
@@ -64,11 +84,11 @@ const droidSans = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Fastscraping — Your web scraping team on demand",
+    default: "Fastscraping — Web data at scale for e-commerce market intelligence",
     template: "%s · Fastscraping",
   },
   description:
-    "Managed web data extraction service. We build, run and maintain the pipelines that keep public web data flowing reliably — clean structured data delivered to your API, warehouse or S3.",
+    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. Shopee product data across 8 markets, GrabFood Indonesia, custom scrapers and managed data pipelines.",
   applicationName: "Fastscraping",
   authors: [{ name: "Md Khalid Mahmud Shawon", url: SITE_URL }],
   creator: "Md Khalid Mahmud Shawon",
@@ -142,8 +162,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f1ea" },
-    { media: "(prefers-color-scheme: dark)", color: "#131613" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#16131f" },
   ],
 };
 
@@ -206,7 +226,7 @@ const websiteLd = {
   },
 };
 
-const fontClass = `${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} ${workSans.variable} ${droidSans.variable}`;
+const fontClass = `${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} ${workSans.variable} ${droidSans.variable} ${manrope.variable} ${jetbrains.variable}`;
 
 export default function RootLayout({
   children,

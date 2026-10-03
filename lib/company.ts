@@ -36,7 +36,6 @@ export const COMPANY = {
   },
 
   email: "khalid@fastscraping.com",
-  whatsapp: "+880 1788 791 134",
   /// US line, shown in the footer — payment reviewers asked for one.
   phone: "+1 (424) 483-3262",
   /// The company LinkedIn page — the footer links here.

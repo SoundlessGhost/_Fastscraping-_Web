@@ -1,154 +1,112 @@
-import Link from "next/link";
-import ContactForm from "@/components/ContactForm";
-import "../styles/contact.css";
 import type { Metadata } from "next";
 import { withShareCard } from "@/lib/seo";
+import { BOOK_CALL_URL } from "@/lib/site-links";
+import { COMPANY, COMPANY_ADDRESS_LINE } from "@/lib/company";
+import ContactFormUV from "@/components/brand/ContactFormUV";
 
 export const metadata: Metadata = withShareCard({
-  title: "Contact",
+  title: "Contact — trial key, sample or a call with Khalid",
   description:
-    "Tell us which site and what you need from it. You'll get a reply from an engineer, not a sales script, within one business day.",
+    "Send a few product links and get JSON back. Replies within 24 hours; trial key the same day or a clean sample on a new platform within 48–72 hours.",
   alternates: { canonical: "/contact" },
-  openGraph: {
-    title: "Contact · Fastscraping",
-    description:
-      "Tell us which site and what you need from it — reply within one business day.",
-    url: "/contact",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact · Fastscraping",
-    description: "Tell us which site and what you need from it.",
-  },
 });
 
-const NEXT_STEPS = [
-  {
-    n: "01",
-    t: "An engineer reads it",
-    d: "We check the target, the anti-bot setup, and whether an existing endpoint already covers it.",
-    when: "Same day",
-  },
-  {
-    n: "02",
-    t: "You get a sample",
-    d: "Where we can, we run a small extraction on your site so you see real rows before any call.",
-    when: "< 24h",
-  },
-  {
-    n: "03",
-    t: "Scope & quote",
-    d: "A short call, or just an email, to fix fields, schedule, delivery and a fixed price.",
-    when: "1–2 days",
-  },
-];
-
-const QUICK = [
-  {
-    t: "Just want to try it?",
-    d: "No need to talk to anyone. 5,000 free credits, no card, live in two minutes.",
-    cta: "Start free",
-    href: "/dashboard/login",
-  },
-  {
-    t: "Looking for the details?",
-    d: "Every service, supported target and delivery option, with the fields we return.",
-    cta: "Browse services",
-    href: "/services",
-  },
-  {
-    t: "Already a customer?",
-    d: "Email support with your account email and a request ID. We answer technical questions within a few hours.",
-    cta: "Email support",
-    href: "mailto:khalid@fastscraping.com",
-  },
-];
+function Row({ href, label, external, icon }: { href: string; label: string; external?: boolean; icon: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noopener" } : {})}
+      style={{
+        display: "flex", alignItems: "center", gap: 12, textDecoration: "none", color: "#16131F",
+        background: "#fff", border: "1px solid #E3E0F2", borderRadius: 10, padding: "14px 16px", fontWeight: 600, fontSize: 16,
+      }}
+    >
+      <span className="fsx-icon" style={{ width: 36, height: 36, borderRadius: 8 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4B3FA3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {icon}
+        </svg>
+      </span>
+      {label}
+    </a>
+  );
+}
 
 export default function ContactPage() {
   return (
-    <div className="cx" data-screen-label="Contact">
-      <div className="cx-wrap">
-        {/* Main grid */}
-        <div className="cx-main">
-
-          {/* Left column */}
-          <div className="cx-left">
-            <div className="cx-eyebrow">Talk to the team</div>
-            <h1 className="cx-h1">
-              Tell us which site, and{" "}
-              <span>what you need from it.</span>
-            </h1>
-            <p className="cx-intro">
-              Tell us what you&apos;re working on in a line or two. You&apos;ll
-              get a reply from an engineer, not a sales script, within one
-              business day.
+    <main className="fsx-page">
+      <section className="fsx-wrap fsx-row" style={{ paddingTop: 72, paddingBottom: 88, gap: 48, alignItems: "flex-start" }}>
+        <div className="fsx-stack" style={{ flex: "1 1 400px", minWidth: 0, gap: 24 }}>
+          <div className="fsx-stack" style={{ gap: 12 }}>
+            <span className="fsx-eyebrow">Contact</span>
+            <h1 className="fsx-h1-sm">Send a few product links. Get JSON back.</h1>
+            <p className="fsx-p" style={{ fontSize: 18, lineHeight: 1.5 }}>
+              Replies within 24 hours. A trial key the same day, or a clean sample on a new platform within 48–72 hours.
             </p>
-
-            <a href="mailto:khalid@fastscraping.com" className="cx-getintouch">
-              <div className="cx-git-ic">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                >
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="m3.5 7 8.5 6 8.5-6" />
-                </svg>
-              </div>
-              <div style={{ minWidth: 0, flex: "1 1 auto" }}>
-                <div className="cx-git-t">Get in touch</div>
-                <div className="cx-git-mail">khalid@fastscraping.com</div>
-              </div>
-              <span className="cx-git-arr">→</span>
-            </a>
-
-            <div style={{ marginTop: 52 }}>
-              <div className="cx-next-h">What happens next</div>
-              <div className="cx-next">
-                {NEXT_STEPS.map((s) => (
-                  <div className="cx-next-row" key={s.n}>
-                    <div className="cx-next-n">{s.n}</div>
-                    <div>
-                      <div className="cx-next-t">{s.t}</div>
-                      <div className="cx-next-d">{s.d}</div>
-                    </div>
-                    <div className="cx-next-when">{s.when}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
-
-          {/* Right column: form */}
-          <ContactForm />
+          <a
+            href={BOOK_CALL_URL}
+            target="_blank"
+            rel="noopener"
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, textDecoration: "none",
+              background: "#4B3FA3", color: "#fff", borderRadius: 12, padding: "20px 22px",
+            }}
+          >
+            <span className="fsx-stack" style={{ gap: 4 }}>
+              <strong style={{ fontSize: 18 }}>Book a 30-min call with Khalid</strong>
+              <span style={{ fontSize: 14, color: "#E4DFFF" }}>Google Meet · pick a slot that suits you</span>
+            </span>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+          <div className="fsx-stack" style={{ gap: 12 }}>
+            <Row
+              href={`mailto:${COMPANY.email}`}
+              label={COMPANY.email}
+              icon={
+                <>
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </>
+              }
+            />
+            <Row
+              href="https://www.linkedin.com/in/md-khalid-mahmud-shawon/"
+              label="LinkedIn · Md Khalid Mahmud Shawon"
+              external
+              icon={
+                <>
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" />
+                  <rect x="2" y="9" width="4" height="12" />
+                  <circle cx="4" cy="4" r="2" />
+                </>
+              }
+            />
+            <Row
+              href="https://t.me/khalid_alsaba"
+              label="Telegram · @khalid_alsaba"
+              external
+              icon={
+                <>
+                  <path d="M22 2L11 13" />
+                  <path d="M22 2L15 22l-4-9-9-4 20-7z" />
+                </>
+              }
+            />
+            <Row
+              href={COMPANY.discord}
+              label="Discord · developer support"
+              external
+              icon={<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />}
+            />
+          </div>
+          <p className="fsx-p" style={{ fontSize: 14 }}>
+            {COMPANY.legalName} · {COMPANY_ADDRESS_LINE}. US-registered, engineering team in Bangladesh.
+          </p>
         </div>
-      </div>
-
-      {/* Bottom band */}
-      <section className="cx-band">
-        <div className="cx-band-grid">
-          {QUICK.map((q) => (
-            <div key={q.t}>
-              <div className="cx-band-t">{q.t}</div>
-              <p className="cx-band-d">{q.d}</p>
-              {q.href.startsWith("mailto:") ? (
-                <a href={q.href} className="cx-band-cta">
-                  {q.cta} →
-                </a>
-              ) : (
-                <Link href={q.href} className="cx-band-cta">
-                  {q.cta} →
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
+        <ContactFormUV />
       </section>
-    </div>
+    </main>
   );
 }

@@ -1,0 +1,170 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { withShareCard } from "@/lib/seo";
+import { BOOK_CALL_URL } from "@/lib/site-links";
+
+export const metadata: Metadata = withShareCard({
+  title: "Web Data APIs — Shopee, GrabFood and more",
+  description:
+    "Async REST APIs that return structured marketplace data in one schema across markets. Shopee product data for TH, ID, MY, PH, VN, SG, Taiwan and Brazil. Pay only for successful requests.",
+  alternates: { canonical: "/apis" },
+});
+
+const MARKETS = ["Thailand", "Indonesia", "Malaysia", "Philippines", "Vietnam", "Singapore"];
+
+const FIELDS = [
+  ["Variants", "Price, price before discount, stock per model/SKU"],
+  ["Promotions", "Vouchers, discounts, flash-sale flags"],
+  ["Demand", "Sold count, rating histogram, review count"],
+  ["Seller", "Shop name, rating, location, follower count"],
+  ["Shipping (TW, BR)", "Shipping options and fees"],
+];
+
+const MORE = [
+  { name: "GrabFood Indonesia", tag: "LIVE", d: "Restaurants by area, full menus with item prices and modifiers, promos, delivery fees, ratings. Other SEA markets on request." },
+  { name: "Temu", tag: "LIVE", d: "Product detail and goods-list data for Brazil and Mexico." },
+  { name: "Shopee listings (BR)", tag: "LIVE", d: "Category, search, brand and shop result pages with sold counts, page by page." },
+  { name: "Ticketing marketplaces", tag: "PIPELINE", d: "Event, section, row, quantity, list and checkout price. 215k+ events and 24M+ listings a day, delivered daily." },
+  { name: "Restaurant & delivery menus", tag: "PIPELINE", d: "Store-level menus and prices for major QSR chains and a leading delivery marketplace. 16,000+ stores, 55M records a week." },
+  { name: "Job boards", tag: "PIPELINE", d: "Indeed across 5 countries, 1.39M postings a week, weekly delivery." },
+  { name: "Real estate", tag: "API", d: "Five REST APIs over Swiss portals: ImmoScout24, Homegate, Newhome, Urbanhome, ge.ch." },
+  { name: "Lazada · TikTok Shop", d: "On request, SEA markets. Clean sample within 48–72 hours before you commit." },
+  { name: "Amazon · Walmart", d: "On request. Product, search and offer pages, priced per platform." },
+  { name: "Professional profiles & companies", d: "Enterprise-scale profile and company data for B2B intelligence, on request." },
+  { name: "Airline fares", d: "Sub-30-minute fare freshness across major US and European carriers." },
+];
+
+export default function ApisPage() {
+  return (
+    <main className="fsx-page">
+      <section style={{ background: "#fff", borderBottom: "1px solid #E3E0F2" }}>
+        <div className="fsx-wrap fsx-stack" style={{ padding: "72px 24px 56px", gap: 16 }}>
+          <span className="fsx-eyebrow">Web Data APIs</span>
+          <h1 className="fsx-h1-sm" style={{ maxWidth: 820 }}>
+            One request. The whole product page.
+          </h1>
+          <p className="fsx-lede">
+            Async REST APIs that return structured marketplace data in one schema across markets. Pay only for
+            successful requests. Free trial of 1,000 requests, no card.
+          </p>
+        </div>
+      </section>
+
+      <section className="fsx-wrap fsx-row" style={{ paddingTop: 72, paddingBottom: 72, gap: 40, alignItems: "flex-start" }}>
+        <div className="fsx-stack" style={{ flex: "1 1 460px", minWidth: 0, gap: 20 }}>
+          <div className="fsx-row" style={{ gap: 10, alignItems: "center" }}>
+            <h2 className="fsx-h2" style={{ fontSize: 36 }}>
+              Shopee Product Data API
+            </h2>
+            <span className="fsx-pill" style={{ background: "#4B3FA3", color: "#fff" }}>
+              LIVE
+            </span>
+          </div>
+          <p className="fsx-p" style={{ fontSize: 17 }}>
+            Built for Shopee&apos;s current anti-bot. Runs on real and cloud devices with country-specific mobile
+            proxies, so the response is what a shopper in that market sees.
+          </p>
+          <div className="fsx-row" style={{ gap: 8 }}>
+            {MARKETS.map((m) => (
+              <span key={m} className="fsx-chip">
+                {m}
+              </span>
+            ))}
+            <span className="fsx-chip fsx-chip-on">Taiwan</span>
+            <span className="fsx-chip fsx-chip-on">Brazil</span>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table className="fsx-table">
+              <thead>
+                <tr>
+                  <th scope="col">Field group</th>
+                  <th scope="col">What you get</th>
+                </tr>
+              </thead>
+              <tbody>
+                {FIELDS.map(([a, b]) => (
+                  <tr key={a}>
+                    <td>{a}</td>
+                    <td>{b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="fsx-row" style={{ gap: 24, fontSize: 14, color: "#5B5676", fontWeight: 600 }}>
+            <span>Median 10–20 s in TH, ID, PH</span>
+            <span>25–50 s in SG, VN, MY, BR</span>
+            <span>1–3 min in Taiwan</span>
+          </div>
+        </div>
+        <div className="fsx-stack" style={{ flex: "1 1 420px", minWidth: 0, gap: 16 }}>
+          <div className="fsx-code" style={{ fontSize: 13 }}>
+            <pre>
+              <span className="c"># 1. submit</span>
+              {`
+curl -X POST $BASE_URL/jobs \\
+  -H "X-API-Key: $KEY" \\
+  -d '{"shop_id": 123456, "item_id": 987654321, "region": "tw"}'
+
+`}
+              <span className="c"># → {`{"job_id": "8f2c91", "status": "pending"}`}</span>
+              {`
+
+`}
+              <span className="c"># 2. poll</span>
+              {`
+curl $BASE_URL/jobs/8f2c91 \\
+  -H "X-API-Key: $KEY"`}
+            </pre>
+          </div>
+          <div className="fsx-card-sm" style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>
+            <strong style={{ color: "#16131F", fontSize: 15 }}>Billing rules</strong>
+            <span>1 successful job = 1 billable request. Pending, failed or not-found jobs are free.</span>
+            <span>Results cached for 2 hours. Resubmitting the same item inside that window returns the cached result.</span>
+            <span>Base URL and key are sent with your trial; examples here are illustrative.</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="fsx-white">
+        <div className="fsx-wrap fsx-stack fsx-section-sm" style={{ gap: 32 }}>
+          <h2 className="fsx-h2" style={{ fontSize: 36 }}>
+            More platforms
+          </h2>
+          <div className="fsx-grid-3" style={{ gap: 16 }}>
+            {MORE.map((m) => (
+              <article key={m.name} className="fsx-card-sm" style={{ background: "#F7F6FC", padding: 24, gap: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <strong style={{ fontSize: 18 }}>{m.name}</strong>
+                  {m.tag ? <span className="fsx-pill">{m.tag}</span> : null}
+                </div>
+                <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{m.d}</span>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="fsx-violet">
+        <div className="fsx-wrap fsx-row" style={{ padding: "72px 24px", gap: 32, alignItems: "center", justifyContent: "space-between" }}>
+          <div className="fsx-stack" style={{ gap: 8, maxWidth: 640 }}>
+            <h2 className="fsx-h2" style={{ fontSize: 34 }}>
+              Test it on your own SKUs.
+            </h2>
+            <p style={{ margin: 0, fontSize: 17, color: "#E4DFFF", lineHeight: 1.5 }}>
+              Send 3–5 product links. You get a trial key and the JSON back, usually the same day.
+            </p>
+          </div>
+          <div className="fsx-row" style={{ gap: 12 }}>
+            <Link className="fsx-btn fsx-btn-lg fsx-btn-white" href="/contact">
+              Get a trial key
+            </Link>
+            <a className="fsx-btn fsx-btn-lg fsx-btn-ghost" href={BOOK_CALL_URL} target="_blank" rel="noopener">
+              Book a call
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}

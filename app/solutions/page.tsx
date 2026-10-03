@@ -1,259 +1,169 @@
-import Link from "next/link";
-import SolutionsStack from "@/components/SolutionsStack";
-import KMAvatar from "@/components/KMAvatar";
-import "../styles/about.css";import "../styles/sol.css";import "../styles/sol-stack.css";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { withShareCard } from "@/lib/seo";
+import { BOOK_CALL_URL } from "@/lib/site-links";
 
 export const metadata: Metadata = withShareCard({
-  title: "Solutions",
+  title: "Solutions — APIs, custom scrapers, data pipelines and data on demand",
   description:
-    "Six battle-tested data products — pricing intelligence, marketplace data, job market insights, LinkedIn data, web APIs, and ETL pipelines.",
+    "Ready-made web data APIs, custom scrapers for protected sites, large-scale scheduled data pipelines and data-as-a-service datasets. Anti-bot, devices and proxies handled on our side.",
   alternates: { canonical: "/solutions" },
-  openGraph: {
-    title: "Solutions · Fastscraping",
-    description:
-      "Six data products: pricing intel, marketplace, jobs, LinkedIn, web APIs, ETL.",
-    url: "/solutions",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Solutions · Fastscraping",
-    description: "Six battle-tested data products.",
-  },
 });
+
+type Sol = {
+  tag: string;
+  title: string;
+  body: string;
+  cta: { href: string; label: string; external?: boolean };
+  facts: [string, string][];
+  dark?: boolean;
+};
+
+const SOLUTIONS: Sol[] = [
+  {
+    tag: "01 · Web Data APIs",
+    title: "Marketplace data, one request at a time.",
+    body: "Async REST endpoints for Shopee (8 markets), GrabFood Indonesia, Temu and more. Submit a job, poll, get the full page as JSON. Billed only on success.",
+    cta: { href: "/apis", label: "Browse the APIs →" },
+    facts: [
+      ["Best for", "Market intelligence, repricing, brand protection"],
+      ["Delivery", "REST API, JSON, 2-hour result cache"],
+      ["Start", "Trial key the same day, 1,000 requests free"],
+      ["Scale", "100k+ product pages a day in production"],
+    ],
+  },
+  {
+    tag: "02 · Custom scrapers",
+    title: "A scraper built for the site you name.",
+    body: "Protected sites, mobile apps, sites your in-house crawler gave up on. We build it, run it on real devices and in-country proxies, and hand you the data, not the code to babysit. Clean sample within 48–72 hours before you commit.",
+    cta: { href: "/contact", label: "Describe your target →" },
+    facts: [
+      ["Best for", "One hard platform, a new market, a mobile-only source"],
+      ["Handles", "Cloudflare, DataDome, PerimeterX, Akamai, app-only APIs"],
+      ["Delivery", "API, SFTP, S3 or webhook; JSON, Parquet, CSV, TSV"],
+      ["Ownership", "We maintain it; layout changes fixed within 24 hours"],
+    ],
+  },
+  {
+    tag: "03 · Large-scale data pipelines",
+    title: "Millions of records a week, on a schedule.",
+    body: "For data and analytics teams that need the same feed every day or every week with coverage that doesn't drift. Ticketing marketplaces at 24M+ listings a day, restaurant and delivery menus for 16,000+ stores a week, job boards at 1.39M postings a week.",
+    cta: { href: BOOK_CALL_URL, label: "Book a call about your pipeline →", external: true },
+    facts: [
+      ["Best for", "Data aggregators, analytics teams, DaaS products"],
+      ["QA every run", "Coverage diff vs last run, duplicates, formats, volumes"],
+      ["SLA", "Delivery windows are commitments; you hear from us first"],
+      ["Pricing", "Flat monthly fee per platform"],
+    ],
+  },
+  {
+    tag: "04 · Data on demand (DaaS)",
+    title: "Order a dataset. Receive a file.",
+    body: "No integration, no pipeline. Tell us the platform, the market, the category or the list of items, and the fields you need. We deliver a one-off or recurring dataset, and you pay for the records delivered.",
+    cta: { href: "/contact", label: "Request a dataset →" },
+    facts: [
+      ["Best for", "Research, due diligence, one-time category studies"],
+      ["Examples", "Every SKU in a Shopee category with prices and sold counts"],
+      ["Format", "CSV, Parquet or JSON, with a field dictionary"],
+      ["Turnaround", "Sample in 48–72 hours, full set scoped on the call"],
+    ],
+    dark: true,
+  },
+];
+
+const INFRA = [
+  ["Real-device fleets", "Physical and cloud Android devices for app-first platforms."],
+  ["In-country mobile proxies", "Country-specific, human-paced. Not just rotating IPs."],
+  ["Complete browser identities", "Fingerprint and TLS consistent end to end."],
+  ["Schema discipline", "Same columns, same types, every run. Your pipeline never notices us."],
+];
 
 export default function SolutionsPage() {
   return (
-    <>
-      {/* ===================== SOLUTIONS HERO ===================== */}
-      <section className="sol-hero" data-screen-label="01 Solutions hero">
-        <div className="container">
-          <div className="ah-band">
-            <span className="eyebrow">Business solutions</span>
-            <div className="ah-band-right">
-              <span className="kbd">6 solutions</span>
-              <span className="kbd">→</span>
-              <span className="kbd">Any platform</span>
-              <span className="kbd">→</span>
-              <span className="kbd">Any scale</span>
-            </div>
-          </div>
-
-          <div className="sol-headline">
-            <h1 className="display sh-h1">
-              Data solutions
-              <em>for every challenge.</em>
-            </h1>
-            <aside className="sh-deck">
-              <p>
-                Six battle-tested data products, each built around the hardest problem in its
-                category. Pick the one that fits — or mix and match.
-              </p>
-              <Link href="#sol-01" className="btn btn-primary" style={{ marginTop: 24 }}>
-                Explore the six
-                <span className="arrow">↓</span>
-              </Link>
-            </aside>
-          </div>
-
-          <div className="sol-jump">
-            <Link href="#pricing-intelligence" className="sj">
-              <span className="sj-i">01</span>
-              <span className="sj-n">Pricing intelligence</span>
-              <span className="sj-m">60M+/day</span>
-            </Link>
-            <Link href="#marketplace-intelligence" className="sj">
-              <span className="sj-i">02</span>
-              <span className="sj-n">Marketplace intelligence</span>
-              <span className="sj-m">10M+</span>
-            </Link>
-            <Link href="#job-market" className="sj">
-              <span className="sj-i">03</span>
-              <span className="sj-n">Job market insights</span>
-              <span className="sj-m">1.4M/wk</span>
-            </Link>
-            <Link href="#linkedin-data" className="sj">
-              <span className="sj-i">04</span>
-              <span className="sj-n">LinkedIn data</span>
-              <span className="sj-m">100M/mo</span>
-            </Link>
-            <Link href="#web-data-apis" className="sj">
-              <span className="sj-i">05</span>
-              <span className="sj-n">Web data APIs</span>
-              <span className="sj-m">200ms</span>
-            </Link>
-            <Link href="#data-pipelines" className="sj">
-              <span className="sj-i">06</span>
-              <span className="sj-n">Pipelines &amp; ETL</span>
-              <span className="sj-m">99% SLA</span>
-            </Link>
-          </div>
+    <main className="fsx-page">
+      <section style={{ background: "#fff", borderBottom: "1px solid #E3E0F2" }}>
+        <div className="fsx-wrap fsx-stack" style={{ padding: "72px 24px 56px", gap: 16 }}>
+          <span className="fsx-eyebrow">Solutions</span>
+          <h1 className="fsx-h1-sm" style={{ maxWidth: 860 }}>
+            Any website, any scale, delivered as data.
+          </h1>
+          <p className="fsx-lede">
+            Ready-made APIs when the platform is one we already run. A custom pipeline when it isn&apos;t. Either way,
+            the anti-bot work, the devices, the proxies and the schema discipline sit on our side.
+          </p>
         </div>
       </section>
 
-      {/* ===================== SOLUTIONS · CASE-FILE STACK ===================== */}
-      <section className="block sol-stack-wrap" data-screen-label="02 Solutions stack">
-        <div className="container">
-          <div className="sol-stack-head">
-            <div>
-              <span className="eyebrow">Six solutions · one team</span>
-              <h2 className="display" style={{ marginTop: 18 }}>
-                Open a <em>case file.</em>
+      <section className="fsx-wrap fsx-stack" style={{ paddingTop: 72, paddingBottom: 24, gap: 24 }}>
+        {SOLUTIONS.map((s) => (
+          <article
+            key={s.tag}
+            className={s.dark ? "fsx-card-uv" : "fsx-card"}
+            style={{ padding: 40, flexDirection: "row", flexWrap: "wrap", gap: 40, alignItems: "flex-start" }}
+          >
+            <div className="fsx-stack" style={{ flex: "1 1 380px", minWidth: 0, gap: 12 }}>
+              <span className="fsx-mono" style={s.dark ? { color: "#D6CEFF" } : undefined}>
+                {s.tag}
+              </span>
+              <h2 className="fsx-h2" style={{ fontSize: 30 }}>
+                {s.title}
               </h2>
-              <div className="ssh-meta">
-                <span>Click to expand · only one open at a time</span>
-              </div>
+              <p className="fsx-p">{s.body}</p>
+              {s.cta.external ? (
+                <a className="fsx-arrow" href={s.cta.href} target="_blank" rel="noopener" style={s.dark ? { color: "#fff" } : undefined}>
+                  {s.cta.label}
+                </a>
+              ) : (
+                <Link className="fsx-arrow" href={s.cta.href} style={s.dark ? { color: "#fff" } : undefined}>
+                  {s.cta.label}
+                </Link>
+              )}
             </div>
-            <p>
-              Each solution is its own case file — collapsed by default so you can scan the
-              index, expandable into a full editorial spread when you want the detail. No
-              alternating left/right walls of text. No infinite scroll. Just the data, the
-              visual, and how to start.
+            <ul className="fsx-facts" style={{ flex: "1 1 380px", minWidth: 0 }}>
+              {s.facts.map(([k, v]) => (
+                <li key={k}>
+                  <strong>{k}</strong>
+                  <br />
+                  <span>{v}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </section>
+
+      <section className="fsx-wrap fsx-stack" style={{ paddingTop: 56, paddingBottom: 88, gap: 28 }}>
+        <div className="fsx-stack" style={{ gap: 10, maxWidth: 680 }}>
+          <span className="fsx-eyebrow">Under every solution</span>
+          <h2 className="fsx-h2" style={{ fontSize: 36 }}>
+            The same infrastructure, whichever shape you pick.
+          </h2>
+        </div>
+        <div className="fsx-grid-4">
+          {INFRA.map(([t, d]) => (
+            <div key={t} className="fsx-card-sm">
+              <strong style={{ fontSize: 16 }}>{t}</strong>
+              <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{d}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="fsx-violet">
+        <div className="fsx-wrap fsx-row" style={{ padding: "72px 24px", gap: 32, alignItems: "center", justifyContent: "space-between" }}>
+          <div className="fsx-stack" style={{ gap: 8, maxWidth: 640 }}>
+            <h2 className="fsx-h2" style={{ fontSize: 34 }}>
+              Not sure which shape fits?
+            </h2>
+            <p style={{ margin: 0, fontSize: 17, color: "#E4DFFF", lineHeight: 1.5 }}>
+              30 minutes with Khalid. Bring the sites and the fields; leave with a plan and a sample date.
             </p>
           </div>
-
-          <SolutionsStack />
+          <a className="fsx-btn fsx-btn-lg fsx-btn-white" href={BOOK_CALL_URL} target="_blank" rel="noopener">
+            Book a call with Khalid
+          </a>
         </div>
       </section>
-
-      {/* ===================== MIX & MATCH ===================== */}
-      <section className="block mix-block" data-screen-label="08 Mix">
-        <div className="container">
-          <div className="mix-card">
-            <div className="mix-left">
-              <span className="eyebrow">Not sure which fits?</span>
-              <h2 className="display">
-                You can <em>mix and match.</em>
-              </h2>
-              <p>
-                The six solutions aren&apos;t silos — most clients run two or three together.
-                Pricing intelligence paired with marketplace data. LinkedIn data delivered
-                through a custom web API. Or a single ETL pipeline that consolidates four of the
-                six. Book a free consultation and we&apos;ll map the right combination for your
-                data challenges.
-              </p>
-              <div className="mix-cta">
-                <Link href="#contact" className="btn btn-accent">
-                  Book a free consultation <span className="arrow">→</span>
-                </Link>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-                  Email Khalid
-                </a>
-              </div>
-            </div>
-            <div className="mix-right">
-              <div className="mix-combo">
-                <div className="mc-h">Most common combos</div>
-                <div className="mc-row">
-                  <span className="mc-tag">Pricing</span>
-                  <span className="mc-plus">+</span>
-                  <span className="mc-tag">Marketplace</span>
-                  <span className="mc-note">→ retail intelligence stack</span>
-                </div>
-                <div className="mc-row">
-                  <span className="mc-tag">LinkedIn</span>
-                  <span className="mc-plus">+</span>
-                  <span className="mc-tag">Web APIs</span>
-                  <span className="mc-note">→ enrichment + go-to-market</span>
-                </div>
-                <div className="mc-row">
-                  <span className="mc-tag">Jobs</span>
-                  <span className="mc-plus">+</span>
-                  <span className="mc-tag">Pipelines</span>
-                  <span className="mc-note">→ talent &amp; comp analytics</span>
-                </div>
-                <div className="mc-row">
-                  <span className="mc-tag">Marketplace</span>
-                  <span className="mc-plus">+</span>
-                  <span className="mc-tag">Pipelines</span>
-                  <span className="mc-note">→ daily warehouse refresh</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===================== CTA ===================== */}
-      <section
-        className="block"
-        style={{ paddingTop: 0 }}
-        id="contact"
-        data-screen-label="09 CTA"
-      >
-        <div className="container">
-          <div className="cta">
-            <div>
-              <span className="eyebrow">Get started</span>
-              <h2 style={{ marginTop: 18 }}>
-                Tell us your <em>data problem.</em>
-              </h2>
-              <p>
-                Whichever solution (or combination) you need, the process is the same: a
-                30-minute intro call, a free sample within 48–72 hours, then a clear quote —
-                and we&apos;re shipping inside two weeks.
-              </p>
-              <div className="hero-bullets" style={{ marginTop: 28 }}>
-                <span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Free 30-min call
-                </span>
-                <span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Free sample data
-                </span>
-                <span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  No commitment
-                </span>
-              </div>
-            </div>
-
-            <div className="cta-card">
-              <div className="label">Direct line</div>
-              <div className="person">
-                <KMAvatar variant="large" />
-                <div>
-                  <div className="n">Md Khalid Mahmud Shawon</div>
-                  <div className="r">Founder · Replies personally</div>
-                </div>
-              </div>
-              <div className="meta-row">
-                <span className="k">Email</span>
-                <span className="v" style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
-                  khalid@fastscraping.com
-                </span>
-              </div>
-              <div className="meta-row">
-                <span className="k">Response time</span>
-                <span className="v">&lt; 24 hours</span>
-              </div>
-              <div className="meta-row">
-                <span className="k">First call</span>
-                <span className="v">30 min · no slides</span>
-              </div>
-              <div className="meta-row">
-                <span className="k">Sample data</span>
-                <span className="v">Within 48–72 hours</span>
-              </div>
-              <div className="actions">
-                <a href="/contact" className="btn btn-accent">Book a demo</a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=khalid@fastscraping.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-                  Email directly
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+    </main>
   );
 }
