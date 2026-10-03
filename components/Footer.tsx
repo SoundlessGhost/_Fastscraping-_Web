@@ -31,14 +31,14 @@ export default function Footer() {
         </div>
         <div className="fsx-foot-cols">
           <div className="fsx-foot-col">
-            <h4>Product</h4>
+            <h2 className="fsx-foot-h">Product</h2>
             <Link href="/apis">Web Data APIs</Link>
             <Link href="/solutions">Solutions</Link>
             <Link href="/pricing">Pricing</Link>
             <Link href="/dashboard/login">Log in</Link>
           </div>
           <div className="fsx-foot-col">
-            <h4>Company</h4>
+            <h2 className="fsx-foot-h">Company</h2>
             <Link href="/contact">Contact</Link>
             <a href={BOOK_CALL_URL} target="_blank" rel="noopener">
               Book a call
@@ -51,7 +51,7 @@ export default function Footer() {
             </a>
           </div>
           <div className="fsx-foot-col">
-            <h4>Legal</h4>
+            <h2 className="fsx-foot-h">Legal</h2>
             {LEGAL_NAV.map((l) => (
               <Link key={l.href} href={l.href}>
                 {l.label}

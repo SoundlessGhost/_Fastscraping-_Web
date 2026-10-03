@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 const SITE = "https://www.fastscraping.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  const now = new Date("2026-10-03");
   const routes: Array<{
     path: string;
     priority: number;

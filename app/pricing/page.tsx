@@ -95,7 +95,7 @@ export default function PricingPage() {
             </span>
           </div>
           <div className="fsx-stack" style={{ gap: 4 }}>
-            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>Per records delivered</span>
+            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }}>Per record delivered</span>
             <span className="fsx-p" style={{ fontSize: 15, fontWeight: 600 }}>
               Quoted on the scope: platform, market, items, fields.
             </span>

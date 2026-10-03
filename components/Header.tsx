@@ -89,6 +89,7 @@ export default function Header() {
           className="fsx-burger"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
+          aria-controls="fsx-drawer"
           onClick={() => setOpen((v) => !v)}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16131F" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -96,7 +97,7 @@ export default function Header() {
           </svg>
         </button>
       </div>
-      <nav className={`fsx-drawer${open ? " is-open" : ""}`} aria-label="Mobile">
+      <nav id="fsx-drawer" className={`fsx-drawer${open ? " is-open" : ""}`} aria-label="Mobile">
         {MAIN_NAV.map((n) => (
           <Link key={n.href} href={n.href} onClick={same(n.href)}>
             {n.label}

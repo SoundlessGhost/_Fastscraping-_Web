@@ -1,5 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="8.62" fill="#131613"/>
-  <path transform="translate(9.533 27.370) scale(0.030400 -0.030400)"
-        fill="#faf8f3" stroke="#faf8f3" stroke-width="18" stroke-linejoin="round" d="M32 0Q19 0 22 13L123 445Q132 482 99 482H78Q62 482 62 496Q62 510 80 510Q111 510 126.5 518.0Q142 526 147 550Q160 607 185.5 651.5Q211 696 247.0 722.0Q283 748 326 748Q361 748 382.5 731.5Q404 715 404 686Q404 664 392.5 650.5Q381 637 364 637Q343 637 336.5 649.0Q330 661 328.5 677.0Q327 693 322.0 705.0Q317 717 299 717Q276 717 258.5 694.5Q241 672 227 610L207 523Q204 510 218 510H298Q317 510 313 496Q310 482 295 482H208Q198 482 195 472L88 11Q85 0 74 0Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="26" fill="#FFFFFF"/>
+  <g transform="translate(14 22) scale(0.84)">
+    <rect x="0" y="0" width="100" height="100" rx="14" fill="#ECEAF8"/>
+    <rect x="22" y="10" width="12" height="12" fill="#16131F"/>
+    <rect x="22" y="27" width="12" height="12" fill="#16131F"/>
+    <rect x="22" y="44" width="12" height="12" fill="#16131F"/>
+    <rect x="22" y="61" width="12" height="12" fill="#16131F"/>
+    <rect x="22" y="78" width="12" height="12" fill="#16131F"/>
+    <rect x="22" y="12" width="96" height="10" fill="#4B3FA3"/>
+    <rect x="22" y="46" width="74" height="10" fill="#4B3FA3"/>
+  </g>
 </svg>

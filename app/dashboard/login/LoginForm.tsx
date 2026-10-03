@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "../../styles/login.css";
+import BrandMark from "@/components/brand/BrandMark";
 
 const RESEND_COOLDOWN = 60;
 
@@ -218,42 +219,40 @@ export default function LoginForm() {
       {/* LEFT · editorial — mirrors the homepage hero */}
       <section className="lg-left">
         <div className="lg-left-body">
-          <Link href="/" className="brand lg-logo">
-            <span className="brand-mark">f</span>
-            <span>Fastscraping</span>
+          <Link href="/" className="lg-logo" aria-label="Fastscraping home">
+            <BrandMark size={30} />
+            <span>fastscraping</span>
           </Link>
-          <span className="eyebrow">Enterprise-grade data extraction</span>
+          <span className="eyebrow">Client dashboard</span>
           <h1 className="lg-h1">
-            <span className="lg-h1-line">We handle your</span>
+            <span className="lg-h1-line">Web data</span>
             <span className="lg-h1-line">
-              <em>web scraping</em>
+              <em>at scale.</em>
             </span>
-            <span className="lg-h1-line">pipeline.</span>
           </h1>
           <p className="lg-sub">
-            Turn any public website into accessible,{" "}
-            <strong>structured data</strong> with our powerful web scraping API,
-            built to handle proxies, browser automation, and CAPTCHA challenges
-            automatically.
+            Your API keys, usage and invoices for every Fastscraping service in one place.
+            Scraping APIs and anti-bot infrastructure powering{" "}
+            <strong>e-commerce market intelligence</strong>.
           </p>
           <div className="hero-bullets">
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Bypass Cloudflare &amp; Captchas
+              Usage and billing per key
             </span>
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Large-scale on demand
+              Pay only for successful requests
             </span>
             <span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              No proxy hassles
+              Invoices and exports
             </span>
           </div>
         </div>

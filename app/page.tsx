@@ -61,14 +61,14 @@ const PLATFORMS = [
   { name: "Ticketing marketplaces", note: "215k+ events, 24M+ listings a day with checkout prices." },
   { name: "Restaurant & delivery menus", note: "QSR chains and delivery apps, 16,000+ stores a week." },
   { name: "Job boards", note: "Indeed across 5 countries, 1.39M postings a week." },
-  { name: "Real estate", note: "Swiss portals: ImmoScout24, Homegate, Newhome, Urbanhome." },
+  { name: "Real estate", note: "Swiss portals: ImmoScout24, Homegate, Newhome, Urbanhome, ge.ch." },
   { name: "Amazon · Walmart", note: "On request · product and search pages" },
   { name: "Professional profiles", note: "Company and profile data at enterprise scale, on request." },
 ];
 
 const STEPS = [
   { tag: "01 · POST /jobs", t: "Submit the product", d: "Send a shop id, item id and region. Batch as many as you like; each job gets an id back immediately." },
-  { tag: "02 · we collect", t: "Real devices, in-country", d: "Our device fleet and country-specific mobile proxies fetch the page the way a shopper would. Median 10–50 s per region." },
+  { tag: "02 · we collect", t: "Real devices, in-country", d: "Our device fleet and country-specific mobile proxies fetch the page the way a shopper would. Median 10–50 s per region; 1–3 min in Taiwan." },
   { tag: "03 · GET /jobs/{id}", t: "Clean JSON, billed on success", d: "Full product page in one schema for all markets. A failed job is never on your invoice." },
 ];
 

@@ -20,7 +20,7 @@ export const OG_IMAGE = {
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "Fastscraping — Your web scraping team on demand",
+  alt: "Fastscraping — Web data at scale for e-commerce market intelligence",
 };
 
 /// Wraps a page's metadata so it keeps the share card, site name, locale and
@@ -32,6 +32,7 @@ export function withShareCard(meta: Metadata): Metadata {
     openGraph: {
       type: "website",
       siteName: "Fastscraping",
+      ...(typeof meta.alternates?.canonical === "string" ? { url: meta.alternates.canonical } : {}),
       locale: "en_US",
       images: [OG_IMAGE],
       ...meta.openGraph,

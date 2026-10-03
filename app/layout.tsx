@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif, JetBrains_Mono, Manrope, Work_Sans } from "next/font/google";
-import localFont from "next/font/local";
+import { JetBrains_Mono, Manrope } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollReset from "@/components/ScrollReset";
@@ -12,30 +11,8 @@ import "./styles/brand.css";
 
 const SITE_URL = "https://www.fastscraping.com";
 
-const geist = Geist({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--next-font-geist",
-  display: "swap",
-  preload: true,
-});
 
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--next-font-geist-mono",
-  display: "swap",
-  preload: false,
-});
 
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  variable: "--next-font-instrument-serif",
-  display: "swap",
-  preload: true,
-});
 
 // Marketing site (Oct 2026 Ultraviolet redesign): Manrope for text, JetBrains
 // Mono for code. Scoped through --next-font-manrope / --next-font-jetbrains in
@@ -56,30 +33,7 @@ const jetbrains = JetBrains_Mono({
   preload: false,
 });
 
-const workSans = Work_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--next-font-work-sans",
-  display: "swap",
-  preload: true,
-});
 
-// The ScraperAPI header/nav is Droid Sans (its headings are Work Sans). Droid
-// Sans is no longer on Google Fonts, so we self-host the same open-source file
-// (Apache 2.0) for the top-bar nav + CTA — its uppercase letterforms, notably
-// the serifed capital "I", are what make the header match ScraperAPI.
-const droidSans = localFont({
-  src: [
-    {
-      path: "./fonts/droidsans-webfont.woff2",
-      weight: "400",
-      style: "normal",
-    },
-  ],
-  variable: "--next-font-droid-sans",
-  display: "swap",
-  preload: true,
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -94,22 +48,19 @@ export const metadata: Metadata = {
   creator: "Md Khalid Mahmud Shawon",
   publisher: "Fastscraping",
   keywords: [
-    "web scraping",
-    "web data extraction",
-    "enterprise data collection",
-    "public web data",
+    "web scraping API",
+    "Shopee API",
+    "Shopee product data",
+    "Shopee scraper",
+    "e-commerce market intelligence",
+    "pricing intelligence",
+    "price monitoring",
+    "marketplace data",
+    "GrabFood data",
+    "digital shelf data",
     "managed data pipelines",
     "data as a service",
-    "structured web data",
-    "data pipelines",
-    "ETL",
-    "LinkedIn data",
-    "pricing intelligence",
-    "marketplace intelligence",
-    "job market data",
-    "web data API",
-    "large-scale data collection",
-    "headless browser",
+    "custom web scraper",
     "Fastscraping",
   ],
   category: "technology",
@@ -120,16 +71,16 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: "Fastscraping",
-    title: "Fastscraping — Your web scraping team on demand",
+    title: "Fastscraping — Web data at scale for e-commerce market intelligence",
     description:
-      "Structured public web data, delivered reliably at any scale — pipelines we build, run and maintain for you.",
+      "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. Shopee across 8 markets, GrabFood Indonesia, custom scrapers and managed pipelines.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fastscraping — Your web scraping team on demand",
+    title: "Fastscraping — Web data at scale for e-commerce market intelligence",
     description:
-      "Structured public web data, delivered reliably at any scale — pipelines we build, run and maintain for you.",
+      "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. Shopee across 8 markets, GrabFood Indonesia, custom scrapers and managed pipelines.",
     creator: "@fastscraping",
   },
   robots: {
@@ -172,7 +123,7 @@ const organizationLd = {
   "@type": "Organization",
   name: COMPANY.name,
   legalName: COMPANY.legalName,
-  alternateName: "Fastscraping — Your web scraping team on demand",
+  alternateName: "Fastscraping — Web data at scale",
   url: SITE_URL,
   logo: `${SITE_URL}/logo.png`,
   email: COMPANY.email,
@@ -207,11 +158,12 @@ const organizationLd = {
     },
   },
   sameAs: [
+    COMPANY.linkedin,
     "https://linkedin.com/in/md-khalid-mahmud-shawon",
     "https://upwork.com/freelancers/khalidalsaba",
   ],
   description:
-    "Managed enterprise web data extraction for data teams, AI companies and agencies. Public data only, custom pipelines, white-label delivery.",
+    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence: Shopee product data across 8 markets, GrabFood Indonesia, custom scrapers and managed data pipelines. Public data only.",
 };
 
 const websiteLd = {
@@ -219,14 +171,9 @@ const websiteLd = {
   "@type": "WebSite",
   name: "Fastscraping",
   url: SITE_URL,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${SITE_URL}/?q={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
 };
 
-const fontClass = `${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} ${workSans.variable} ${droidSans.variable} ${manrope.variable} ${jetbrains.variable}`;
+const fontClass = `${manrope.variable} ${jetbrains.variable}`;
 
 export default function RootLayout({
   children,

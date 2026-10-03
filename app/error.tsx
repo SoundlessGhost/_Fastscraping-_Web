@@ -8,32 +8,22 @@ import Link from "next/link";
 
 export default function Error({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <section className="block" style={{ minHeight: "60vh", display: "grid", placeItems: "center" }}>
-      <div className="container" style={{ textAlign: "center" }}>
-        <span className="eyebrow">Something went wrong</span>
-        <h1 className="display" style={{ marginTop: 16 }}>
-          That didn&apos;t <em>go as planned.</em>
-        </h1>
-        <p
-          style={{
-            color: "var(--muted)",
-            maxWidth: "46ch",
-            margin: "16px auto 28px",
-            lineHeight: 1.6,
-          }}
-        >
-          A temporary error stopped this page from loading. You can try again, or
-          head back and pick up where you left off.
+    <main className="fsx-page">
+      <section className="fsx-wrap fsx-stack" style={{ minHeight: "60vh", justifyContent: "center", alignItems: "center", textAlign: "center", gap: 16, padding: "96px 24px" }}>
+        <span className="fsx-eyebrow">Something went wrong</span>
+        <h1 className="fsx-h1-sm">That didn&apos;t go as planned.</h1>
+        <p className="fsx-p" style={{ maxWidth: "46ch", fontSize: 17 }}>
+          A temporary error stopped this page from loading. You can try again, or head back and pick up where you left off.
         </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button onClick={reset} className="btn btn-primary">
-            Try again <span className="arrow">→</span>
+        <div className="fsx-row" style={{ gap: 12, justifyContent: "center", marginTop: 8 }}>
+          <button type="button" onClick={reset} className="fsx-btn">
+            Try again →
           </button>
-          <Link href="/" className="btn btn-ghost">
+          <Link href="/" className="fsx-btn fsx-btn-outline">
             Back home
           </Link>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }

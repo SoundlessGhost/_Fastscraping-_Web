@@ -4,7 +4,7 @@ import { withShareCard } from "@/lib/seo";
 import { BOOK_CALL_URL } from "@/lib/site-links";
 
 export const metadata: Metadata = withShareCard({
-  title: "Solutions — APIs, custom scrapers, data pipelines and data on demand",
+  title: "Solutions — APIs, custom scrapers and data pipelines",
   description:
     "Ready-made web data APIs, custom scrapers for protected sites, large-scale scheduled data pipelines and data-as-a-service datasets. Anti-bot, devices and proxies handled on our side.",
   alternates: { canonical: "/solutions" },

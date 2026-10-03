@@ -26,7 +26,7 @@ export default function LegalDoc({ current, title, html }: { current: string; ti
       </section>
       <article className="fsx-legal" dangerouslySetInnerHTML={{ __html: html }} />
       <section className="fsx-legal" style={{ paddingTop: 0 }}>
-        <h3>Contact</h3>
+        <h2>Contact</h2>
         <p>
           {COMPANY.legalName} · {COMPANY_ADDRESS_LINE} · <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a> ·{" "}
           {COMPANY.phone}

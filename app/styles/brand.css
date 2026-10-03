@@ -11,7 +11,7 @@
   --uv-tile: #eceaf8;
   --uv-ground: #f7f6fc;
   --uv-line: #e3e0f2;
-  --uv-line-2: #c9c4e4;
+  --uv-line-2: #857fa9; /* 3.7:1 on white, the minimum for field outlines */
   --uv-muted: #5b5676;
   --uv-body: #3a3550;
   --uv-soft: #b0a6ff;
@@ -27,6 +27,7 @@
 
 .fsx-page, .fsx-head, .fsx-foot {
   font-family: var(--uv-sans);
+  font-weight: 400; /* base.css sets body 500 for the old site */
   color: var(--uv-ink);
   -webkit-font-smoothing: antialiased;
 }
@@ -143,7 +144,7 @@
 .fsx-card-uv .fsx-facts li span { color: var(--uv-on); }
 @media (max-width: 620px) { .fsx-facts { grid-template-columns: minmax(0, 1fr); } }
 
-.fsx-table { border-collapse: collapse; width: 100%; font-size: 15px; background: #fff; border: 1px solid var(--uv-line); border-radius: 12px; overflow: hidden; }
+.fsx-table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 15px; background: #fff; border: 1px solid var(--uv-line); border-radius: 12px; overflow: hidden; }
 .fsx-table th { background: var(--uv-tile); text-align: left; padding: 12px 16px; font-weight: 800; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--uv); }
 .fsx-table td { padding: 12px 16px; border-top: 1px solid var(--uv-line); color: var(--uv-muted); vertical-align: top; }
 .fsx-table td:first-child { font-weight: 700; color: var(--uv-ink); }
@@ -159,12 +160,13 @@
 .fsx-field textarea { padding: 12px; resize: vertical; min-height: 120px; }
 .fsx-field input:focus, .fsx-field select:focus, .fsx-field textarea:focus { outline: 2px solid var(--uv); outline-offset: 1px; border-color: var(--uv); }
 .fsx-note { font-size: 13px; color: var(--uv-muted); }
-.fsx-err { font-size: 14px; color: #b42318; font-weight: 600; }
-.fsx-ok { background: var(--uv-tile); border-radius: 12px; padding: 20px; font-weight: 600; }
+.fsx-err { margin: 0; font-size: 14px; color: #b42318; font-weight: 600; }
+.fsx-ok { margin: 0; background: var(--uv-tile); border-radius: 12px; padding: 20px; font-weight: 600; }
 
 /* ---------- legal ---------- */
 .fsx-legal { max-width: 860px; margin: 0 auto; padding: 8px 24px 80px; }
-.fsx-legal h2 { margin: 48px 0 16px; font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+.fsx-legal h2 { margin: 30px 0 8px; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; color: var(--uv-ink); }
+.fsx-legal a, .fsx-p a { text-decoration: underline; text-underline-offset: 2px; }
 .fsx-legal h3 { margin: 26px 0 8px; font-size: 18px; font-weight: 800; color: var(--uv-ink); }
 .fsx-legal p, .fsx-legal li { font-size: 16px; line-height: 1.65; color: var(--uv-body); }
 .fsx-legal p { margin: 0 0 14px; }
@@ -174,12 +176,38 @@
 .fsx-legal-nav a[aria-current="page"] { background: var(--uv); color: #fff; }
 
 /* ---------- footer ---------- */
-.fsx-foot { background: var(--uv-ink); color: var(--uv-foot); font-size: 14px; }
+/* base.css still styles `.site-scroll > footer` (cream background, 80px top
+   margin, padding) for the old site. That selector out-ranks `.fsx-foot`, so
+   it is reset here at higher specificity. */
+.site-scroll > footer.fsx-foot,
+.fsx-foot { background: var(--uv-ink); color: var(--uv-foot); font-size: 14px; margin: 0; padding: 0; border-top: 0; }
 .fsx-foot .fsx-wrap { padding-top: 48px; padding-bottom: 40px; display: flex; flex-wrap: wrap; gap: 32px; justify-content: space-between; }
 .fsx-foot a { color: var(--uv-foot); text-decoration: none; }
 .fsx-foot a:hover { color: #fff; }
-.fsx-foot h4 { margin: 0 0 4px; color: #fff; font-size: 14px; font-weight: 700; }
+.fsx-foot-h { margin: 0 0 4px; color: #fff; font-size: 14px; font-weight: 700; letter-spacing: 0; }
 .fsx-foot-col { display: flex; flex-direction: column; gap: 8px; }
 .fsx-foot-cols { display: flex; gap: 48px; flex-wrap: wrap; }
 .fsx-foot-base { border-top: 1px solid rgba(255,255,255,0.08); }
 .fsx-foot-base .fsx-wrap { padding-top: 18px; padding-bottom: 18px; font-size: 13px; }
+
+/* ---------- keyboard focus ---------- */
+.fsx-btn:focus-visible, .fsx-page a:focus-visible, .fsx-head a:focus-visible,
+.fsx-foot a:focus-visible, .fsx-burger:focus-visible {
+  outline: 2px solid var(--uv-soft); outline-offset: 2px; border-radius: 4px;
+}
+
+/* ---------- client login (app/dashboard/login) in the new brand ----------
+   login.css is built on the old emerald variables; remap them for the login
+   subtree only. The dashboard shell itself is untouched. */
+main.lg-split {
+  --bg: #f7f6fc; --paper: #ffffff; --ink: #16131f; --ink-2: #2a2540;
+  --muted: #5b5676; --hairline: rgba(22,19,31,0.10); --hairline-strong: rgba(22,19,31,0.18);
+  --accent: #4b3fa3; --accent-ink: #3f3590; --accent-soft: #eceaf8;
+  --font-display: var(--uv-sans); --font-work: var(--uv-sans); --font-sans: var(--uv-sans);
+  font-family: var(--uv-sans);
+}
+.lg-split .lg-left::after { content: none; }
+.lg-split .lg-right { background: radial-gradient(135% 130% at 88% 6%, #5a4fb8 0%, #3f3590 45%, #1d1838 100%); }
+.lg-split .lg-h1 { font-family: var(--uv-sans); font-weight: 800; letter-spacing: -0.03em; }
+.lg-split .lg-h1 em { font-style: normal; color: var(--uv); }
+.lg-logo { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; color: var(--uv-ink); text-decoration: none; }
