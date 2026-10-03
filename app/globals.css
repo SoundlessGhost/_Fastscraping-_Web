@@ -22,22 +22,6 @@ html {
   html { scroll-behavior: auto; }
 }
 
-/* Megamenu card text: heading + description must stack vertically.
-   `.mm-h` and `.mm-d` are <span> elements — force block so they don't
-   render inline (which made text concatenate on one line). */
-.mm-h,
-.mm-d {
-  display: block;
-}
-
-/* Vertically center icon, body and metric inside each megamenu card.
-   Override `.mm-m { align-self: start }` from base.css so metric also centers. */
-.mm-card {
-  align-items: center;
-}
-.mm-card .mm-m {
-  align-self: center;
-}
 
 /* Legal pages (privacy/terms): `.prose h3` from legal.css sets dark color,
    which cascades into the dark `.legal-foot-card` and hides the heading.
@@ -46,11 +30,3 @@ html {
   color: var(--paper);
 }
 
-/* Header "Dashboard" link — client access, set apart from the marketing nav */
-.nav a.nav-dash {
-  color: var(--accent);
-}
-.nav a.nav-dash::before {
-  content: "→ ";
-  opacity: 0.6;
-}

@@ -38,11 +38,11 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Fastscraping — Web data at scale for e-commerce market intelligence",
+    default: "Fastscraping — Web data at scale for e-commerce intelligence",
     template: "%s · Fastscraping",
   },
   description:
-    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. Shopee product data across 8 markets, GrabFood Indonesia, custom scrapers and managed data pipelines.",
+    "Scraping APIs and anti-bot infrastructure for e-commerce market intelligence: Shopee data in 8 markets with per-variant prices, stock and sold counts.",
   applicationName: "Fastscraping",
   authors: [{ name: "Md Khalid Mahmud Shawon", url: SITE_URL }],
   creator: "Md Khalid Mahmud Shawon",
@@ -56,7 +56,8 @@ export const metadata: Metadata = {
     "pricing intelligence",
     "price monitoring",
     "marketplace data",
-    "GrabFood data",
+    "restaurant menu data",
+    "real estate data API",
     "digital shelf data",
     "managed data pipelines",
     "data as a service",
@@ -71,17 +72,16 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: "Fastscraping",
-    title: "Fastscraping — Web data at scale for e-commerce market intelligence",
+    title: "Fastscraping — Web data at scale for e-commerce intelligence",
     description:
-      "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. Shopee across 8 markets, GrabFood Indonesia, custom scrapers and managed pipelines.",
+      "Scraping APIs and anti-bot infrastructure for e-commerce market intelligence: Shopee data in 8 markets with per-variant prices, stock and sold counts.",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fastscraping — Web data at scale for e-commerce market intelligence",
+    title: "Fastscraping — Web data at scale for e-commerce intelligence",
     description:
-      "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. Shopee across 8 markets, GrabFood Indonesia, custom scrapers and managed pipelines.",
-    creator: "@fastscraping",
+      "Scraping APIs and anti-bot infrastructure for e-commerce market intelligence: Shopee data in 8 markets with per-variant prices, stock and sold counts.",
   },
   robots: {
     index: true,
@@ -94,13 +94,19 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  // Versioned file names: browsers cache favicons by URL for a long time, so
+  // the old "f" icon kept showing after the Oct 2026 rebrand under /icon.svg.
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/icon-v2.svg", type: "image/svg+xml" },
+      { url: "/favicon-v2.ico", sizes: "any" },
+    ],
+    shortcut: [{ url: "/favicon-v2.ico" }],
     // A real file in public/, not app/apple-icon.svg: Next builds a route for
     // icon.svg but not for apple-icon.svg, so that path 404'd and iOS had no
     // home-screen icon. PNG also because Google will not take an SVG for the
     // structured-data logo below, and one file should serve both.
-    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+    apple: [{ url: "/apple-icon-v2.png", type: "image/png", sizes: "180x180" }],
   },
   formatDetection: {
     email: false,
@@ -163,7 +169,7 @@ const organizationLd = {
     "https://upwork.com/freelancers/khalidalsaba",
   ],
   description:
-    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence: Shopee product data across 8 markets, GrabFood Indonesia, custom scrapers and managed data pipelines. Public data only.",
+    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence: Shopee product data across 8 markets, Temu, Swiss real-estate APIs, custom scrapers and managed data pipelines. Public data only.",
 };
 
 const websiteLd = {

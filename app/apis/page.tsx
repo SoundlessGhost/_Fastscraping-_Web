@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { withShareCard } from "@/lib/seo";
 import { BOOK_CALL_URL } from "@/lib/site-links";
+import { ON_REQUEST_GROUPS, PLATFORMS, STATUS_LABEL } from "@/lib/platforms";
 
 export const metadata: Metadata = withShareCard({
-  title: "Web Data APIs — Shopee, GrabFood and more",
+  title: "Shopee, Temu, Naver & Real Estate Data APIs",
   description:
-    "Async REST APIs that return structured marketplace data in one schema across markets. Shopee product data for TH, ID, MY, PH, VN, SG, Taiwan and Brazil. Pay only for successful requests.",
+    "Shopee product data API for 8 markets incl. Taiwan and Brazil, plus Temu, Naver Shopping and Swiss real-estate APIs. Pay only for successful requests.",
   alternates: { canonical: "/apis" },
 });
 
@@ -20,19 +21,6 @@ const FIELDS = [
   ["Shipping (TW, BR)", "Shipping options and fees"],
 ];
 
-const MORE = [
-  { name: "GrabFood Indonesia", tag: "LIVE", d: "Restaurants by area, full menus with item prices and modifiers, promos, delivery fees, ratings. Other SEA markets on request." },
-  { name: "Temu", tag: "LIVE", d: "Product detail and goods-list data for Brazil and Mexico." },
-  { name: "Shopee listings (BR)", tag: "LIVE", d: "Category, search, brand and shop result pages with sold counts, page by page." },
-  { name: "Ticketing marketplaces", tag: "PIPELINE", d: "Event, section, row, quantity, list and checkout price. 215k+ events and 24M+ listings a day, delivered daily." },
-  { name: "Restaurant & delivery menus", tag: "PIPELINE", d: "Store-level menus and prices for major QSR chains and a leading delivery marketplace. 16,000+ stores, 55M records a week." },
-  { name: "Job boards", tag: "PIPELINE", d: "Indeed across 5 countries, 1.39M postings a week, weekly delivery." },
-  { name: "Real estate", tag: "API", d: "Five REST APIs over Swiss portals: ImmoScout24, Homegate, Newhome, Urbanhome, ge.ch." },
-  { name: "Lazada · TikTok Shop", d: "On request, SEA markets. Clean sample within 48–72 hours before you commit." },
-  { name: "Amazon · Walmart", d: "On request. Product, search and offer pages, priced per platform." },
-  { name: "Professional profiles & companies", d: "Enterprise-scale profile and company data for B2B intelligence, on request." },
-  { name: "Airline fares", d: "Sub-30-minute fare freshness across major US and European carriers." },
-];
 
 export default function ApisPage() {
   return (
@@ -129,18 +117,43 @@ curl $BASE_URL/jobs/8f2c91 \\
       <section className="fsx-white">
         <div className="fsx-wrap fsx-stack fsx-section-sm" style={{ gap: 32 }}>
           <h2 className="fsx-h2" style={{ fontSize: 36 }}>
-            More platforms
+            More platforms and feeds
           </h2>
           <div className="fsx-grid-3" style={{ gap: 16 }}>
-            {MORE.map((m) => (
+            {PLATFORMS.map((m) => (
               <article key={m.name} className="fsx-card-sm" style={{ background: "#F7F6FC", padding: 24, gap: 10 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                  <strong style={{ fontSize: 18 }}>{m.name}</strong>
-                  {m.tag ? <span className="fsx-pill">{m.tag}</span> : null}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>{m.name}</h3>
+                  <span className="fsx-pill">{STATUS_LABEL[m.status]}</span>
                 </div>
-                <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{m.d}</span>
+                <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{m.detail}</span>
+              {m.sites ? (
+                <div className="fsx-row" style={{ gap: 6 }}>
+                  {m.sites.map((x) => (
+                    <span key={x} className="fsx-chip" style={{ fontSize: 12, padding: "4px 10px", background: "#fff", border: "1px solid #E3E0F2" }}>
+                      {x}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               </article>
             ))}
+          </div>
+          <div className="fsx-stack" style={{ gap: 14 }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Also built on request</h3>
+            {ON_REQUEST_GROUPS.map((g) => (
+              <div key={g.region} className="fsx-row" style={{ gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#5B5676", minWidth: 190 }}>{g.region}</span>
+                {g.sites.map((n) => (
+                  <span key={n} className="fsx-chip" style={{ fontWeight: 600, fontSize: 12, padding: "4px 10px" }}>
+                    {n}
+                  </span>
+                ))}
+              </div>
+            ))}
+            <p className="fsx-p" style={{ fontSize: 14 }}>
+              Any public website, priced per platform. Clean sample within 48–72 hours before you commit.
+            </p>
           </div>
         </div>
       </section>

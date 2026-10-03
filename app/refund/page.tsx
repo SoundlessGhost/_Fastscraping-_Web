@@ -5,7 +5,7 @@ import { LEGAL_REFUND } from "@/lib/legal/content";
 
 export const metadata: Metadata = withShareCard({
   title: "Refund & Cancellation Policy",
-  description: "How refunds, credits, cancellations and payment disputes work for Fastscraping services.",
+  description: "How refunds, prepaid credit, cancellations and payment disputes work for Fastscraping APIs, pipelines and datasets, paid by card, PayPal or bank transfer.",
   alternates: { canonical: "/refund" },
 });
 

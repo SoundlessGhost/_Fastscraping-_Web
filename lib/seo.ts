@@ -39,7 +39,6 @@ export function withShareCard(meta: Metadata): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      creator: "@fastscraping",
       images: [OG_IMAGE],
       ...meta.twitter,
     },

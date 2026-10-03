@@ -5,7 +5,7 @@ import { LEGAL_PRIVACY } from "@/lib/legal/content";
 
 export const metadata: Metadata = withShareCard({
   title: "Privacy & Cookies Policy",
-  description: "What personal data Fastscraping collects, why, who processes it and your rights.",
+  description: "What personal data Fastscraping LLC collects, why, which processors handle it, how long it is kept and how to exercise your GDPR and CCPA rights.",
   alternates: { canonical: "/privacy" },
 });
 

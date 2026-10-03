@@ -5,9 +5,9 @@ import { COMPANY, COMPANY_ADDRESS_LINE } from "@/lib/company";
 import ContactFormUV from "@/components/brand/ContactFormUV";
 
 export const metadata: Metadata = withShareCard({
-  title: "Contact — trial key, sample or a call with Khalid",
+  title: "Contact — Free Trial Key or a Call",
   description:
-    "Send a few product links and get JSON back. Replies within 24 hours; trial key the same day or a clean sample on a new platform within 48–72 hours.",
+    "Send 3–5 product links and get JSON back. Free trial key the same day, a sample on a new platform in 48–72 hours, or book a call with Khalid.",
   alternates: { canonical: "/contact" },
 });
 

@@ -8,6 +8,12 @@ export const contentType = "image/png";
 /// The share card: Ultraviolet ground with the 96px grid, the Tile-F mark and
 /// the hero line — the same look as the site hero and the LinkedIn banner.
 export default async function Image() {
+  // Manrope (OFL) bundled as WOFF — Satori reads WOFF/TTF, not WOFF2.
+  const [regular, bold, extra] = await Promise.all([
+    fetch(new URL("./fonts/manrope-400.woff", import.meta.url)).then((r) => r.arrayBuffer()),
+    fetch(new URL("./fonts/manrope-700.woff", import.meta.url)).then((r) => r.arrayBuffer()),
+    fetch(new URL("./fonts/manrope-800.woff", import.meta.url)).then((r) => r.arrayBuffer()),
+  ]);
   const grid =
     "linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px)";
   return new ImageResponse(
@@ -24,7 +30,7 @@ export default async function Image() {
           backgroundSize: "96px 96px",
           padding: "64px 72px",
           color: "#FFFFFF",
-          fontFamily: "sans-serif",
+          fontFamily: "Manrope",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
@@ -51,11 +57,18 @@ export default async function Image() {
         </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 24, color: "#D6CEFF" }}>
-          <span>Shopee · 8 markets · GrabFood Indonesia · custom pipelines</span>
+          <span>Shopee · 8 markets · Temu · real estate · custom pipelines</span>
           <span style={{ color: "#FFFFFF", fontWeight: 700 }}>fastscraping.com</span>
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [
+        { name: "Manrope", data: regular, weight: 400, style: "normal" },
+        { name: "Manrope", data: bold, weight: 700, style: "normal" },
+        { name: "Manrope", data: extra, weight: 800, style: "normal" },
+      ],
+    },
   );
 }

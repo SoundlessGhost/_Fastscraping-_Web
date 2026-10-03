@@ -4,11 +4,12 @@ import Link from "next/link";
 import { withShareCard } from "@/lib/seo";
 import { BOOK_CALL_URL, TRIAL_URL } from "@/lib/site-links";
 import { COMPANY } from "@/lib/company";
+import { ON_REQUEST_SITES, PLATFORMS, SHOPEE, STATUS_LABEL } from "@/lib/platforms";
 
 export const metadata: Metadata = withShareCard({
-  title: { absolute: "Fastscraping — Web data at scale for e-commerce market intelligence" },
+  title: { absolute: "Fastscraping — Web data at scale for e-commerce intelligence" },
   description:
-    "Scraping APIs and anti-bot infrastructure powering e-commerce market intelligence. One request returns a full product page: price per variant, live stock, vouchers, sold count and seller data.",
+    "Scraping APIs and anti-bot infrastructure for e-commerce market intelligence: Shopee data in 8 markets with per-variant prices, stock and sold counts.",
   alternates: { canonical: "/" },
 });
 
@@ -22,7 +23,7 @@ const PROOF = [
 const WAYS = [
   {
     title: "Web Data APIs",
-    body: "Ready-made async APIs for Shopee, GrabFood and more. Submit a job, get clean JSON back. Billed per successful request.",
+    body: "Ready-made async APIs for Shopee, Temu, Swiss real estate and more. Submit a job, get clean JSON back. Billed per successful request.",
     href: "/apis",
     cta: "Browse the APIs →",
     icon: <path d="M4 7h16M4 12h16M4 17h10" />,
@@ -53,18 +54,6 @@ const WAYS = [
   },
 ];
 
-const PLATFORMS = [
-  { name: "GrabFood Indonesia", note: "Restaurants by area, full menus, item prices, promos, delivery fees.", live: true },
-  { name: "Temu", note: "Product and goods-list data for Brazil and Mexico.", live: true },
-  { name: "Lazada", note: "On request · SEA markets" },
-  { name: "TikTok Shop", note: "On request · SEA markets" },
-  { name: "Ticketing marketplaces", note: "215k+ events, 24M+ listings a day with checkout prices." },
-  { name: "Restaurant & delivery menus", note: "QSR chains and delivery apps, 16,000+ stores a week." },
-  { name: "Job boards", note: "Indeed across 5 countries, 1.39M postings a week." },
-  { name: "Real estate", note: "Swiss portals: ImmoScout24, Homegate, Newhome, Urbanhome, ge.ch." },
-  { name: "Amazon · Walmart", note: "On request · product and search pages" },
-  { name: "Professional profiles", note: "Company and profile data at enterprise scale, on request." },
-];
 
 const STEPS = [
   { tag: "01 · POST /jobs", t: "Submit the product", d: "Send a shop id, item id and region. Batch as many as you like; each job gets an id back immediately." },
@@ -205,20 +194,32 @@ export default function Home() {
               <span className="fsx-pill fsx-pill-strong">LIVE</span>
             </div>
             <span style={{ fontSize: 15, color: "#E4DFFF", lineHeight: 1.5 }}>
-              Full product page per request across TH · ID · MY · PH · VN · SG · TW · BR. Price and stock per variant,
-              vouchers, sold count, ratings, shop data.
+              {SHOPEE.detail}
             </span>
           </div>
-          {PLATFORMS.map((p) => (
+          {PLATFORMS.filter((p) => p.home).map((p) => (
             <div key={p.name} className="fsx-card-sm" style={{ padding: 24 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 18, fontWeight: 800 }}>{p.name}</span>
-                {p.live ? <span className="fsx-pill">LIVE</span> : null}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                <span style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>{p.name}</span>
+                <span className="fsx-pill">{STATUS_LABEL[p.status]}</span>
               </div>
-              <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{p.note}</span>
+              <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{p.detail}</span>
+              {p.sites ? (
+                <div className="fsx-row" style={{ gap: 6 }}>
+                  {p.sites.map((x) => (
+                    <span key={x} className="fsx-chip" style={{ fontSize: 12, padding: "4px 10px", background: "#fff", border: "1px solid #E3E0F2" }}>
+                      {x}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
+        <p className="fsx-p" style={{ fontSize: 14 }}>
+          Also on request: {ON_REQUEST_SITES.join(" · ")}.{" "}
+          <Link href="/contact">Tell us the site</Link> and we scope it.
+        </p>
       </section>
 
       {/* HOW IT WORKS */}

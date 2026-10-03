@@ -62,7 +62,7 @@ export default function Footer() {
       </div>
       <div className="fsx-foot-base">
         <div className="fsx-wrap">
-          © {year} {COMPANY.legalName}. Not affiliated with Shopee, Grab or any other platform named on this site; their names identify data sources only.
+          © {year} {COMPANY.legalName}. Not affiliated with Shopee, McDonald&apos;s, Starbucks or any other platform or brand named on this site; their names identify data sources only.
         </div>
       </div>
     </footer>

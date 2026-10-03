@@ -4,9 +4,9 @@ import { withShareCard } from "@/lib/seo";
 import { BOOK_CALL_URL } from "@/lib/site-links";
 
 export const metadata: Metadata = withShareCard({
-  title: "Solutions — APIs, custom scrapers and data pipelines",
+  title: "Custom Scrapers & Managed Data Pipelines",
   description:
-    "Ready-made web data APIs, custom scrapers for protected sites, large-scale scheduled data pipelines and data-as-a-service datasets. Anti-bot, devices and proxies handled on our side.",
+    "Ready-made web data APIs, custom scrapers for protected sites, scheduled data pipelines and datasets on demand. Anti-bot, devices and proxies handled.",
   alternates: { canonical: "/solutions" },
 });
 
@@ -23,7 +23,7 @@ const SOLUTIONS: Sol[] = [
   {
     tag: "01 · Web Data APIs",
     title: "Marketplace data, one request at a time.",
-    body: "Async REST endpoints for Shopee (8 markets), GrabFood Indonesia, Temu and more. Submit a job, poll, get the full page as JSON. Billed only on success.",
+    body: "Async REST endpoints for Shopee (8 markets), Temu, Swiss real-estate portals and more. Submit a job, poll, get the full page as JSON. Billed only on success.",
     cta: { href: "/apis", label: "Browse the APIs →" },
     facts: [
       ["Best for", "Market intelligence, repricing, brand protection"],

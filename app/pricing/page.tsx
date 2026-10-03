@@ -4,9 +4,9 @@ import { withShareCard } from "@/lib/seo";
 import { BOOK_CALL_URL } from "@/lib/site-links";
 
 export const metadata: Metadata = withShareCard({
-  title: "Pricing — priced per platform, paid for data",
+  title: "Pricing — Pay Per Successful Request",
   description:
-    "APIs billed per successful request, managed pipelines at a flat monthly fee per platform, datasets per record delivered. Every quote is built for the platform, markets and volume you need.",
+    "Web data priced per platform: APIs per successful request, managed pipelines per month, datasets per record. Get a quote in one 30-minute call.",
   alternates: { canonical: "/pricing" },
 });
 
@@ -23,9 +23,20 @@ const FAQ = [
   ["How do we pay?", "Monthly invoice in USD. Card (Stripe), PayPal or bank transfer. A usage export is available for reconciliation. See the Refund & Cancellation policy for the details."],
 ];
 
+const FAQ_LD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map(([q, a]) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
+
 export default function PricingPage() {
   return (
     <main className="fsx-page">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_LD) }} />
       <section style={{ background: "#fff", borderBottom: "1px solid #E3E0F2" }}>
         <div className="fsx-wrap fsx-stack" style={{ padding: "72px 24px 56px", gap: 16 }}>
           <span className="fsx-eyebrow">Pricing</span>
@@ -44,7 +55,7 @@ export default function PricingPage() {
           <div className="fsx-stack" style={{ gap: 6 }}>
             <h2 className="fsx-h3">Web Data APIs</h2>
             <span className="fsx-p" style={{ fontSize: 15 }}>
-              Shopee, GrabFood, Temu and other ready-made endpoints
+              Shopee, Temu, Swiss real estate and other ready-made endpoints
             </span>
           </div>
           <div className="fsx-stack" style={{ gap: 4 }}>
