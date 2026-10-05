@@ -5,14 +5,14 @@ into a scoped module the Next.js /docs/shopee-api page renders.
 
 - CSS: light theme only, every selector scoped under .apidoc, Shopee-orange
   palette swapped for the Ultraviolet brand, fonts -> Manrope / JetBrains Mono.
-- HTML: base URL -> https://shopee-api.fastscraping.com (never a raw server IP),
+- HTML: base URL -> https://shopee-multi-region.fastscraping.com (never a raw server IP),
   a few wording fixes, footer -> support email.
 Writes lib/docs/shopee-api-doc.ts.
 """
 import json, re, sys, pathlib
 
 BASE_OLD = "http://169.58.203.69:7007"
-BASE_NEW = "https://shopee-api.fastscraping.com"
+BASE_NEW = "https://shopee-multi-region.fastscraping.com"
 
 src = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
 styles = re.findall(r"(?s)<style[^>]*>(.*?)</style>", src)
