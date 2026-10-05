@@ -118,6 +118,13 @@ curl $BASE_URL/jobs/8f2c91 \\
             </Link>
             .
           </span>
+          <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>
+            Need whole category, search or shop pages? See the{" "}
+            <Link className="fsx-link" href="/docs/shopee-cbc">
+              Shopee Listings API docs
+            </Link>
+            .
+          </span>
           <Link className="fsx-btn fsx-btn-outline" href="/docs/shopee-api" style={{ alignSelf: "flex-start" }}>
             Read the full API docs
           </Link>

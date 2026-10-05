@@ -41,6 +41,7 @@ export const PLATFORMS: Platform[] = [
     status: "live",
     detail: "Category, search, brand and shop result pages with sold counts, page by page.",
     home: true,
+    href: "/docs/shopee-cbc",
   },
   {
     name: "Temu",
