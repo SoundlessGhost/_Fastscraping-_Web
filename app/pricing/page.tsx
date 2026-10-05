@@ -122,6 +122,19 @@ export default function PricingPage() {
         </article>
       </section>
 
+      <section className="fsx-wrap" style={{ paddingTop: 0, paddingBottom: 8 }}>
+        <div className="fsx-card-sm" style={{ fontSize: 15, lineHeight: 1.55, gap: 6 }}>
+          <strong style={{ color: "#16131F" }}>Published rate</strong>
+          <span style={{ color: "#5B5676" }}>
+            <strong style={{ color: "#16131F" }}>Shopee Item Sold API (Vietnam):</strong> $3 per 1,000 items returned · jobs
+            of 300 to 1,000 items · missing items and errors are free ·{" "}
+            <Link className="fsx-link" href="/docs/shopee-get-list">
+              Docs →
+            </Link>
+          </span>
+        </div>
+      </section>
+
       <section className="fsx-wrap fsx-row" style={{ paddingTop: 40, paddingBottom: 80, gap: 48, alignItems: "flex-start" }}>
         <div className="fsx-stack" style={{ flex: "1 1 380px", minWidth: 0, gap: 12 }}>
           <span className="fsx-eyebrow">What sets the rate</span>

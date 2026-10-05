@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/solutions", priority: 0.9, changeFrequency: "monthly" },
     { path: "/pricing", priority: 0.8, changeFrequency: "monthly" },
     { path: "/docs/shopee-api", priority: 0.8, changeFrequency: "monthly" },
+    { path: "/docs/shopee-get-list", priority: 0.7, changeFrequency: "monthly" },
     { path: "/contact", priority: 0.8, changeFrequency: "monthly" },
     { path: "/terms", priority: 0.3, changeFrequency: "yearly" },
     { path: "/refund", priority: 0.3, changeFrequency: "yearly" },

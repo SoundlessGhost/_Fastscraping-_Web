@@ -17,6 +17,8 @@ export type Platform = {
   sites?: string[];
   /// Shown on the home grid (the rest appear on /apis only).
   home?: boolean;
+  /// Public docs page; /apis links the card title and adds "Read the docs".
+  href?: string;
 };
 
 export const SHOPEE = {
@@ -27,6 +29,13 @@ export const SHOPEE = {
 };
 
 export const PLATFORMS: Platform[] = [
+  {
+    name: "Shopee Item Sold API (Vietnam)",
+    status: "live",
+    detail:
+      "Exact lifetime sold per listing, Shopee's merged sold figure, 30-day sold, price and stock. Jobs of 300 to 1,000 items, $3 per 1,000 items returned.",
+    href: "/docs/shopee-get-list",
+  },
   {
     name: "Shopee listings (Brazil)",
     status: "live",

@@ -111,6 +111,13 @@ curl $BASE_URL/jobs/8f2c91 \\
             <span>Results cached for 2 hours. Resubmitting the same item inside that window returns the cached result.</span>
             <span>Your key comes with your trial; examples here are illustrative.</span>
           </div>
+          <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>
+            Need exact sold counts only? See the{" "}
+            <Link className="fsx-link" href="/docs/shopee-get-list">
+              Shopee Item Sold API docs
+            </Link>
+            .
+          </span>
           <Link className="fsx-btn fsx-btn-outline" href="/docs/shopee-api" style={{ alignSelf: "flex-start" }}>
             Read the full API docs
           </Link>
@@ -126,7 +133,15 @@ curl $BASE_URL/jobs/8f2c91 \\
             {PLATFORMS.map((m) => (
               <article key={m.name} className="fsx-card-sm" style={{ background: "#F7F6FC", padding: 24, gap: 10 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>{m.name}</h3>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, lineHeight: 1.3 }}>
+                    {m.href ? (
+                      <Link href={m.href} style={{ color: "inherit", textDecoration: "none" }}>
+                        {m.name}
+                      </Link>
+                    ) : (
+                      m.name
+                    )}
+                  </h3>
                   <span className="fsx-pill">{STATUS_LABEL[m.status]}</span>
                 </div>
                 <span style={{ fontSize: 14, color: "#5B5676", lineHeight: 1.5 }}>{m.detail}</span>
@@ -138,6 +153,11 @@ curl $BASE_URL/jobs/8f2c91 \\
                     </span>
                   ))}
                 </div>
+              ) : null}
+              {m.href ? (
+                <Link className="fsx-link" href={m.href} style={{ fontSize: 14, fontWeight: 700 }}>
+                  Read the docs →
+                </Link>
               ) : null}
               </article>
             ))}
