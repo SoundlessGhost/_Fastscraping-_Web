@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 export const SUPPORT_TOPICS = [
   "Technical issue",
   "Billing or invoice",
+  "Bank transfer or invoice",
   "Buy credits or change plan",
   "Trial key",
   "New platform or endpoint",

@@ -64,6 +64,7 @@ model User {
   sessions       Session[]
   auditLogs      AuditLog[]      @relation("actor")
   avatar         Avatar?
+  walletTxns     WalletTxn[]
 
   @@index([role])
 }
@@ -250,4 +251,27 @@ model AuditLog {
 
   @@index([createdAt])
   @@index([actorId])
+}
+
+/// Prepaid wallet ledger, in US cents. Balance = sum(amountCents).
+/// TOPUP rows come from Stripe Checkout (idempotent on stripeSessionId) or an
+/// admin recording a bank transfer; ADJUST rows are admin corrections and
+/// credit conversions (negative when wallet money is moved onto an API key).
+model WalletTxn {
+  id              String   @id @default(cuid())
+  userId          String
+  amountCents     Int
+  currency        String   @default("USD")
+  /// TOPUP | ADJUST
+  kind            String
+  /// stripe | bank | admin
+  source          String
+  stripeSessionId String?  @unique
+  note            String?
+  actorId         String?
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

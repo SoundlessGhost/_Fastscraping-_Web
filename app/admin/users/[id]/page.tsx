@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { decryptSecret, maskSecret } from "@/lib/crypto";
 import type { ServiceNode } from "@/lib/services/taxonomy";
 import ClientView from "@/components/admin/ClientView";
+import WalletAdmin from "@/components/admin/WalletAdmin";
+import { usd, walletBalanceCents } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +59,12 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
   }
   const services: ServiceNode[] = [...bySlug.values()];
 
+  const [balanceCents, txns] = await Promise.all([
+    walletBalanceCents(user.id),
+    prisma.walletTxn.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 30 }),
+  ]);
+  const df = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
+
   return (
     <>
       <div className="ds-head">
@@ -69,6 +77,12 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
           </p>
         </div>
       </div>
+
+      <WalletAdmin
+        userId={user.id}
+        balance={usd(balanceCents)}
+        txns={txns.map((t) => ({ id: t.id, date: df.format(t.createdAt), source: t.source, note: t.note, amount: usd(t.amountCents) }))}
+      />
 
       <ClientView userId={user.id} email={user.email} services={services} />
     </>

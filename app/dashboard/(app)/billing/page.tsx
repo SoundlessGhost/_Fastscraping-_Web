@@ -10,17 +10,46 @@ import { creditPacks, trialConfig, TRIAL_AUDIT_ACTION } from "@/lib/billing";
 import { BOOK_CALL_URL } from "@/lib/site-links";
 import BalanceList, { type BalanceRow } from "@/components/dashboard/BalanceList";
 import TrialCard from "@/components/dashboard/TrialCard";
+import WalletCard from "@/components/dashboard/WalletCard";
+import { creditStripeSession, stripe, usd, walletBalanceCents, walletConfig } from "@/lib/wallet";
 
 export const metadata: Metadata = { title: "Billing & credits" };
 export const dynamic = "force-dynamic";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" });
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ topup?: string; session_id?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/dashboard/login");
+  const sp = await searchParams;
+  const wallet = walletConfig();
 
-  const [services, invoices, trialUsed] = await Promise.all([
+  // Back from Stripe: credit right away if the webhook has not landed yet.
+  // Idempotent, and only for this user's own paid session.
+  let topupNote: { ok: boolean; text: string } | null = null;
+  if (sp.topup === "success" && sp.session_id && wallet.cardEnabled && /^cs_[A-Za-z0-9_]+$/.test(sp.session_id)) {
+    try {
+      const session = await stripe().checkout.sessions.retrieve(sp.session_id);
+      if (session.metadata?.userId === user.id) {
+        await creditStripeSession(session);
+        topupNote =
+          session.payment_status === "paid"
+            ? { ok: true, text: `Payment received: ${usd(session.amount_total ?? 0)} added to your wallet. Thank you.` }
+            : { ok: true, text: "Payment is processing. Your wallet updates as soon as the bank confirms it." };
+      }
+    } catch (e) {
+      console.error("[billing] session lookup failed", e);
+      topupNote = { ok: true, text: "Payment received. Your wallet updates within a minute." };
+    }
+  } else if (sp.topup === "cancelled") {
+    topupNote = { ok: false, text: "Payment cancelled. Nothing was charged." };
+  }
+
+  const [services, invoices, trialUsed, balanceCents, txns] = await Promise.all([
     getCatalogForUser(user.id),
     prisma.invoice.findMany({
       where: { clientEmail: { equals: user.email, mode: "insensitive" } },
@@ -28,6 +57,8 @@ export default async function BillingPage() {
       take: 50,
     }),
     prisma.auditLog.findFirst({ where: { actorId: user.id, action: TRIAL_AUDIT_ACTION }, select: { id: true } }),
+    walletBalanceCents(user.id),
+    prisma.walletTxn.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 20 }),
   ]);
 
   const rows: BalanceRow[] = services.flatMap((s) =>
@@ -53,13 +84,63 @@ export default async function BillingPage() {
         </p>
       </div>
 
+      {topupNote ? (
+        <div className={`ap2-banner ${topupNote.ok ? "" : "ap2-banner--warn"}`} role="status">
+          {topupNote.text}
+        </div>
+      ) : null}
+
+      <section className="ap2-sec" aria-labelledby="wal-h">
+        <h2 id="wal-h">Wallet</h2>
+        <WalletCard
+          balance={usd(balanceCents)}
+          cardEnabled={wallet.cardEnabled}
+          min={wallet.min}
+          max={wallet.max}
+          presets={wallet.presets}
+          email={user.email}
+        />
+        {txns.length > 0 ? (
+          <div className="ap2-table-wrap">
+            <table className="ap2-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Note</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {txns.map((t) => (
+                  <tr key={t.id}>
+                    <td>{dateFmt.format(t.createdAt)}</td>
+                    <td>
+                      {t.source === "stripe"
+                        ? "Card top-up"
+                        : t.source === "bank"
+                          ? "Bank transfer"
+                          : t.amountCents < 0
+                            ? "Moved to API credits"
+                            : "Adjustment"}
+                    </td>
+                    <td>{t.source === "stripe" ? "Stripe" : (t.note ?? "")}</td>
+                    <td className="ap2-num">{usd(t.amountCents)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </section>
+
       <section className="ap2-sec" aria-labelledby="bal-h">
-        <h2 id="bal-h">Your balance</h2>
+        <h2 id="bal-h">API key credits</h2>
         <BalanceList rows={rows} />
       </section>
 
       <section className="ap2-sec" aria-labelledby="buy-h">
-        <h2 id="buy-h">Buy credits</h2>
+        <h2 id="buy-h">Plans</h2>
         {packs.length > 0 ? (
           <>
             <p>Pay by card through Stripe. Credits are added to your key within one business day, usually much sooner.</p>
@@ -81,7 +162,7 @@ export default async function BillingPage() {
           </>
         ) : (
           <>
-            <p>Prices depend on the platform, market and volume. Tell us what you need and you get a quote the same day.</p>
+            <p>Prices depend on the platform, market and volume. Add balance above, or tell us what you need and get a quote the same day.</p>
             <div className="ap2-grid">
               <TrialCard enabled={trial.enabled} used={!!trialUsed} quota={trial.quota} serviceName={trialService?.name ?? null} />
               <div className="ap2-card">

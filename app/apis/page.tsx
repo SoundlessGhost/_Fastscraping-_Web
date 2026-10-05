@@ -109,8 +109,11 @@ curl $BASE_URL/jobs/8f2c91 \\
             <strong style={{ color: "#16131F", fontSize: 15 }}>Billing rules</strong>
             <span>1 successful job = 1 billable request. Pending, failed or not-found jobs are free.</span>
             <span>Results cached for 2 hours. Resubmitting the same item inside that window returns the cached result.</span>
-            <span>Base URL and key are sent with your trial; examples here are illustrative.</span>
+            <span>Your key comes with your trial; examples here are illustrative.</span>
           </div>
+          <Link className="fsx-btn fsx-btn-outline" href="/docs/shopee-api" style={{ alignSelf: "flex-start" }}>
+            Read the full API docs
+          </Link>
         </div>
       </section>
 

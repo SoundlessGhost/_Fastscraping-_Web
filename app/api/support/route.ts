@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 const TOPICS = new Set([
   "Technical issue",
   "Billing or invoice",
+  "Bank transfer or invoice",
   "Buy credits or change plan",
   "Trial key",
   "New platform or endpoint",

@@ -33,6 +33,7 @@ export default function Footer() {
           <div className="fsx-foot-col">
             <h2 className="fsx-foot-h">Product</h2>
             <Link href="/apis">Web Data APIs</Link>
+            <Link href="/docs/shopee-api">Shopee API docs</Link>
             <Link href="/solutions">Solutions</Link>
             <Link href="/pricing">Pricing</Link>
             <Link href="/dashboard/login">Log in</Link>

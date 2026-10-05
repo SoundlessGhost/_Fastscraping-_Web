@@ -10,6 +10,7 @@ export const MAIN_NAV = [
   { href: "/apis", label: "APIs" },
   { href: "/solutions", label: "Solutions" },
   { href: "/pricing", label: "Pricing" },
+  { href: "/docs/shopee-api", label: "Docs" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
