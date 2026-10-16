@@ -464,6 +464,24 @@ export default function ServiceUsage({
     }
   }, [downloading, days, service.slug, region, selectedKeyId]);
 
+  // Per-item history: one CSV row per billed job for the dates on screen. The
+  // file can be large, so the browser downloads it directly from our route
+  // (which streams it from the service) instead of holding it in memory here.
+  const ledger = service.kind === "shopee-usage";
+  const ledgerDays = days.length;
+  const downloadItems = useCallback(() => {
+    if (!ledger || ledgerDays === 0 || ledgerDays > 31) return;
+    const q = new URLSearchParams({ from: days[0]!.date, to: days[days.length - 1]!.date });
+    if (selectedKeyId) q.set("k", selectedKeyId);
+    const a = document.createElement("a");
+    a.href = `/api/services/${service.slug}/billing-csv?${q}`;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, [ledger, ledgerDays, days, service.slug, selectedKeyId]);
+
   const top = Math.max(1, ...days.map((d) => d.total));
   const yOf = (v: number) => PADT + plotH - (v / top) * plotH;
   const colW = days.length ? plotW / days.length : 0;
@@ -682,7 +700,13 @@ export default function ServiceUsage({
               ? nf.format(!region && billableTracksLifetime && jobs ? (jobs.billable ?? jobs.completed) : view.totals.lifetime)
               : "—"}
           </div>
-          <div className="dash-stat-s">since first req</div>
+          <div className="dash-stat-s">
+            {/* Lifetime next to what the key is allowed in total, so a client
+                reads "used X of Y" in one place. */}
+            {!region && credits && !credits.unlimited && credits.total
+              ? `of ${nf.format(credits.total)} allowed · ${Math.round(((credits.used ?? 0) / credits.total) * 100)}% used`
+              : "since first req"}
+          </div>
         </div>
         {/* Only when a rate is configured — better no card than a confident $0. */}
         {cost && (
@@ -729,6 +753,10 @@ export default function ServiceUsage({
               {limits.concurrency !== null && <span>{limits.concurrency} concurrent</span>}
             </div>
           )}
+          <div className="su-ask">
+            Need a different breakdown, such as per region, per hour or per shop?{" "}
+            <a href="/dashboard/support?topic=Something%20else">Tell us</a> and we will add it to your report.
+          </div>
         </div>
       )}
 
@@ -784,6 +812,29 @@ export default function ServiceUsage({
                     />
                   </svg>
                   {downloading ? "Preparing…" : "Download"}
+                </button>
+              )}
+              {!isViewAs && ledger && (
+                <button
+                  className="su-dl"
+                  onClick={downloadItems}
+                  disabled={loading || ledgerDays === 0 || ledgerDays > 31}
+                  title={
+                    ledgerDays > 31
+                      ? "Item history covers up to 31 days. Pick a shorter range."
+                      : "One row per billed request: job ID, region, shop ID, item ID, time and result"
+                  }
+                >
+                  <svg className="su-dl-ic" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M8 2v8m0 0L5 7m3 3 3-3M3 12v1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Item history (CSV)
                 </button>
               )}
               {dlError && <span className="su-dl-err">{dlError}</span>}

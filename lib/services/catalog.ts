@@ -17,7 +17,14 @@ export async function getCatalogForUser(userId: string): Promise<ServiceNode[]> 
     include: { clientServices: { where: { userId }, orderBy: { createdAt: "asc" } } },
   });
 
-  return rows.map((s) => {
+  // An admin can retire a service from every client's sidebar without deleting
+  // it (or anyone's stored key) by setting capabilities = {"hidden": true}.
+  const visible = rows.filter((s) => {
+    const caps = s.capabilities as { hidden?: unknown } | null;
+    return !(caps && typeof caps === "object" && caps.hidden === true);
+  });
+
+  return visible.map((s) => {
     const connections = s.clientServices.map((link) => {
       let keyMask = "";
       try {

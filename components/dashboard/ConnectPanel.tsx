@@ -45,10 +45,10 @@ const TagGlyph = (
 /// What the dashboard shows once a key is in — kept honest: these are the real
 /// panels a connected service renders, not decoration.
 const FEATURES = [
-  { k: "Live volume", d: "Today, 7-day, 30-day and lifetime requests — refreshed every few seconds." },
+  { k: "Daily & monthly usage", d: "Today, yesterday, last 7 days, this month and lifetime — refreshed every few seconds." },
   { k: "Prepaid credits", d: "Purchased, used and remaining, billed off your successful jobs." },
   { k: "Job health", d: "Completed, not found and failed, with your success rate." },
-  { k: "Daily breakdown", d: "A day-by-day chart, your busiest days, and a per-date lookup." },
+  { k: "Daily breakdown & exports", d: "A day-by-day chart with an Excel download, plus a CSV of every billed request (job ID, item ID, time)." },
 ];
 
 const STEPS = [

@@ -367,3 +367,8 @@ main.lg-split {
 .adm-wallet-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
 .adm-wallet-form label { display: grid; gap: 4px; font-size: 12px; font-weight: 700; color: var(--uv-muted); }
 .adm-wallet-form input, .adm-wallet-form select { font: 400 14px/1.3 var(--uv-sans); border: 1px solid var(--uv-line-2); border-radius: 8px; padding: 8px 10px; background: #fff; color: var(--uv-ink); }
+
+/* usage page: "need another breakdown?" note under the credits panel */
+.su-ask { grid-column: 1 / -1; margin-top: 10px; font-size: 13px; color: var(--uv-muted); font-family: var(--uv-sans); }
+.su-ask a { color: var(--uv); font-weight: 700; text-decoration: none; }
+.su-ask a:hover { text-decoration: underline; }
