@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ShopeeMailbox from "@/components/admin/ShopeeMailbox";
 
 type Code = {
   id: string;
@@ -225,6 +226,9 @@ export default function TemuCodes({
         </div>
       )}
 
+      {brand === "shopee" ? (
+        <ShopeeMailbox codes={shown} apiUrl={apiUrl} />
+      ) : (
       <div className="tc-list">
         <div className="tc-row tc-row--head">
           <span>Code</span>
@@ -280,6 +284,7 @@ export default function TemuCodes({
           })
         )}
       </div>
+      )}
     </>
   );
 }

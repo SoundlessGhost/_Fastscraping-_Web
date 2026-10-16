@@ -246,11 +246,11 @@ export async function ingestCodes(): Promise<IngestResult> {
       // rows actually created so the caller can log "N new".
       const store = async (
         messageId: string, account: string, fromAddr: string,
-        subject: string, code: string, receivedAt: Date,
+        subject: string, code: string, receivedAt: Date, body?: string | null,
       ) => {
         const res = await prisma.otpCode.upsert({
           where: { messageId },
-          create: { messageId, account, fromAddr, subject, code, receivedAt },
+          create: { messageId, account, fromAddr, subject, code, receivedAt, body: body ?? null },
           update: {}, // seen before — leave it
         });
         if (Date.now() - res.createdAt.getTime() < 5000) added++;
@@ -320,7 +320,8 @@ export async function ingestCodes(): Promise<IngestResult> {
           if (!html) continue;
           const value = j.mode === "code" ? codeFromBody(stripHtml(html)) : linkFromBody(html);
           if (!value) continue;
-          await store(j.messageId, j.account, j.fromAddr, j.subject, value, j.receivedAt);
+          // Keep the whole email so the Shopee tab can show it in a reading pane.
+          await store(j.messageId, j.account, j.fromAddr, j.subject, value, j.receivedAt, html);
         }
       }
 

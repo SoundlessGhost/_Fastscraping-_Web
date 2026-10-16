@@ -90,6 +90,29 @@ export async function getCodes() {
   return { ...snap, error: error ?? snap.error };
 }
 
+/// The full stored email for one row — used by the Shopee reading pane. Scripts
+/// and inline event handlers are stripped here, and the client renders the HTML
+/// in a sandboxed iframe with remote content blocked, so a mail can neither run
+/// code nor phone home. Returns null for rows with no stored body (Temu/Indeed).
+export async function getCodeBody(id: string) {
+  const row = await prisma.otpCode.findUnique({
+    where: { id },
+    select: { subject: true, fromAddr: true, account: true, receivedAt: true, body: true },
+  });
+  if (!row || !row.body) return null;
+  const html = row.body
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, "");
+  return {
+    subject: row.subject,
+    fromAddr: row.fromAddr,
+    account: row.account,
+    receivedAt: row.receivedAt.toISOString(),
+    html,
+  };
+}
+
 /// The shared secret in the public URL /codes/{token}. Empty (unset) means the
 /// public page is disabled — every token 404s until it's configured.
 export function codesToken(): string {
