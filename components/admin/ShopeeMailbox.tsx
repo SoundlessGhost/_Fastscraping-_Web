@@ -68,7 +68,10 @@ export default function ShopeeMailbox({ codes, apiUrl }: { codes: Code[]; apiUrl
     if (!body) return "";
     const img = loadImages ? "https: data:" : "data:";
     const csp = `default-src 'none'; img-src ${img}; style-src 'unsafe-inline'; font-src data: https:;`;
-    return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><style>body{margin:12px;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1a1a1a;background:#fff;overflow-wrap:break-word;word-break:break-word}img{max-width:100%;height:auto}a{color:#2563eb}</style></head><body>${body.html}</body></html>`;
+    // While images are blocked, hide them entirely so the email reads cleanly
+    // instead of showing broken-image icons. "Load images" brings them back.
+    const hideImg = loadImages ? "" : "img{display:none!important}";
+    return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><style>body{margin:12px;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1a1a1a;background:#fff;overflow-wrap:break-word;word-break:break-word}img{max-width:100%;height:auto}a{color:#2563eb}${hideImg}</style></head><body>${body.html}</body></html>`;
   }, [body, loadImages]);
 
   return (
