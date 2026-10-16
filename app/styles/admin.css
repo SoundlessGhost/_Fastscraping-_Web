@@ -647,6 +647,7 @@
 }
 .tc-src--temu { color: #a35a1e; background: rgba(214, 87, 48, 0.1); border-color: rgba(214, 87, 48, 0.28); }
 .tc-src--indeed { color: #24508f; background: rgba(42, 93, 138, 0.1); border-color: rgba(42, 93, 138, 0.28); }
+.tc-src--shopee { color: #c0391b; background: rgba(238, 77, 45, 0.1); border-color: rgba(238, 77, 45, 0.3); }
 
 /* standalone public /codes/{token} page — centered, no admin sidebar */
 .codes-standalone {

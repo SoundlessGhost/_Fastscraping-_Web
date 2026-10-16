@@ -76,18 +76,40 @@ async function purgeOldMail(client: ImapFlow): Promise<number> {
   }
 }
 
-/// 6 digits not glued to other digits — the shape both brands use.
+/// 6 digits not glued to other digits — the shape every brand's code uses.
 const CODE_RE = /(?<!\d)(\d{6})(?!\d)/;
 
-/// The senders we harvest codes from. Both put the code in the subject line
-/// ("... code: 690686"), so no body fetch is needed. Adding a brand is one
-/// entry here — the ingest filter and the dashboard badges both read this list.
-export const BRANDS = [
-  { id: "temu", label: "Temu", match: /temu/i },
-  { id: "indeed", label: "Indeed", match: /indeed/i },
-] as const;
+type Brand = {
+  id: string;
+  label: string;
+  match: RegExp;
+  /// Where the code lives. "subject" — Temu and Indeed spell it in the subject
+  /// ("... code: 690686"). "body" — Shopee's subject only says "use OTP to
+  /// verify"; the 6-digit code is in the body ("OTP驗證碼: 784818"), so those
+  /// need one extra body fetch.
+  codeIn: "subject" | "body";
+  /// For body brands only: the subject must match this for us to bother fetching
+  /// the body, so Shopee marketing and login-alert mail (no code) is skipped
+  /// without a download.
+  bodySubject?: RegExp;
+};
 
-export type BrandId = (typeof BRANDS)[number]["id"];
+/// The senders we harvest codes from. Adding a brand is one entry here — the
+/// ingest filter and the dashboard badges both read this list.
+export const BRANDS: readonly Brand[] = [
+  { id: "temu", label: "Temu", match: /temu/i, codeIn: "subject" },
+  { id: "indeed", label: "Indeed", match: /indeed/i, codeIn: "subject" },
+  {
+    id: "shopee",
+    label: "Shopee",
+    match: /shopee/i,
+    codeIn: "body",
+    // Shopee OTP mail says "OTP" / "驗證" (verify) in the subject across locales.
+    bodySubject: /OTP|驗證|验证|verif|verifica|código|codigo/i,
+  },
+];
+
+export type BrandId = string;
 
 /// Which brand a message belongs to — matched on sender first, then subject.
 /// Null means "not one of ours", and the ingest skips it.
@@ -96,6 +118,64 @@ export function brandOf(fromAddr: string, subject: string): BrandId | null {
     if (b.match.test(fromAddr) || b.match.test(subject)) return b.id;
   }
   return null;
+}
+
+function brandDef(id: BrandId): Brand | undefined {
+  return BRANDS.find((b) => b.id === id);
+}
+
+/// Pull a 6-digit code out of a decoded mail body. Prefer one sitting next to an
+/// OTP/verification keyword, so a stray 6-digit order number never wins; fall
+/// back to a lone 6-digit when the body is essentially just the code.
+function codeFromBody(text: string): string {
+  const near = text.match(
+    /(?:OTP|驗證碼|验证码|verification code|código|codigo|code)\D{0,40}(\d{6})(?!\d)/i,
+  );
+  if (near) return near[1]!;
+  const lone = text.match(/(?<!\d)(\d{6})(?!\d)/);
+  return lone ? lone[1]! : "";
+}
+
+/// Walk an imapflow bodyStructure to the first text part to read (HTML preferred,
+/// then plain), so we download just the body — not the whole raw message.
+function findTextPart(node: unknown, want: string): string | null {
+  if (!node || typeof node !== "object") return null;
+  const n = node as { type?: string; part?: string; childNodes?: unknown[] };
+  if (n.type === want && n.part) return n.part;
+  for (const c of n.childNodes ?? []) {
+    const r = findTextPart(c, want);
+    if (r) return r;
+  }
+  return null;
+}
+
+/// Download one decoded text part, bounded and with its own timeout so a slow or
+/// stuck mailbox can never hang the ingest. Returns "" on any failure.
+async function downloadBodyText(client: ImapFlow, uid: number, part: string): Promise<string> {
+  try {
+    const dl = (await Promise.race([
+      client.download(uid, part, { uid: true }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("download timeout")), 20000)),
+    ])) as { content: AsyncIterable<Buffer> };
+    let buf = "";
+    await Promise.race([
+      (async () => {
+        for await (const ch of dl.content) {
+          buf += ch.toString("utf8");
+          if (buf.length > 200_000) break;
+        }
+      })(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("stream timeout")), 20000)),
+    ]);
+    return buf
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/\s+/g, " ")
+      .trim();
+  } catch {
+    return "";
+  }
 }
 
 /// Pull a header value out of the raw header block imapflow returns.
@@ -129,19 +209,37 @@ export async function ingestCodes(): Promise<IngestResult> {
       const since = new Date(Date.now() - LOOKBACK_MS);
       const uids = (await client.search({ since }, { uid: true })) || [];
       const recent = uids.slice(-MAX_MESSAGES);
+
+      // One row upsert, shared by the subject path and the body path. Counts only
+      // rows actually created so the caller can log "N new".
+      const store = async (
+        messageId: string, account: string, fromAddr: string,
+        subject: string, code: string, receivedAt: Date,
+      ) => {
+        const res = await prisma.otpCode.upsert({
+          where: { messageId },
+          create: { messageId, account, fromAddr, subject, code, receivedAt },
+          update: {}, // seen before — leave it
+        });
+        if (Date.now() - res.createdAt.getTime() < 5000) added++;
+      };
+
+      // Body-brand (Shopee) messages: can't download a body while the fetch
+      // iterator is open, so collect them and fetch their bodies in a second pass.
+      type BodyJob = { uid: number; part: string; messageId: string; account: string; fromAddr: string; subject: string; receivedAt: Date };
+      const bodyJobs: BodyJob[] = [];
+
       if (recent.length) {
         for await (const msg of client.fetch(
           recent,
-          { envelope: true, internalDate: true, headers: ["delivered-to", "to"] },
+          { envelope: true, internalDate: true, bodyStructure: true, headers: ["delivered-to", "to"] },
           { uid: true },
         )) {
           const env = msg.envelope;
           const subject = env?.subject ?? "";
           const fromAddr = addrOnly(env?.from?.[0]?.address) ?? "";
-          if (!brandOf(fromAddr, subject)) continue;
-
-          const code = subject.match(CODE_RE)?.[1] ?? "";
-          if (!code) continue;
+          const brand = brandOf(fromAddr, subject);
+          if (!brand) continue;
 
           const messageId = env?.messageId ?? `uid-${msg.uid}@${cfg.user}`;
           const rawHeaders = msg.headers ? msg.headers.toString() : "";
@@ -149,15 +247,42 @@ export async function ingestCodes(): Promise<IngestResult> {
             addrOnly(headerValue(rawHeaders, "delivered-to")) ??
             addrOnly(env?.to?.[0]?.address) ??
             "unknown";
-          const receivedAt = env?.date ?? msg.internalDate ?? new Date();
+          const receivedAt = new Date(env?.date ?? msg.internalDate ?? Date.now());
 
-          const res = await prisma.otpCode.upsert({
-            where: { messageId },
-            create: { messageId, account, fromAddr, subject, code, receivedAt },
-            update: {}, // seen before — leave it
-          });
-          // upsert doesn't tell us insert vs update; count by checking createdAt≈now
-          if (Date.now() - res.createdAt.getTime() < 5000) added++;
+          const def = brandDef(brand);
+          if (def?.codeIn === "body") {
+            // Only OTP-type subjects carry a code — skip marketing / login alerts
+            // without paying for a body download.
+            if (def.bodySubject && !def.bodySubject.test(subject)) continue;
+            const part =
+              findTextPart(msg.bodyStructure, "text/html") ??
+              findTextPart(msg.bodyStructure, "text/plain") ??
+              "1";
+            bodyJobs.push({ uid: msg.uid, part, messageId, account, fromAddr, subject, receivedAt });
+            continue;
+          }
+
+          const code = subject.match(CODE_RE)?.[1] ?? "";
+          if (!code) continue;
+          await store(messageId, account, fromAddr, subject, code, receivedAt);
+        }
+      }
+
+      // Second pass — bodies. Skip any messageId already stored so a code's body
+      // is downloaded exactly once, not on every poll.
+      if (bodyJobs.length) {
+        const have = new Set(
+          (await prisma.otpCode.findMany({
+            where: { messageId: { in: bodyJobs.map((j) => j.messageId) } },
+            select: { messageId: true },
+          })).map((r) => r.messageId),
+        );
+        for (const j of bodyJobs) {
+          if (have.has(j.messageId)) continue;
+          const text = await downloadBodyText(client, j.uid, j.part);
+          const code = codeFromBody(text);
+          if (!code) continue;
+          await store(j.messageId, j.account, j.fromAddr, j.subject, code, j.receivedAt);
         }
       }
 
