@@ -271,8 +271,8 @@ export default function TemuCodes({
                   {ago(c.receivedAt)}
                 </span>
                 <span className="tc-actions">
-                  <button className="tc-copy" onClick={() => copy(c)}>
-                    {copied === c.id ? "Copied ✓" : isLink ? "Copy link" : "Copy"}
+                  <button className="tc-copy" onClick={() => copy(c)} title={isLink ? "Copy the link" : "Copy the code"}>
+                    {copied === c.id ? "Copied ✓" : "Copy"}
                   </button>
                 </span>
               </div>
