@@ -1,5 +1,6 @@
 import { ImapFlow } from "imapflow";
 import { prisma } from "@/lib/db";
+import { SHOPEE_MAILBOXES } from "@/lib/otp/shopee-mailboxes";
 
 // Reads the central mailbox over IMAP, extracts Temu verification codes and
 // stores them in Postgres (de-duped by Message-ID). Credentials come from the
@@ -83,43 +84,29 @@ type Brand = {
   id: string;
   label: string;
   match: RegExp;
-  /// Where the code lives. "subject" — Temu and Indeed spell it in the subject
-  /// ("... code: 690686"). "body" — Shopee's subject only says "use OTP to
-  /// verify"; the 6-digit code is in the body ("OTP驗證碼: 784818"), so those
-  /// need one extra body fetch.
-  codeIn: "subject" | "body";
-  /// For body brands only: a subject matching this carries a numeric code in the
-  /// body (we fetch the body and read the digits). Shopee marketing is skipped.
-  bodySubject?: RegExp;
-  /// For body brands only: a subject matching this is a "confirm this login"
-  /// mail that carries a confirmation LINK (not a code) in the body. Shopee
-  /// sometimes sends a link to approve a login instead of an OTP.
-  linkSubject?: RegExp;
+  /// "subject" — Temu and Indeed spell the 6-digit code in the subject.
+  /// "mailbox" — Shopee: show the WHOLE email in a reading pane. Every mail
+  ///   forwarded from a Shopee-account mailbox is kept (not just OTP/login), so
+  ///   the tab is a real inbox, not a code list.
+  codeIn: "subject" | "mailbox";
 };
 
-/// The senders we harvest codes from. Adding a brand is one entry here — the
-/// ingest filter and the dashboard badges both read this list.
+/// Brands the dashboard knows about. Temu/Indeed match by sender; Shopee also
+/// matches by recipient (any mail to a mailbox in SHOPEE_MAILBOXES — see brandOf).
 export const BRANDS: readonly Brand[] = [
   { id: "temu", label: "Temu", match: /temu/i, codeIn: "subject" },
   { id: "indeed", label: "Indeed", match: /indeed/i, codeIn: "subject" },
-  {
-    id: "shopee",
-    label: "Shopee",
-    match: /shopee/i,
-    codeIn: "body",
-    // Shopee OTP mail says "OTP" / "驗證" (verify) in the subject across locales.
-    bodySubject: /OTP|驗證|验证|verif|verifica|código|codigo/i,
-    // "Someone is attempting to log in …" — these carry a shp.ee confirm link.
-    // (A plain "new login" notification matches neither gate and is ignored.)
-    linkSubject: /嘗試|尝试|attempt|someone is|log\s?in to your|trying to (log|sign)/i,
-  },
+  { id: "shopee", label: "Shopee", match: /shopee/i, codeIn: "mailbox" },
 ];
 
 export type BrandId = string;
 
-/// Which brand a message belongs to — matched on sender first, then subject.
-/// Null means "not one of ours", and the ingest skips it.
-export function brandOf(fromAddr: string, subject: string): BrandId | null {
+/// Which brand a message belongs to. A mail delivered to one of our dedicated
+/// Shopee-account mailboxes is Shopee whatever its sender — those inboxes are
+/// Shopee-only and the user wants EVERY mail from them, not just OTP/login.
+/// Otherwise match Temu / Indeed by sender or subject. Null = not one of ours.
+export function brandOf(fromAddr: string, subject: string, account?: string): BrandId | null {
+  if (account && SHOPEE_MAILBOXES.has(account.toLowerCase())) return "shopee";
   for (const b of BRANDS) {
     if (b.match.test(fromAddr) || b.match.test(subject)) return b.id;
   }
@@ -258,7 +245,7 @@ export async function ingestCodes(): Promise<IngestResult> {
 
       // Body-brand (Shopee) messages: can't download a body while the fetch
       // iterator is open, so collect them and fetch their bodies in a second pass.
-      type BodyJob = { uid: number; part: string; mode: "code" | "link"; messageId: string; account: string; fromAddr: string; subject: string; receivedAt: Date };
+      type BodyJob = { uid: number; part: string; messageId: string; account: string; fromAddr: string; subject: string; receivedAt: Date };
       const bodyJobs: BodyJob[] = [];
 
       if (recent.length) {
@@ -270,9 +257,6 @@ export async function ingestCodes(): Promise<IngestResult> {
           const env = msg.envelope;
           const subject = env?.subject ?? "";
           const fromAddr = addrOnly(env?.from?.[0]?.address) ?? "";
-          const brand = brandOf(fromAddr, subject);
-          if (!brand) continue;
-
           const messageId = env?.messageId ?? `uid-${msg.uid}@${cfg.user}`;
           const rawHeaders = msg.headers ? msg.headers.toString() : "";
           const account =
@@ -281,21 +265,18 @@ export async function ingestCodes(): Promise<IngestResult> {
             "unknown";
           const receivedAt = new Date(env?.date ?? msg.internalDate ?? Date.now());
 
-          const def = brandDef(brand);
-          if (def?.codeIn === "body") {
-            // A code mail (OTP subject) or a login-confirm mail (attempt subject).
-            // Anything else from the brand (marketing, plain "new login" notices)
-            // is skipped without paying for a body download.
-            const mode: "code" | "link" | null =
-              def.bodySubject && def.bodySubject.test(subject) ? "code"
-              : def.linkSubject && def.linkSubject.test(subject) ? "link"
-              : null;
-            if (!mode) continue;
+          // Match on recipient (Shopee mailbox) as well as sender.
+          const brand = brandOf(fromAddr, subject, account);
+          if (!brand) continue;
+
+          if (brandDef(brand)?.codeIn === "mailbox") {
+            // Keep the WHOLE email — every mail to a Shopee mailbox, not just
+            // OTP/login. Collect it; its body is fetched in the second pass.
             const part =
               findTextPart(msg.bodyStructure, "text/html") ??
               findTextPart(msg.bodyStructure, "text/plain") ??
               "1";
-            bodyJobs.push({ uid: msg.uid, part, mode, messageId, account, fromAddr, subject, receivedAt });
+            bodyJobs.push({ uid: msg.uid, part, messageId, account, fromAddr, subject, receivedAt });
             continue;
           }
 
@@ -318,10 +299,10 @@ export async function ingestCodes(): Promise<IngestResult> {
           if (have.has(j.messageId)) continue;
           const html = await downloadBody(client, j.uid, j.part);
           if (!html) continue;
-          const value = j.mode === "code" ? codeFromBody(stripHtml(html)) : linkFromBody(html);
-          if (!value) continue;
-          // Keep the whole email so the Shopee tab can show it in a reading pane.
-          await store(j.messageId, j.account, j.fromAddr, j.subject, value, j.receivedAt, html);
+          // Best-effort code/link for search; the whole email is kept regardless,
+          // so even a plain Shopee mail (no code) still shows in the mailbox.
+          const code = codeFromBody(stripHtml(html)) || linkFromBody(html) || "";
+          await store(j.messageId, j.account, j.fromAddr, j.subject, code, j.receivedAt, html);
         }
       }
 
