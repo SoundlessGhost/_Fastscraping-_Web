@@ -88,10 +88,13 @@ type Brand = {
   /// verify"; the 6-digit code is in the body ("OTP驗證碼: 784818"), so those
   /// need one extra body fetch.
   codeIn: "subject" | "body";
-  /// For body brands only: the subject must match this for us to bother fetching
-  /// the body, so Shopee marketing and login-alert mail (no code) is skipped
-  /// without a download.
+  /// For body brands only: a subject matching this carries a numeric code in the
+  /// body (we fetch the body and read the digits). Shopee marketing is skipped.
   bodySubject?: RegExp;
+  /// For body brands only: a subject matching this is a "confirm this login"
+  /// mail that carries a confirmation LINK (not a code) in the body. Shopee
+  /// sometimes sends a link to approve a login instead of an OTP.
+  linkSubject?: RegExp;
 };
 
 /// The senders we harvest codes from. Adding a brand is one entry here — the
@@ -106,6 +109,9 @@ export const BRANDS: readonly Brand[] = [
     codeIn: "body",
     // Shopee OTP mail says "OTP" / "驗證" (verify) in the subject across locales.
     bodySubject: /OTP|驗證|验证|verif|verifica|código|codigo/i,
+    // "Someone is attempting to log in …" — these carry a shp.ee confirm link.
+    // (A plain "new login" notification matches neither gate and is ignored.)
+    linkSubject: /嘗試|尝试|attempt|someone is|log\s?in to your|trying to (log|sign)/i,
   },
 ];
 
@@ -136,6 +142,36 @@ function codeFromBody(text: string): string {
   return lone ? lone[1]! : "";
 }
 
+/// HTML -> visible text, for reading a code.
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/// Pull the "confirm this login" link out of a Shopee security mail. The confirm
+/// link is always a Shopee short link (tw.shp.ee / my.shp.ee / …); every other
+/// link in the mail is help, app-store or social. Keying on that domain — not on
+/// the anchor text — makes this work whatever language the mail is in. Falls back
+/// to an anchor whose visible text is a "here / confirm" word.
+function linkFromBody(html: string): string {
+  const h = html.replace(/=\r?\n/g, ""); // rejoin any quoted-printable soft breaks
+  const shp = h.match(/https?:\/\/[a-z0-9.-]*\bshp\.ee\/[^\s"'<>]+/i);
+  if (shp) return shp[0].replace(/&amp;/g, "&");
+  const re = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(h))) {
+    const text = m[2]!.replace(/<[^>]+>/g, "").trim();
+    if (/\bhere\b|此處|此处|確認|确认|confirm|點擊|点击/i.test(text)) {
+      return m[1]!.replace(/&amp;/g, "&");
+    }
+  }
+  return "";
+}
+
 /// Walk an imapflow bodyStructure to the first text part to read (HTML preferred,
 /// then plain), so we download just the body — not the whole raw message.
 function findTextPart(node: unknown, want: string): string | null {
@@ -149,9 +185,10 @@ function findTextPart(node: unknown, want: string): string | null {
   return null;
 }
 
-/// Download one decoded text part, bounded and with its own timeout so a slow or
-/// stuck mailbox can never hang the ingest. Returns "" on any failure.
-async function downloadBodyText(client: ImapFlow, uid: number, part: string): Promise<string> {
+/// Download one decoded text part as raw HTML, bounded and with its own timeout
+/// so a slow or stuck mailbox can never hang the ingest. The caller strips it for
+/// a code or scans the hrefs for a link. Returns "" on any failure.
+async function downloadBody(client: ImapFlow, uid: number, part: string): Promise<string> {
   try {
     const dl = (await Promise.race([
       client.download(uid, part, { uid: true }),
@@ -167,12 +204,7 @@ async function downloadBodyText(client: ImapFlow, uid: number, part: string): Pr
       })(),
       new Promise((_, rej) => setTimeout(() => rej(new Error("stream timeout")), 20000)),
     ]);
-    return buf
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;|&#160;/gi, " ")
-      .replace(/&amp;/g, "&")
-      .replace(/\s+/g, " ")
-      .trim();
+    return buf;
   } catch {
     return "";
   }
@@ -226,7 +258,7 @@ export async function ingestCodes(): Promise<IngestResult> {
 
       // Body-brand (Shopee) messages: can't download a body while the fetch
       // iterator is open, so collect them and fetch their bodies in a second pass.
-      type BodyJob = { uid: number; part: string; messageId: string; account: string; fromAddr: string; subject: string; receivedAt: Date };
+      type BodyJob = { uid: number; part: string; mode: "code" | "link"; messageId: string; account: string; fromAddr: string; subject: string; receivedAt: Date };
       const bodyJobs: BodyJob[] = [];
 
       if (recent.length) {
@@ -251,14 +283,19 @@ export async function ingestCodes(): Promise<IngestResult> {
 
           const def = brandDef(brand);
           if (def?.codeIn === "body") {
-            // Only OTP-type subjects carry a code — skip marketing / login alerts
-            // without paying for a body download.
-            if (def.bodySubject && !def.bodySubject.test(subject)) continue;
+            // A code mail (OTP subject) or a login-confirm mail (attempt subject).
+            // Anything else from the brand (marketing, plain "new login" notices)
+            // is skipped without paying for a body download.
+            const mode: "code" | "link" | null =
+              def.bodySubject && def.bodySubject.test(subject) ? "code"
+              : def.linkSubject && def.linkSubject.test(subject) ? "link"
+              : null;
+            if (!mode) continue;
             const part =
               findTextPart(msg.bodyStructure, "text/html") ??
               findTextPart(msg.bodyStructure, "text/plain") ??
               "1";
-            bodyJobs.push({ uid: msg.uid, part, messageId, account, fromAddr, subject, receivedAt });
+            bodyJobs.push({ uid: msg.uid, part, mode, messageId, account, fromAddr, subject, receivedAt });
             continue;
           }
 
@@ -279,10 +316,11 @@ export async function ingestCodes(): Promise<IngestResult> {
         );
         for (const j of bodyJobs) {
           if (have.has(j.messageId)) continue;
-          const text = await downloadBodyText(client, j.uid, j.part);
-          const code = codeFromBody(text);
-          if (!code) continue;
-          await store(j.messageId, j.account, j.fromAddr, j.subject, code, j.receivedAt);
+          const html = await downloadBody(client, j.uid, j.part);
+          if (!html) continue;
+          const value = j.mode === "code" ? codeFromBody(stripHtml(html)) : linkFromBody(html);
+          if (!value) continue;
+          await store(j.messageId, j.account, j.fromAddr, j.subject, value, j.receivedAt);
         }
       }
 
