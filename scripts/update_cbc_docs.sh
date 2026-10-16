@@ -16,6 +16,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Teammates also push to main and deploy from it. Never deploy a tree that is
+# missing their commits (it would overwrite their code on the server).
+git fetch -q origin
+if ! git merge-base --is-ancestor origin/main HEAD; then
+  echo "STOP: origin/main has commits this branch does not. Run: git merge origin/main  (then re-run)"; exit 1
+fi
+
 DOCS_HOST=root@169.58.203.69
 SITE_HOST=root@89.117.59.90
 TMP="$(mktemp -d)"
