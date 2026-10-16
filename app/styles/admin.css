@@ -510,6 +510,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: 20px;
   letter-spacing: 0.08em;
@@ -648,8 +650,10 @@
 .tc-src--temu { color: #a35a1e; background: rgba(214, 87, 48, 0.1); border-color: rgba(214, 87, 48, 0.28); }
 .tc-src--indeed { color: #24508f; background: rgba(42, 93, 138, 0.1); border-color: rgba(42, 93, 138, 0.28); }
 .tc-src--shopee { color: #c0391b; background: rgba(238, 77, 45, 0.1); border-color: rgba(238, 77, 45, 0.3); }
-/* Shopee "confirm this login" link shown in place of a numeric code. */
-.tc-link { color: #2563eb; font-weight: 600; text-decoration: none; white-space: nowrap; }
+/* Shopee "confirm this login" link shown in place of a numeric code. Smaller
+   than a 20px code so it fits the narrow code column instead of overlapping the
+   account next to it. */
+.tc-link { color: #2563eb; font-weight: 600; font-size: 13px; letter-spacing: 0; text-decoration: none; white-space: nowrap; }
 .tc-link:hover { text-decoration: underline; }
 
 /* standalone public /codes/{token} page — centered, no admin sidebar */

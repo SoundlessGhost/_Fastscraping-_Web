@@ -252,8 +252,8 @@ export default function TemuCodes({
               <div className={`tc-row${c.fresh ? " is-fresh" : ""}`} key={c.id}>
                 <span className="tc-code">
                   {isLink ? (
-                    <a className="tc-link" href={c.code} target="_blank" rel="noopener noreferrer">
-                      confirm link ↗
+                    <a className="tc-link" href={c.code} target="_blank" rel="noopener noreferrer" title={c.code}>
+                      confirm ↗
                     </a>
                   ) : (
                     c.code
