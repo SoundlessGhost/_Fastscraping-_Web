@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ShopeeMailbox from "@/components/admin/ShopeeMailbox";
 
 type Code = {
   id: string;
@@ -225,6 +226,9 @@ export default function TemuCodes({
         </div>
       )}
 
+      {brand === "shopee" ? (
+        <ShopeeMailbox codes={shown} apiUrl={apiUrl} />
+      ) : (
       <div className="tc-list">
         <div className="tc-row tc-row--head">
           <span>Code</span>
@@ -244,31 +248,43 @@ export default function TemuCodes({
             {brand !== "all" ? ` in ${brands.find((b) => b.id === brand)?.label ?? brand}` : ""}.
           </div>
         ) : (
-          shown.map((c) => (
-            <div className={`tc-row${c.fresh ? " is-fresh" : ""}`} key={c.id}>
-              <span className="tc-code">
-                {c.code}
-                {c.fresh && <span className="tc-fresh">new</span>}
-              </span>
-              <span className="tc-account" title={c.account}>
-                <span className={`tc-src tc-src--${c.source}`}>{c.source}</span>
-                {c.account}
-              </span>
-              <span className="tc-from" title={c.subject}>
-                {c.fromAddr}
-              </span>
-              <span className="tc-when" title={fmtTime(c.receivedAt)}>
-                {ago(c.receivedAt)}
-              </span>
-              <span className="tc-actions">
-                <button className="tc-copy" onClick={() => copy(c)}>
-                  {copied === c.id ? "Copied ✓" : "Copy"}
-                </button>
-              </span>
-            </div>
-          ))
+          shown.map((c) => {
+            // Shopee sometimes sends a "confirm this login" link instead of a
+            // numeric code; those rows carry the URL in `code`.
+            const isLink = /^https?:\/\//i.test(c.code);
+            return (
+              <div className={`tc-row${c.fresh ? " is-fresh" : ""}`} key={c.id}>
+                <span className="tc-code">
+                  {isLink ? (
+                    <a className="tc-link" href={c.code} target="_blank" rel="noopener noreferrer" title={c.code}>
+                      confirm ↗
+                    </a>
+                  ) : (
+                    c.code
+                  )}
+                  {c.fresh && <span className="tc-fresh">new</span>}
+                </span>
+                <span className="tc-account" title={c.account}>
+                  <span className={`tc-src tc-src--${c.source}`}>{c.source}</span>
+                  {c.account}
+                </span>
+                <span className="tc-from" title={c.subject}>
+                  {c.fromAddr}
+                </span>
+                <span className="tc-when" title={fmtTime(c.receivedAt)}>
+                  {ago(c.receivedAt)}
+                </span>
+                <span className="tc-actions">
+                  <button className="tc-copy" onClick={() => copy(c)} title={isLink ? "Copy the link" : "Copy the code"}>
+                    {copied === c.id ? "Copied ✓" : "Copy"}
+                  </button>
+                </span>
+              </div>
+            );
+          })
         )}
       </div>
+      )}
     </>
   );
 }

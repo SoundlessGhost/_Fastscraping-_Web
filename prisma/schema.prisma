@@ -186,6 +186,10 @@ model OtpCode {
   fromAddr   String
   subject    String
   code       String
+  // Full HTML body, stored only for brands shown as a mailbox (Shopee) so the
+  // dashboard can render the whole email in a reading pane. Null for code-only
+  // brands (Temu, Indeed). Pruned with the row at 7 days.
+  body       String?
   receivedAt DateTime
   createdAt  DateTime @default(now())
 

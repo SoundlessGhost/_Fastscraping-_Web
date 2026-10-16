@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ingestCodes, otpConfigured, brandOf, BRANDS, type IngestResult } from "@/lib/otp/imap";
+import { SHOPEE_MAILBOXES } from "@/lib/otp/shopee-mailboxes";
 
 // Shared by the admin page and the public secret-URL page. Ingestion is
 // throttled to once per window and de-duped across concurrent requests (a
@@ -11,6 +12,11 @@ const THROTTLE_MS = 5000;
 /// codes that expire in minutes, not an archive.
 const PER_BRAND = 50;
 const FRESH_MS = 5 * 60 * 1000;
+
+/// List columns only — never `body` (large; the reading pane fetches it per id).
+const LIST_SELECT = {
+  id: true, account: true, fromAddr: true, subject: true, code: true, receivedAt: true,
+} as const;
 
 let lastIngest = 0;
 let inFlight: Promise<IngestResult> | null = null;
@@ -33,15 +39,29 @@ export async function listCodes() {
   // roughly 30:1, so a single global limit pushed every Indeed code off the end
   // and the Indeed tab looked broken. Each brand now gets its own slice and the
   // union is re-sorted, so a low-volume sender is always represented.
+  // Shopee rows are matched by recipient (the mail's delivered-to is one of our
+  // Shopee-account mailboxes), not by sender — the tab is those mailboxes' inbox.
+  const shopeeList = [...SHOPEE_MAILBOXES];
   const perBrand = await Promise.all(
     BRANDS.map((b) =>
       prisma.otpCode.findMany({
-        where: {
-          OR: [
-            { fromAddr: { contains: b.id, mode: "insensitive" } },
-            { subject: { contains: b.id, mode: "insensitive" } },
-          ],
-        },
+        where:
+          b.id === "shopee"
+            ? {
+                OR: [
+                  { account: { in: shopeeList } },
+                  { fromAddr: { contains: "shopee", mode: "insensitive" } },
+                ],
+              }
+            : {
+                OR: [
+                  { fromAddr: { contains: b.id, mode: "insensitive" } },
+                  { subject: { contains: b.id, mode: "insensitive" } },
+                ],
+              },
+        // Never pull `body` into the list — it can be 200 KB per row and the
+        // reading pane fetches it separately on click.
+        select: LIST_SELECT,
         orderBy: { receivedAt: "desc" },
         take: PER_BRAND,
       }),
@@ -50,7 +70,7 @@ export async function listCodes() {
 
   // Anything that matched the ingest but not these narrower queries still shows
   // up here, so nothing silently disappears from the list.
-  const recent = await prisma.otpCode.findMany({ orderBy: { receivedAt: "desc" }, take: PER_BRAND });
+  const recent = await prisma.otpCode.findMany({ select: LIST_SELECT, orderBy: { receivedAt: "desc" }, take: PER_BRAND });
 
   const seen = new Set<string>();
   const rows = [...perBrand.flat(), ...recent]
@@ -70,7 +90,7 @@ export async function listCodes() {
       fromAddr: r.fromAddr,
       subject: r.subject,
       code: r.code,
-      source: brandOf(r.fromAddr, r.subject) ?? "other",
+      source: brandOf(r.fromAddr, r.subject, r.account) ?? "other",
       receivedAt: r.receivedAt.toISOString(),
       fresh: now - r.receivedAt.getTime() < FRESH_MS,
     })),
@@ -88,6 +108,29 @@ export async function getCodes() {
   }
   const snap = await listCodes();
   return { ...snap, error: error ?? snap.error };
+}
+
+/// The full stored email for one row — used by the Shopee reading pane. Scripts
+/// and inline event handlers are stripped here, and the client renders the HTML
+/// in a sandboxed iframe with remote content blocked, so a mail can neither run
+/// code nor phone home. Returns null for rows with no stored body (Temu/Indeed).
+export async function getCodeBody(id: string) {
+  const row = await prisma.otpCode.findUnique({
+    where: { id },
+    select: { subject: true, fromAddr: true, account: true, receivedAt: true, body: true },
+  });
+  if (!row || !row.body) return null;
+  const html = row.body
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, "");
+  return {
+    subject: row.subject,
+    fromAddr: row.fromAddr,
+    account: row.account,
+    receivedAt: row.receivedAt.toISOString(),
+    html,
+  };
 }
 
 /// The shared secret in the public URL /codes/{token}. Empty (unset) means the
