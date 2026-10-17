@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import TurnstileWidget, { TURNSTILE_SITE_KEY } from "@/components/brand/TurnstileWidget";
 
 const TOPICS = [
   "Shopee API trial key",
@@ -26,25 +27,30 @@ export default function ContactFormUV() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [err, setErr] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot — stays empty for humans
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [tsReset, setTsReset] = useState(0);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (status === "sending") return;
     if (name.trim().length < 2) return setErr("Add your name so we know who to reply to.");
     if (!EMAIL_RE.test(email)) return setErr("Add a valid work email.");
+    if (TURNSTILE_SITE_KEY && !turnstileToken) return setErr("Please complete the verification below.");
     setErr("");
     setStatus("sending");
     try {
       const r = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, company, email, topic, message }),
+        body: JSON.stringify({ name, company, email, topic, message, website, turnstileToken }),
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d?.ok) throw new Error(d?.error || "Could not send.");
       setStatus("sent");
     } catch (e2) {
       setStatus("error");
+      setTsReset((n) => n + 1);
       setErr(e2 instanceof Error ? e2.message : "Could not send.");
     }
   }
@@ -89,6 +95,12 @@ export default function ContactFormUV() {
         <label htmlFor="cf-msg">Product links or target sites (3–5 is plenty)</label>
         <textarea id="cf-msg" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
       </div>
+      {/* honeypot: hidden from people, filled by bots */}
+      <div aria-hidden="true" style={{ position: "absolute", left: -9999, top: -9999, height: 0, overflow: "hidden" }}>
+        <label htmlFor="cf-website">Website</label>
+        <input id="cf-website" name="website" type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+      </div>
+      <TurnstileWidget onToken={setTurnstileToken} resetSignal={tsReset} />
       {err ? (
         <p className="fsx-err" role="alert">
           {err}
