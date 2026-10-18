@@ -63,6 +63,68 @@ const shortRegion = (k: string) => (k.length <= 3 ? k : k.slice(0, 3)).toUpperCa
 
 const todayUTC = () => new Date().toISOString().slice(0, 10);
 
+/// Dashboard timezone (Shopdora 2026-10-18: their business day is UTC+8). The
+/// backend buckets days, "today" and the month breakdown in whatever IANA zone
+/// we pass, so every figure on the page follows this one choice. Remembered per
+/// browser. "UTC" sends nothing and keeps the old behaviour.
+const TZ_KEY = "fs.usage.tz";
+const TZ_OPTIONS = [
+  "UTC",
+  "Asia/Taipei",
+  "Asia/Shanghai",
+  "Asia/Hong_Kong",
+  "Asia/Singapore",
+  "Asia/Kuala_Lumpur",
+  "Asia/Jakarta",
+  "Asia/Bangkok",
+  "Asia/Ho_Chi_Minh",
+  "Asia/Manila",
+  "Asia/Dhaka",
+  "Asia/Kolkata",
+  "Europe/London",
+  "Europe/Berlin",
+  "America/New_York",
+  "America/Sao_Paulo",
+];
+const isValidTz = (tz: string) => {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+};
+/// "UTC+8" for Asia/Taipei, "UTC-3" for São Paulo; "" where the browser cannot say.
+const tzOffsetLabel = (tz: string) => {
+  try {
+    const part = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" })
+      .formatToParts(new Date())
+      .find((p) => p.type === "timeZoneName")?.value;
+    return (part ?? "").replace("GMT", "UTC");
+  } catch {
+    return "";
+  }
+};
+const tzLabel = (tz: string) => (tz === "UTC" ? "UTC" : `${tz.replace(/_/g, " ")} (${tzOffsetLabel(tz) || tz})`);
+const tzShort = (tz: string) => (tz === "UTC" ? "UTC" : tzOffsetLabel(tz) || tz);
+/// YYYY-MM-DD of "now" in that zone — the backend's idea of today.
+const todayIn = (tz: string) => {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  } catch {
+    return todayUTC();
+  }
+};
+const readStoredTz = () => {
+  try {
+    const v = localStorage.getItem(TZ_KEY);
+    if (v && isValidTz(v)) return v;
+  } catch {
+    /* private mode etc. */
+  }
+  return "UTC";
+};
+
 /// Every YYYY-MM-DD from start to end inclusive (UTC) — the custom-range chart
 /// reads these straight out of `byDate`, so no extra fetch is needed.
 function datesBetween(start: string, end: string): string[] {
@@ -268,7 +330,36 @@ export default function ServiceUsage({
   // for the admin rather than the client being viewed — hide it in view-as.
   const isViewAs = Boolean(usageUrl);
   const keyQuery = !isViewAs && selectedKeyId ? `&k=${selectedKeyId}` : "";
-  const feedUrl = usageUrl ?? `/api/services/${service.slug}/usage?interval=${WIDEST}${keyQuery}`;
+  // Timezone the backend buckets days in. Starts as UTC on the server render and
+  // picks up the remembered choice after mount, so hydration never mismatches.
+  const [tz, setTz] = useState("UTC");
+  useEffect(() => {
+    setTz(readStoredTz());
+  }, []);
+  const changeTz = useCallback((next: string) => {
+    const v = isValidTz(next) ? next : "UTC";
+    setTz(v);
+    try {
+      localStorage.setItem(TZ_KEY, v);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  // The browser's own zone joins the list when it is not already there.
+  const tzChoices = useMemo(() => {
+    let mine = "";
+    try {
+      mine = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
+    } catch {
+      /* ignore */
+    }
+    const extra = [mine, tz].filter((z) => z && !TZ_OPTIONS.includes(z) && isValidTz(z));
+    return [...TZ_OPTIONS, ...Array.from(new Set(extra))];
+  }, [tz]);
+  const tzQuery = tz !== "UTC" ? `&tz=${encodeURIComponent(tz)}` : "";
+  const feedUrl = usageUrl
+    ? `${usageUrl}${tzQuery ? (usageUrl.includes("?") ? "&" : "?") + tzQuery.slice(1) : ""}`
+    : `/api/services/${service.slug}/usage?interval=${WIDEST}${keyQuery}${tzQuery}`;
 
   const [range, setRange] = useState(7);
   // Which marketplace the page is showing. null = all of them, which is the
@@ -438,6 +529,7 @@ export default function ServiceUsage({
     const to = days[days.length - 1]!.date;
     const q = new URLSearchParams({ from, to });
     if (region) q.set("region", region);
+    if (tz !== "UTC") q.set("tz", tz);
     // Download the same key that is on screen.
     if (selectedKeyId) q.set("k", selectedKeyId);
     try {
@@ -462,7 +554,7 @@ export default function ServiceUsage({
     } finally {
       setDownloading(false);
     }
-  }, [downloading, days, service.slug, region, selectedKeyId]);
+  }, [downloading, days, service.slug, region, selectedKeyId, tz]);
 
   // Per-item history: one CSV row per billed job for the dates on screen. The
   // file can be large, so the browser downloads it directly from our route
@@ -473,6 +565,7 @@ export default function ServiceUsage({
     if (!ledger || ledgerDays === 0 || ledgerDays > 31) return;
     const q = new URLSearchParams({ from: days[0]!.date, to: days[days.length - 1]!.date });
     if (selectedKeyId) q.set("k", selectedKeyId);
+    if (tz !== "UTC") q.set("tz", tz);
     const a = document.createElement("a");
     a.href = `/api/services/${service.slug}/billing-csv?${q}`;
     a.target = "_blank";
@@ -480,7 +573,7 @@ export default function ServiceUsage({
     document.body.appendChild(a);
     a.click();
     a.remove();
-  }, [ledger, ledgerDays, days, service.slug, selectedKeyId]);
+  }, [ledger, ledgerDays, days, service.slug, selectedKeyId, tz]);
 
   const top = Math.max(1, ...days.map((d) => d.total));
   const yOf = (v: number) => PADT + plotH - (v / top) * plotH;
@@ -502,7 +595,7 @@ export default function ServiceUsage({
     const ranked = days.filter((d) => d.total > 0).sort((a, b) => b.total - a.total);
     return ranked.slice(0, usage?.jobs ? 5 : 8);
   }, [days, usage?.jobs]);
-  const today = todayUTC();
+  const today = todayIn(tz);
 
   // Date picker: the backend reports this month and last day-by-day, on top of
   // the daily window — so offer exactly the span we hold figures for.
@@ -596,7 +689,20 @@ export default function ServiceUsage({
             {displayName} <em>Usage</em>
           </h1>
           <p className="dash-meta">
-            owner <b>{usage?.owner ?? "—"}</b> · all times UTC
+            owner <b>{usage?.owner ?? "—"}</b> · all times{" "}
+            <select
+              className="su-tz"
+              value={tz}
+              onChange={(e) => changeTz(e.target.value)}
+              title="Timezone for days, today and the month breakdown"
+              aria-label="Dashboard timezone"
+            >
+              {tzChoices.map((z) => (
+                <option key={z} value={z}>
+                  {tzLabel(z)}
+                </option>
+              ))}
+            </select>
             {updatedAt && (
               <>
                 {" · "}
@@ -666,12 +772,12 @@ export default function ServiceUsage({
         <div className="dash-stat">
           <div className="dash-stat-k">Today</div>
           <div className="dash-stat-v">{view ? nf.format(view.totals.today) : "—"}</div>
-          <div className="dash-stat-s">req so far · UTC</div>
+          <div className="dash-stat-s">req so far · {tzShort(tz)}</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">Yesterday</div>
           <div className="dash-stat-v">{view ? nf.format(yesterdayTotal) : "—"}</div>
-          <div className="dash-stat-s">full day · UTC</div>
+          <div className="dash-stat-s">full day · {tzShort(tz)}</div>
         </div>
         <div className="dash-stat">
           <div className="dash-stat-k">Last 7 days</div>
@@ -1161,7 +1267,7 @@ export default function ServiceUsage({
         <div className="dash-card su-day">
           <div className="dash-card-h">
             <div className="dash-card-t">
-              Day breakdown <small>requests on a specific date (UTC)</small>
+              Day breakdown <small>requests on a specific date ({tzShort(tz)})</small>
             </div>
             <div className="su-daypick">
               <button type="button" className="su-date" onClick={() => setDayCalOpen((o) => !o)}>

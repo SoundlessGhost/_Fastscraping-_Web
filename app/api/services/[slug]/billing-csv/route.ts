@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 import { decryptSecret } from "@/lib/crypto";
+import { safeTz } from "@/lib/services/usage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
   const path = service.usagePath.replace(/\/usage\/?$/, "/billing.csv");
   let res: Response;
   try {
-    res = await fetch(`${base}${path}?from=${from}&to=${to}`, {
+    // from/to are calendar days in the dashboard's timezone (row timestamps stay UTC).
+    const tz = safeTz(req.nextUrl.searchParams.get("tz"));
+    res = await fetch(`${base}${path}?from=${from}&to=${to}${tz !== "UTC" ? `&tz=${encodeURIComponent(tz)}` : ""}`, {
       headers: { [service.authHeader]: apiKey },
       cache: "no-store",
       signal: AbortSignal.timeout(10 * 60 * 1000),

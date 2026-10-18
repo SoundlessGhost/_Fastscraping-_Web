@@ -58,6 +58,9 @@ export type DimTotals = { today: number; last7: number; last30: number; thisMont
 
 export type NormalizedUsage = {
   owner: string | null;
+  /// IANA zone the backend bucketed days in ("UTC" unless the page asked for
+  /// another one). Only the Shopee backend reports it; others leave it unset.
+  timezone?: string | null;
   /// Null until a rate is known — the cost card is hidden rather than showing $0.
   pricing: Pricing | null;
   /// Every date we know a figure for, keyed YYYY-MM-DD. Wider than `daily`:
@@ -344,6 +347,7 @@ function adaptShopee(raw: Record<string, unknown>): NormalizedUsage {
     dimension: "region",
     dims,
     daily,
+    timezone: typeof raw["timezone"] === "string" ? raw["timezone"] : "UTC",
     raw,
   };
 }
@@ -656,12 +660,28 @@ async function callBackend(
   }
 }
 
+/// IANA zone names only (letters, digits, "/", "_", "+", "-"); anything else is
+/// treated as UTC so a bad value can never reach the backend's query string.
+export function safeTz(tz: string | null | undefined): string {
+  const v = (tz ?? "").trim();
+  if (!v || v === "UTC" || !/^[A-Za-z0-9_+\-/]{1,64}$/.test(v)) return "UTC";
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: v });
+    return v;
+  } catch {
+    return "UTC";
+  }
+}
+
 export async function fetchServiceUsage(
   service: ServiceTarget,
   apiKey: string,
   interval: number,
+  tz: string = "UTC",
 ): Promise<FetchResult> {
-  const call = await callBackend(service, apiKey, `?interval=${interval}`);
+  // The Shopee backend buckets days in `tz`; other backends ignore the param.
+  const z = safeTz(tz);
+  const call = await callBackend(service, apiKey, `?interval=${interval}${z !== "UTC" ? `&tz=${encodeURIComponent(z)}` : ""}`);
   if ("error" in call) return call.error;
   const { res } = call;
 

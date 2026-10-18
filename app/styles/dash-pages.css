@@ -1564,3 +1564,25 @@
 .cf-ok:hover { opacity: 0.9; }
 .cf-ok.is-danger { background: #c2492b; border-color: #c2492b; }
 .cf-ok.is-danger:hover { background: #a93d22; }
+
+/* Timezone picker in the usage header ("all times ▾"). Reads as part of the
+   meta line, not a form field: no box until hovered, mono like its neighbours. */
+.su-tz {
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 1px 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  max-width: 240px;
+}
+.su-tz:hover,
+.su-tz:focus-visible {
+  border-color: var(--uv-line-2, #d9d6e6);
+  background: #fff;
+  outline: none;
+}

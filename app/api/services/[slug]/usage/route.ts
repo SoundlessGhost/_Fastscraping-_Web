@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage } from "@/lib/services/usage";
+import { fetchServiceUsage, safeTz } from "@/lib/services/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +34,8 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
 
   const requested = Number(req.nextUrl.searchParams.get("interval") ?? 7);
   const interval = ALLOWED_INTERVALS.includes(requested) ? requested : 7;
+  // Timezone the backend buckets days in (dashboard selector); unknown → UTC.
+  const tz = safeTz(req.nextUrl.searchParams.get("tz"));
 
   let apiKey: string;
   try {
@@ -42,7 +44,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
     return NextResponse.json({ error: "KEY_UNREADABLE" }, { status: 500 });
   }
 
-  const result = await fetchServiceUsage(service, apiKey, interval);
+  const result = await fetchServiceUsage(service, apiKey, interval, tz);
 
   if (!result.ok) {
     // Cache the backend's verdict so the sidebar can flag a dead key without

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth/session";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage, projectRegion } from "@/lib/services/usage";
+import { fetchServiceUsage, projectRegion, safeTz } from "@/lib/services/usage";
 import { buildUsageWorkbook, datesBetween } from "@/lib/services/usage-export";
 
 export const runtime = "nodejs";
@@ -60,7 +60,9 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ slug: strin
     return bad("KEY_UNREADABLE", 500);
   }
 
-  const result = await fetchServiceUsage(service, apiKey, WIDEST);
+  // Same timezone the page is showing, so the sheet's days match the chart.
+  const tz = safeTz(req.nextUrl.searchParams.get("tz"));
+  const result = await fetchServiceUsage(service, apiKey, WIDEST, tz);
   if (!result.ok) {
     const status = result.reason === "unauthorized" ? 401 : 502;
     return NextResponse.json({ error: result.reason.toUpperCase(), message: result.message }, { status });

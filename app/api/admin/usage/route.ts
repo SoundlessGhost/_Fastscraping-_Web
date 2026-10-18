@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { adminOr401 } from "@/lib/auth/guard";
 import { decryptSecret } from "@/lib/crypto";
-import { fetchServiceUsage } from "@/lib/services/usage";
+import { fetchServiceUsage, safeTz } from "@/lib/services/usage";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,8 @@ export async function GET(req: NextRequest) {
     data: { actorId: admin.id, action: "admin.view_usage", target: `${slug} of user ${userId}` },
   });
 
-  const result = await fetchServiceUsage(service, apiKey, interval);
+  const tz = safeTz(req.nextUrl.searchParams.get("tz"));
+  const result = await fetchServiceUsage(service, apiKey, interval, tz);
   if (!result.ok) {
     const status = result.reason === "unauthorized" ? 401 : 502;
     return NextResponse.json({ error: result.reason.toUpperCase(), message: result.message }, { status });
