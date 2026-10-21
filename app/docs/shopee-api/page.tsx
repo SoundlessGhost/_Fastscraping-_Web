@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 import { withShareCard } from "@/lib/seo";
 import { DOC_CSS, DOC_HTML, DOC_JS } from "@/lib/docs/shopee-api-doc";
+
+// Inter for the reference sidebar (Khalid, 2026-10-21); exposed as --next-font-inter.
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--next-font-inter" });
 
 export const metadata: Metadata = withShareCard({
   title: "Shopee Product API Docs",
@@ -15,7 +19,7 @@ export const metadata: Metadata = withShareCard({
 /// never leak into the rest of the site.
 export default function ShopeeApiDocs() {
   return (
-    <div className="apidoc-host">
+    <div className={`apidoc-host ${inter.variable}`}>
       <style dangerouslySetInnerHTML={{ __html: DOC_CSS }} />
       <div className="apidoc" dangerouslySetInnerHTML={{ __html: DOC_HTML }} />
       <Script id="apidoc-js" strategy="afterInteractive">
