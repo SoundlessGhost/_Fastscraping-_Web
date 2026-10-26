@@ -108,9 +108,11 @@ export async function getCodes() {
   }
   const snap = await listCodes();
   // A transient poll-ingest failure ("Command failed" under a heavy mailbox) is
-  // noise while the IDLE worker keeps the list current — only surface it when
-  // nothing fresh is arriving (a real outage still shows during a quiet spell).
-  if (error && snap.codes.some((c) => c.fresh)) error = null;
+  // noise while the IDLE worker keeps the list current. Only surface it when the
+  // pipeline looks genuinely stuck — nothing has arrived for 15 min.
+  const newestMs = snap.codes.reduce((m, c) => Math.max(m, new Date(c.receivedAt).getTime()), 0);
+  const flowing = newestMs > 0 && Date.now() - newestMs < 15 * 60 * 1000;
+  if (error && flowing) error = null;
   return { ...snap, error: error ?? snap.error };
 }
 
