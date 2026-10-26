@@ -15,7 +15,7 @@ const FRESH_MS = 5 * 60 * 1000;
 
 /// List columns only — never `body` (large; the reading pane fetches it per id).
 const LIST_SELECT = {
-  id: true, account: true, fromAddr: true, subject: true, code: true, receivedAt: true,
+  id: true, account: true, fromAddr: true, subject: true, code: true, inbox: true, receivedAt: true,
 } as const;
 
 let lastIngest = 0;
@@ -41,12 +41,16 @@ export async function listCodes() {
   // union is re-sorted, so a low-volume sender is always represented.
   // Shopee rows are matched by recipient (the mail's delivered-to is one of our
   // Shopee-account mailboxes), not by sender — the tab is those mailboxes' inbox.
+  // Leadconnect rows are matched by their dedicated central inbox: every mail
+  // that came through the leadconn cPanel is Leadconnect, whoever sent it.
   const shopeeList = [...SHOPEE_MAILBOXES];
   const perBrand = await Promise.all(
     BRANDS.map((b) =>
       prisma.otpCode.findMany({
         where:
-          b.id === "shopee"
+          b.id === "leadconn"
+            ? { inbox: "leadconn" }
+            : b.id === "shopee"
             ? {
                 OR: [
                   { account: { in: shopeeList } },
@@ -90,7 +94,7 @@ export async function listCodes() {
       fromAddr: r.fromAddr,
       subject: r.subject,
       code: r.code,
-      source: brandOf(r.fromAddr, r.subject, r.account) ?? "other",
+      source: brandOf(r.fromAddr, r.subject, r.account, r.inbox) ?? "other",
       receivedAt: r.receivedAt.toISOString(),
       fresh: now - r.receivedAt.getTime() < FRESH_MS,
     })),

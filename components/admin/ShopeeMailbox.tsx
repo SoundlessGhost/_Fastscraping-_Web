@@ -26,12 +26,23 @@ const ago = (iso: string) => {
   return `${Math.round(s / 86400)}d`;
 };
 
-/// Shopee tab as a mini mailbox: the list of Shopee mails on the left, and a
-/// reading pane on the right that shows the WHOLE selected email (not an
-/// extracted code). The body is fetched on click (`${apiUrl}/body/{id}`) and
-/// rendered in a sandboxed iframe — no scripts run, and remote images are
-/// blocked until "load images", so the email can't phone home.
-export default function ShopeeMailbox({ codes, apiUrl }: { codes: Code[]; apiUrl: string }) {
+/// A brand tab rendered as a mini mailbox: the list of that brand's mails on the
+/// left, and a reading pane on the right that shows the WHOLE selected email (not
+/// an extracted code). The body is fetched on click (`${apiUrl}/body/{id}`) and
+/// rendered in a sandboxed iframe — no scripts run, and remote images are blocked
+/// until "load images", so the email can't phone home. Shared by the Shopee and
+/// Leadconnect tabs — `brand` only drives the little coloured source chip + copy.
+export default function ShopeeMailbox({
+  codes,
+  apiUrl,
+  brand = "shopee",
+  brandLabel = "Shopee",
+}: {
+  codes: Code[];
+  apiUrl: string;
+  brand?: string;
+  brandLabel?: string;
+}) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [body, setBody] = useState<Body | null>(null);
   const [loading, setLoading] = useState(false);
@@ -78,7 +89,7 @@ export default function ShopeeMailbox({ codes, apiUrl }: { codes: Code[]; apiUrl
     <div className={`sm-wrap${selectedId ? " sm-wrap--open" : ""}`}>
       <div className="sm-list">
         {codes.length === 0 ? (
-          <div className="tc-empty">No Shopee emails yet — they appear here within seconds of arriving.</div>
+          <div className="tc-empty">No {brandLabel} emails yet — they appear here within seconds of arriving.</div>
         ) : (
           codes.map((c) => (
             <button
@@ -93,7 +104,7 @@ export default function ShopeeMailbox({ codes, apiUrl }: { codes: Code[]; apiUrl
               </div>
               <div className="sm-from">{c.fromAddr}</div>
               <div className="sm-acct">
-                <span className="tc-src tc-src--shopee">shopee</span>
+                <span className={`tc-src tc-src--${brand}`}>{brand}</span>
                 {c.account}
                 {c.fresh && <span className="sm-new">new</span>}
               </div>

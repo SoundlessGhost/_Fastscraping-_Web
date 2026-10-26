@@ -226,8 +226,13 @@ export default function TemuCodes({
         </div>
       )}
 
-      {brand === "shopee" ? (
-        <ShopeeMailbox codes={shown} apiUrl={apiUrl} />
+      {brand === "shopee" || brand === "leadconn" ? (
+        <ShopeeMailbox
+          codes={shown}
+          apiUrl={apiUrl}
+          brand={brand}
+          brandLabel={brands.find((b) => b.id === brand)?.label ?? brand}
+        />
       ) : (
       <div className="tc-list">
         <div className="tc-row tc-row--head">

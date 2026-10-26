@@ -2,31 +2,60 @@ import { ImapFlow } from "imapflow";
 import { prisma } from "@/lib/db";
 import { SHOPEE_MAILBOXES } from "@/lib/otp/shopee-mailboxes";
 
-// Reads the central mailbox over IMAP, extracts Temu verification codes and
-// stores them in Postgres (de-duped by Message-ID). Credentials come from the
-// server env only — never from code or the browser. See the handoff spec.
+// Reads one or more central mailboxes over IMAP, extracts verification codes /
+// whole emails and stores them in Postgres (de-duped by Message-ID). Each
+// mailbox is a separate cPanel account that many real mailboxes forward into.
+// Credentials come from the server env only — never from code or the browser.
 
-const cfg = {
-  host: process.env.TEMU_IMAP_HOST ?? "",
-  port: Number(process.env.TEMU_IMAP_PORT ?? 993),
-  user: process.env.TEMU_IMAP_USER ?? "",
-  pass: process.env.TEMU_IMAP_PASS ?? "",
+/// A central inbox we read. `brand` fixes every message from a *dedicated*
+/// inbox to one brand regardless of sender (leadconn only carries Leadconnect
+/// mail); `brand: null` means classify each message by sender/recipient (the
+/// cloakfetch relay carries Temu, Indeed and Shopee together).
+export type MailSource = {
+  id: string;
+  brand: BrandId | null;
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
 };
 
-/// True once the central-inbox IMAP env vars are set. The dashboard shows a
-/// "not configured" note instead of erroring when they aren't.
+/// The inboxes, built from env. A source with no host/user/pass is dropped, so
+/// adding a cPanel is just four env vars + one line here. The `id` is what each
+/// row stores in `OtpCode.inbox`.
+export const SOURCES: MailSource[] = [
+  {
+    id: "cloakfetch",
+    brand: null, // relay — Temu/Indeed by sender, Shopee by recipient
+    host: process.env.TEMU_IMAP_HOST ?? "",
+    port: Number(process.env.TEMU_IMAP_PORT ?? 993),
+    user: process.env.TEMU_IMAP_USER ?? "",
+    pass: process.env.TEMU_IMAP_PASS ?? "",
+  },
+  {
+    id: "leadconn",
+    brand: "leadconn", // dedicated — every mail here is Leadconnect
+    host: process.env.LEADCONN_IMAP_HOST ?? "",
+    port: Number(process.env.LEADCONN_IMAP_PORT ?? 993),
+    user: process.env.LEADCONN_IMAP_USER ?? "",
+    pass: process.env.LEADCONN_IMAP_PASS ?? "",
+  },
+].filter((s) => s.host && s.user && s.pass);
+
+/// True once at least one central inbox is configured. The dashboard shows a
+/// "not configured" note instead of erroring when none are.
 export function otpConfigured(): boolean {
-  return Boolean(cfg.host && cfg.user && cfg.pass);
+  return SOURCES.length > 0;
 }
 
-/// A fresh IMAP client from the central-inbox env. Shared by the throttled
-/// ingest and the persistent IDLE worker.
-export function newImapClient(): ImapFlow {
+/// A fresh IMAP client for one source. Shared by the throttled ingest and the
+/// persistent IDLE worker (one worker per source).
+export function newImapClient(source: MailSource): ImapFlow {
   return new ImapFlow({
-    host: cfg.host,
-    port: cfg.port,
+    host: source.host,
+    port: source.port,
     secure: true,
-    auth: { user: cfg.user, pass: cfg.pass },
+    auth: { user: source.user, pass: source.pass },
     logger: false,
   });
 }
@@ -60,21 +89,22 @@ const PURGE_MAX = 2000;
 /// Housekeeping is cheap but not free — at most once an hour.
 const PURGE_EVERY_MS = 60 * 60 * 1000;
 
-let lastPurge = 0;
+/// Last purge time per source id — each inbox is cleaned on its own cadence.
+const lastPurge: Record<string, number> = {};
 
 /// Deletes mail older than the harvest window. Runs inside the caller's mailbox
 /// lock. Never throws: a failed cleanup must not fail the ingest that found
 /// codes. Returns how many were removed.
-async function purgeOldMail(client: ImapFlow): Promise<number> {
-  if (Date.now() - lastPurge < PURGE_EVERY_MS) return 0;
-  lastPurge = Date.now();
+async function purgeOldMail(client: ImapFlow, sourceId: string): Promise<number> {
+  if (Date.now() - (lastPurge[sourceId] ?? 0) < PURGE_EVERY_MS) return 0;
+  lastPurge[sourceId] = Date.now();
   try {
     const before = new Date(Date.now() - PURGE_AFTER_MS);
     const stale = (await client.search({ before }, { uid: true })) || [];
     if (!stale.length) return 0;
     const batch = stale.slice(0, PURGE_MAX);
     await client.messageDelete(batch, { uid: true });
-    console.log(`[otp-idle] mailbox cleanup — removed ${batch.length} message(s) older than 48h`);
+    console.log(`[otp-idle] ${sourceId}: mailbox cleanup — removed ${batch.length} message(s) older than 48h`);
     return batch.length;
   } catch (e) {
     console.error("[otp-idle] mailbox cleanup failed:", e instanceof Error ? e.message : e);
@@ -97,20 +127,30 @@ type Brand = {
 };
 
 /// Brands the dashboard knows about. Temu/Indeed match by sender; Shopee also
-/// matches by recipient (any mail to a mailbox in SHOPEE_MAILBOXES — see brandOf).
+/// matches by recipient (any mail to a mailbox in SHOPEE_MAILBOXES — see
+/// brandOf); Leadconnect matches by its dedicated inbox (see DEDICATED_INBOX).
 export const BRANDS: readonly Brand[] = [
   { id: "temu", label: "Temu", match: /temu/i, codeIn: "subject" },
   { id: "indeed", label: "Indeed", match: /indeed/i, codeIn: "subject" },
   { id: "shopee", label: "Shopee", match: /shopee/i, codeIn: "mailbox" },
+  { id: "leadconn", label: "Leadconnect", match: /leadconn/i, codeIn: "mailbox" },
 ];
 
 export type BrandId = string;
 
-/// Which brand a message belongs to. A mail delivered to one of our dedicated
-/// Shopee-account mailboxes is Shopee whatever its sender — those inboxes are
-/// Shopee-only and the user wants EVERY mail from them, not just OTP/login.
-/// Otherwise match Temu / Indeed by sender or subject. Null = not one of ours.
-export function brandOf(fromAddr: string, subject: string, account?: string): BrandId | null {
+/// Inboxes dedicated to a single brand: every mail that arrives through them is
+/// that brand, whoever sent it. Kept here (not derived from SOURCES) so old
+/// rows classify correctly even when that source's env is absent.
+const DEDICATED_INBOX: Record<string, BrandId> = { leadconn: "leadconn" };
+
+/// Which brand a message belongs to.
+///   1. A dedicated inbox (leadconn) fixes the brand regardless of sender.
+///   2. A mail to one of our Shopee-account mailboxes is Shopee whatever its
+///      sender — those inboxes are Shopee-only and we keep EVERY mail from them.
+///   3. Otherwise match Temu / Indeed by sender or subject.
+/// Null = not one of ours.
+export function brandOf(fromAddr: string, subject: string, account?: string, inbox?: string): BrandId | null {
+  if (inbox && DEDICATED_INBOX[inbox]) return DEDICATED_INBOX[inbox]!;
   if (account && SHOPEE_MAILBOXES.has(account.toLowerCase())) return "shopee";
   for (const b of BRANDS) {
     if (b.match.test(fromAddr) || b.match.test(subject)) return b.id;
@@ -218,12 +258,12 @@ function addrOnly(v: string | null | undefined): string | null {
 
 export type IngestResult = { ok: true; added: number } | { ok: false; error: string };
 
-/// Connects, ingests new codes, prunes old ones. Safe to call on a throttle from
-/// the list endpoint — one short IMAP session per call.
-export async function ingestCodes(): Promise<IngestResult> {
-  if (!otpConfigured()) return { ok: false, error: "IMAP not configured" };
-
-  const client = newImapClient();
+/// Ingest one central inbox. Connects, classifies each message (sender/recipient
+/// for the relay, or a fixed brand for a dedicated inbox), stores it, and prunes
+/// old mail. One short IMAP session per call. Rows carry `inbox: source.id`.
+async function ingestOne(source: MailSource): Promise<IngestResult> {
+  const client = newImapClient(source);
+  const self = source.user.toLowerCase();
 
   let added = 0;
   try {
@@ -242,40 +282,47 @@ export async function ingestCodes(): Promise<IngestResult> {
       ) => {
         const res = await prisma.otpCode.upsert({
           where: { messageId },
-          create: { messageId, account, fromAddr, subject, code, receivedAt, body: body ?? null },
+          create: { messageId, account, fromAddr, subject, code, receivedAt, inbox: source.id, body: body ?? null },
           update: {}, // seen before — leave it
         });
         if (Date.now() - res.createdAt.getTime() < 5000) added++;
       };
 
-      // Body-brand (Shopee) messages: can't download a body while the fetch
-      // iterator is open, so collect them and fetch their bodies in a second pass.
+      // Body-brand (Shopee / Leadconnect) messages: can't download a body while
+      // the fetch iterator is open, so collect them and fetch bodies in a 2nd pass.
       type BodyJob = { uid: number; part: string; messageId: string; account: string; fromAddr: string; subject: string; receivedAt: Date };
       const bodyJobs: BodyJob[] = [];
 
       if (recent.length) {
         for await (const msg of client.fetch(
           recent,
-          { envelope: true, internalDate: true, bodyStructure: true, headers: ["delivered-to", "to"] },
+          { envelope: true, internalDate: true, bodyStructure: true, headers: ["delivered-to", "x-forwarded-to", "to"] },
           { uid: true },
         )) {
           const env = msg.envelope;
           const subject = env?.subject ?? "";
           const fromAddr = addrOnly(env?.from?.[0]?.address) ?? "";
-          const messageId = env?.messageId ?? `uid-${msg.uid}@${cfg.user}`;
+          const messageId = env?.messageId ?? `uid-${msg.uid}@${source.user}`;
           const rawHeaders = msg.headers ? msg.headers.toString() : "";
+          // The original mailbox the mail was sent to. Forwarding adds the relay
+          // as a recipient, so prefer a recipient that ISN'T our central inbox —
+          // that's the real mailbox (e.g. a Shopee or Leadconnect address), not
+          // codes@… . Falls back to whatever we have.
+          const deliveredTo = addrOnly(headerValue(rawHeaders, "delivered-to"));
+          const forwardedTo = addrOnly(headerValue(rawHeaders, "x-forwarded-to"));
+          const toAddr = addrOnly(env?.to?.[0]?.address);
           const account =
-            addrOnly(headerValue(rawHeaders, "delivered-to")) ??
-            addrOnly(env?.to?.[0]?.address) ??
-            "unknown";
+            [deliveredTo, forwardedTo, toAddr].find((a) => a && a !== self) ??
+            deliveredTo ?? toAddr ?? "unknown";
           const receivedAt = new Date(env?.date ?? msg.internalDate ?? Date.now());
 
-          // Match on recipient (Shopee mailbox) as well as sender.
-          const brand = brandOf(fromAddr, subject, account);
+          // A dedicated inbox fixes the brand; the relay classifies by
+          // sender (Temu/Indeed) or recipient (Shopee mailbox).
+          const brand = source.brand ?? brandOf(fromAddr, subject, account);
           if (!brand) continue;
 
           if (brandDef(brand)?.codeIn === "mailbox") {
-            // Keep the WHOLE email — every mail to a Shopee mailbox, not just
+            // Keep the WHOLE email — every mail to that mailbox, not just
             // OTP/login. Collect it; its body is fetched in the second pass.
             const part =
               findTextPart(msg.bodyStructure, "text/html") ??
@@ -310,7 +357,7 @@ export async function ingestCodes(): Promise<IngestResult> {
           const html = await downloadBody(client, j.uid, j.part);
           if (!html) continue;
           // Best-effort code/link for search; the whole email is kept regardless,
-          // so even a plain Shopee mail (no code) still shows in the mailbox.
+          // so even a plain mail (no code) still shows in the mailbox.
           const code = codeFromBody(stripHtml(html)) || linkFromBody(html) || "";
           await store(j.messageId, j.account, j.fromAddr, j.subject, code, j.receivedAt, html);
         }
@@ -318,7 +365,7 @@ export async function ingestCodes(): Promise<IngestResult> {
 
       // Housekeeping while we still hold the lock — keeps the quota from
       // filling, which is what stopped codes arriving in Aug 2026.
-      await purgeOldMail(client);
+      await purgeOldMail(client, source.id);
     } finally {
       lock.release();
     }
@@ -332,10 +379,31 @@ export async function ingestCodes(): Promise<IngestResult> {
     return { ok: false, error: e instanceof Error ? e.message : "IMAP error" };
   }
 
-  // Opportunistic prune.
+  return { ok: true, added };
+}
+
+/// Ingest every configured inbox in turn, then prune old rows once. Safe to call
+/// on a throttle from the list endpoint. The aggregate `added` drives the "N new"
+/// push; the first source error surfaces (and is suppressed upstream while codes
+/// are still flowing — see getCodes).
+export async function ingestCodes(): Promise<IngestResult> {
+  if (!otpConfigured()) return { ok: false, error: "IMAP not configured" };
+
+  let added = 0;
+  let firstError: string | null = null;
+  for (const source of SOURCES) {
+    const r = await ingestOne(source);
+    if (r.ok) added += r.added;
+    else if (!firstError) firstError = `${source.id}: ${r.error}`;
+  }
+
+  // Opportunistic prune (all inboxes share the one table).
   prisma.otpCode
     .deleteMany({ where: { receivedAt: { lt: new Date(Date.now() - KEEP_MS) } } })
     .catch(() => {});
 
+  // A code that landed anywhere is still a success for the viewer; only report an
+  // error when nothing came through at all.
+  if (firstError && added === 0) return { ok: false, error: firstError };
   return { ok: true, added };
 }

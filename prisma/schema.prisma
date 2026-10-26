@@ -186,14 +186,20 @@ model OtpCode {
   fromAddr   String
   subject    String
   code       String
-  // Full HTML body, stored only for brands shown as a mailbox (Shopee) so the
-  // dashboard can render the whole email in a reading pane. Null for code-only
-  // brands (Temu, Indeed). Pruned with the row at 7 days.
+  // Full HTML body, stored only for brands shown as a mailbox (Shopee,
+  // Leadconnect) so the dashboard can render the whole email in a reading pane.
+  // Null for code-only brands (Temu, Indeed). Pruned with the row at 7 days.
   body       String?
+  // Which central inbox the mail arrived through — one per cPanel account we
+  // read ("cloakfetch" = Temu/Indeed/Shopee relay, "leadconn" = Leadconnect).
+  // A dedicated inbox fixes the brand regardless of sender, so a second cPanel
+  // needs no per-message sender rules. Existing rows predate multi-source.
+  inbox      String   @default("cloakfetch")
   receivedAt DateTime
   createdAt  DateTime @default(now())
 
   @@index([receivedAt])
+  @@index([inbox, receivedAt])
 }
 
 /// Failed-login ledger for rate limiting. One row per failed attempt, keyed by
