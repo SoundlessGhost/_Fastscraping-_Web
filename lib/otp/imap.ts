@@ -36,6 +36,11 @@ export function newImapClient(): ImapFlow {
 const LOOKBACK_MS = 24 * 60 * 60 * 1000;
 /// Bound the work on a busy inbox — newest N since the lookback.
 const MAX_MESSAGES = 150;
+/// Max email bodies to download in a single ingest. Shopee mailboxes get a lot
+/// of mail, and downloading dozens of bodies in one session held the mailbox lock
+/// long enough that the server intermittently answered "Command failed". Capped
+/// per run (newest first); the IDLE worker and the next poll pick up the rest.
+const BODY_FETCH_MAX = 15;
 /// Drop rows older than this so the table stays small.
 const KEEP_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -295,8 +300,13 @@ export async function ingestCodes(): Promise<IngestResult> {
             select: { messageId: true },
           })).map((r) => r.messageId),
         );
-        for (const j of bodyJobs) {
-          if (have.has(j.messageId)) continue;
+        // Newest-first, capped per run so one ingest never holds the mailbox lock
+        // downloading dozens of bodies (which intermittently failed "Command failed").
+        const pending = bodyJobs
+          .filter((j) => !have.has(j.messageId))
+          .sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime())
+          .slice(0, BODY_FETCH_MAX);
+        for (const j of pending) {
           const html = await downloadBody(client, j.uid, j.part);
           if (!html) continue;
           // Best-effort code/link for search; the whole email is kept regardless,

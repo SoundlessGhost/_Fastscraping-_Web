@@ -107,6 +107,10 @@ export async function getCodes() {
     if (!r.ok) error = r.error;
   }
   const snap = await listCodes();
+  // A transient poll-ingest failure ("Command failed" under a heavy mailbox) is
+  // noise while the IDLE worker keeps the list current — only surface it when
+  // nothing fresh is arriving (a real outage still shows during a quiet spell).
+  if (error && snap.codes.some((c) => c.fresh)) error = null;
   return { ...snap, error: error ?? snap.error };
 }
 
