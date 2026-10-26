@@ -86,8 +86,15 @@ export async function listCodes() {
     configured: otpConfigured(),
     error: null as string | null,
     // Which brand each code came from is derived from the sender we already
-    // store, so adding a brand needs no migration and no backfill.
-    brands: BRANDS.map((b) => ({ id: b.id, label: b.label })),
+    // store, so adding a brand needs no migration and no backfill. `view` tells
+    // the UI how to show it: "code" brands (Temu/Indeed) get their own code-list
+    // tab; "mailbox" brands (Shopee, Leadconnect and every future cPanel) are
+    // grouped into the one mailbox tab, distinguished per row by a source chip.
+    brands: BRANDS.map((b) => ({
+      id: b.id,
+      label: b.label,
+      view: b.codeIn === "mailbox" ? ("mailbox" as const) : ("code" as const),
+    })),
     codes: rows.map((r) => ({
       id: r.id,
       account: r.account,

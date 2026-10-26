@@ -26,23 +26,14 @@ const ago = (iso: string) => {
   return `${Math.round(s / 86400)}d`;
 };
 
-/// A brand tab rendered as a mini mailbox: the list of that brand's mails on the
-/// left, and a reading pane on the right that shows the WHOLE selected email (not
-/// an extracted code). The body is fetched on click (`${apiUrl}/body/{id}`) and
+/// The one mailbox tab: the list of forwarded-account mails on the left, and a
+/// reading pane on the right that shows the WHOLE selected email (not an
+/// extracted code). The body is fetched on click (`${apiUrl}/body/{id}`) and
 /// rendered in a sandboxed iframe — no scripts run, and remote images are blocked
-/// until "load images", so the email can't phone home. Shared by the Shopee and
-/// Leadconnect tabs — `brand` only drives the little coloured source chip + copy.
-export default function ShopeeMailbox({
-  codes,
-  apiUrl,
-  brand = "shopee",
-  brandLabel = "Shopee",
-}: {
-  codes: Code[];
-  apiUrl: string;
-  brand?: string;
-  brandLabel?: string;
-}) {
+/// until "load images", so the email can't phone home. Rows from every cPanel
+/// source (Shopee, Leadconnect, …) live in this one list, each tagged with a
+/// coloured source chip (`c.source`) so you can tell which account it was for.
+export default function ShopeeMailbox({ codes, apiUrl }: { codes: Code[]; apiUrl: string }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [body, setBody] = useState<Body | null>(null);
   const [loading, setLoading] = useState(false);
@@ -89,7 +80,7 @@ export default function ShopeeMailbox({
     <div className={`sm-wrap${selectedId ? " sm-wrap--open" : ""}`}>
       <div className="sm-list">
         {codes.length === 0 ? (
-          <div className="tc-empty">No {brandLabel} emails yet — they appear here within seconds of arriving.</div>
+          <div className="tc-empty">No emails yet — they appear here within seconds of arriving.</div>
         ) : (
           codes.map((c) => (
             <button
@@ -104,7 +95,7 @@ export default function ShopeeMailbox({
               </div>
               <div className="sm-from">{c.fromAddr}</div>
               <div className="sm-acct">
-                <span className={`tc-src tc-src--${brand}`}>{brand}</span>
+                <span className={`tc-src tc-src--${c.source}`}>{c.source}</span>
                 {c.account}
                 {c.fresh && <span className="sm-new">new</span>}
               </div>

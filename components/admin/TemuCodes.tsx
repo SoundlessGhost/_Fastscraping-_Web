@@ -14,7 +14,7 @@ type Code = {
   fresh: boolean;
 };
 
-type Brand = { id: string; label: string };
+type Brand = { id: string; label: string; view?: "code" | "mailbox" };
 
 const POLL_MS = 3000;
 
@@ -142,12 +142,30 @@ export default function TemuCodes({
     }
   };
 
+  // "mailbox" brands (Shopee, Leadconnect, and every future cPanel) share ONE
+  // tab — all forwarded-account mail in one list, chipped per row by source.
+  // "code" brands (Temu, Indeed) keep their own code-list tab. The mailbox tab
+  // reuses the first mailbox brand's id/label (Shopee) so its name never changes
+  // as more cPanels are added.
+  const mailboxBrands = useMemo(() => brands.filter((b) => b.view === "mailbox"), [brands]);
+  const mailboxIds = useMemo(() => new Set(mailboxBrands.map((b) => b.id)), [mailboxBrands]);
+  const mailboxTabId = mailboxBrands[0]?.id ?? "";
+  const isMailboxTab = brand === mailboxTabId && mailboxBrands.length > 0;
+
+  const tabs = useMemo(() => {
+    const codeTabs = brands.filter((b) => b.view !== "mailbox").map((b) => ({ id: b.id, label: b.label }));
+    const mbox = mailboxBrands.length ? [{ id: mailboxTabId, label: mailboxBrands[0]!.label }] : [];
+    return [{ id: "all", label: "All" }, ...codeTabs, ...mbox];
+  }, [brands, mailboxBrands, mailboxTabId]);
+
   // Client-side filter over code / account / sender — the list is small (≤100)
   // and already sorted newest-first, so filtering keeps that order.
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return codes.filter((c) => {
-      if (brand !== "all" && c.source !== brand) return false;
+      if (brand !== "all") {
+        if (isMailboxTab ? !mailboxIds.has(c.source) : c.source !== brand) return false;
+      }
       if (!q) return true;
       return (
         c.code.toLowerCase().includes(q) ||
@@ -156,15 +174,17 @@ export default function TemuCodes({
         c.subject.toLowerCase().includes(q)
       );
     });
-  }, [codes, query, brand]);
+  }, [codes, query, brand, isMailboxTab, mailboxIds]);
 
-  /// Per-brand counts for the tab labels, so "Indeed 0" is visible rather than
-  /// leaving someone wondering whether the filter is broken.
+  /// Per-tab counts for the labels, so "Indeed 0" is visible rather than leaving
+  /// someone wondering whether the filter is broken. The mailbox tab counts
+  /// every mailbox-source row, not just its own id.
   const counts = useMemo(() => {
     const m: Record<string, number> = { all: codes.length };
     for (const c of codes) m[c.source] = (m[c.source] ?? 0) + 1;
+    if (mailboxTabId) m[mailboxTabId] = codes.filter((c) => mailboxIds.has(c.source)).length;
     return m;
-  }, [codes]);
+  }, [codes, mailboxTabId, mailboxIds]);
 
   return (
     <>
@@ -208,9 +228,9 @@ export default function TemuCodes({
       )}
       {configured && error && <div className="tc-note tc-note--warn">Mailbox: {error}</div>}
 
-      {brands.length > 1 && (
+      {tabs.length > 2 && (
         <div className="tc-tabs" role="tablist">
-          {[{ id: "all", label: "All" }, ...brands].map((b) => (
+          {tabs.map((b) => (
             <button
               key={b.id}
               type="button"
@@ -226,13 +246,8 @@ export default function TemuCodes({
         </div>
       )}
 
-      {brand === "shopee" || brand === "leadconn" ? (
-        <ShopeeMailbox
-          codes={shown}
-          apiUrl={apiUrl}
-          brand={brand}
-          brandLabel={brands.find((b) => b.id === brand)?.label ?? brand}
-        />
+      {isMailboxTab ? (
+        <ShopeeMailbox codes={shown} apiUrl={apiUrl} />
       ) : (
       <div className="tc-list">
         <div className="tc-row tc-row--head">
