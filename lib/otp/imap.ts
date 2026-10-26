@@ -40,6 +40,14 @@ export const SOURCES: MailSource[] = [
     user: process.env.LEADCONN_IMAP_USER ?? "",
     pass: process.env.LEADCONN_IMAP_PASS ?? "",
   },
+  {
+    id: "fastscra",
+    brand: "fastscra", // dedicated — every mail here is from the fastscra pool
+    host: process.env.FASTSCRA_IMAP_HOST ?? "",
+    port: Number(process.env.FASTSCRA_IMAP_PORT ?? 993),
+    user: process.env.FASTSCRA_IMAP_USER ?? "",
+    pass: process.env.FASTSCRA_IMAP_PASS ?? "",
+  },
 ].filter((s) => s.host && s.user && s.pass);
 
 /// True once at least one central inbox is configured. The dashboard shows a
@@ -134,6 +142,7 @@ export const BRANDS: readonly Brand[] = [
   { id: "indeed", label: "Indeed", match: /indeed/i, codeIn: "subject" },
   { id: "shopee", label: "Shopee", match: /shopee/i, codeIn: "mailbox" },
   { id: "leadconn", label: "Leadconnect", match: /leadconn/i, codeIn: "mailbox" },
+  { id: "fastscra", label: "Fastscra", match: /fastscra/i, codeIn: "mailbox" },
 ];
 
 export type BrandId = string;
@@ -141,7 +150,12 @@ export type BrandId = string;
 /// Inboxes dedicated to a single brand: every mail that arrives through them is
 /// that brand, whoever sent it. Kept here (not derived from SOURCES) so old
 /// rows classify correctly even when that source's env is absent.
-const DEDICATED_INBOX: Record<string, BrandId> = { leadconn: "leadconn" };
+const DEDICATED_INBOX: Record<string, BrandId> = { leadconn: "leadconn", fastscra: "fastscra" };
+
+/// Brand ids that come from a dedicated inbox — the list query pulls them by
+/// `inbox`, not by sender/recipient. Derived so a new dedicated source is one
+/// DEDICATED_INBOX entry and nothing else.
+export const DEDICATED_BRAND_IDS: ReadonlySet<BrandId> = new Set(Object.values(DEDICATED_INBOX));
 
 /// Which brand a message belongs to.
 ///   1. A dedicated inbox (leadconn) fixes the brand regardless of sender.

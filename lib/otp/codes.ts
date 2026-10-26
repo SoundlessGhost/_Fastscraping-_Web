@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { ingestCodes, otpConfigured, brandOf, BRANDS, type IngestResult } from "@/lib/otp/imap";
+import { ingestCodes, otpConfigured, brandOf, BRANDS, DEDICATED_BRAND_IDS, type IngestResult } from "@/lib/otp/imap";
 import { SHOPEE_MAILBOXES } from "@/lib/otp/shopee-mailboxes";
 
 // Shared by the admin page and the public secret-URL page. Ingestion is
@@ -48,8 +48,8 @@ export async function listCodes() {
     BRANDS.map((b) =>
       prisma.otpCode.findMany({
         where:
-          b.id === "leadconn"
-            ? { inbox: "leadconn" }
+          DEDICATED_BRAND_IDS.has(b.id)
+            ? { inbox: b.id }
             : b.id === "shopee"
             ? {
                 OR: [

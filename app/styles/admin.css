@@ -651,6 +651,7 @@
 .tc-src--indeed { color: #24508f; background: rgba(42, 93, 138, 0.1); border-color: rgba(42, 93, 138, 0.28); }
 .tc-src--shopee { color: #c0391b; background: rgba(238, 77, 45, 0.1); border-color: rgba(238, 77, 45, 0.3); }
 .tc-src--leadconn { color: #0f766e; background: rgba(13, 148, 136, 0.1); border-color: rgba(13, 148, 136, 0.3); }
+.tc-src--fastscra { color: #6d28d9; background: rgba(109, 40, 217, 0.1); border-color: rgba(109, 40, 217, 0.3); }
 /* Shopee "confirm this login" link shown in place of a numeric code. Smaller
    than a 20px code so it fits the narrow code column instead of overlapping the
    account next to it. */
